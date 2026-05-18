@@ -85,13 +85,13 @@ export default function Testimonials() {
   );
 
   return (
-    <section id="testimonials" className="pt-24 pb-48 relative overflow-hidden bg-white">
+    <section id="testimonials" className="pt-12 pb-32 sm:pt-24 sm:pb-48 relative overflow-hidden bg-white">
       <div className="mx-auto px-6 relative z-10" style={{ maxWidth: "var(--max-width)" }}>
         
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
           <div className="max-w-2xl">
-            <span className="inline-block px-4 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-[2px] mb-4 bg-amber-50 text-amber-700 border border-amber-100">
+            <span className="inline-block px-3 py-1 sm:px-4 sm:py-1.5 rounded-full text-[10px] sm:text-[11px] font-bold uppercase tracking-[1.5px] sm:tracking-[2px] mb-4 bg-amber-50 text-amber-700 border border-amber-100">
               Community Love
             </span>
             <h2 className="leading-[1.1] mb-6" style={{ fontSize: "clamp(32px, 5vw, 56px)", fontWeight: 800, color: "var(--text-primary)" }}>
@@ -111,8 +111,8 @@ export default function Testimonials() {
           </div>
         </div>
 
-        {/* Testimonials Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Testimonials Grid (Desktop & Tablet) */}
+        <div className="hidden md:grid grid-cols-3 gap-6">
           {visibleItems.map((t, i) => (
             <div
               key={`${t.author}-${i}`}
@@ -153,6 +153,52 @@ export default function Testimonials() {
               </div>
             </div>
           ))}
+        </div>
+
+        {/* Testimonials Carousel (Mobile Only - Single Active Card) */}
+        <div className="md:hidden">
+          {(() => {
+            const t = testimonials[current];
+            return (
+              <div
+                className="btn-glare group relative flex flex-col p-8 rounded-[32px] border-2 bg-white transition-all duration-500 cursor-default min-h-[320px]"
+                style={{ 
+                  borderColor: "#E8392A",
+                }}
+              >
+                <div className="mb-6 flex items-center justify-between">
+                  <StarRating />
+                  <Quote size={24} className="text-slate-100 transition-colors" />
+                </div>
+
+                <div className="flex">
+                  <span className="w-fit inline-block text-[10px] font-bold uppercase tracking-[1px] mb-4 px-3 py-1 rounded-full border" 
+                    style={{ 
+                      backgroundColor: `${t.color}15`,
+                      borderColor: `${t.color}30`,
+                      color: t.color
+                    }}>
+                    {t.plan}
+                  </span>
+                </div>
+
+                <p className="text-[16px] font-normal text-slate-600 leading-relaxed mb-8 flex-1 italic">
+                  "{t.quote}"
+                </p>
+
+                <div className="pt-6 border-t border-slate-100 flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-[14px] font-bold text-white shadow-lg"
+                    style={{ background: `linear-gradient(135deg, ${t.color}, ${t.color}cc)` }}>
+                    {t.initials}
+                  </div>
+                  <div>
+                    <p className="text-[15px] font-semibold text-slate-900">{t.author}</p>
+                    <p className="text-[12px] font-normal text-slate-400">{t.sub}</p>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
         </div>
 
         {/* Modern Dot Indicators */}

@@ -150,14 +150,16 @@ export default function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-12 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-6">
+        <div className="pt-12 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-6 text-center md:text-left">
           <p className="text-[13px] text-slate-500 font-medium">
-            © 2025 EazyMyTiffin. Premium Tiffin Service.
+            © 2025 EazyMy-Tiffin. India's Premium Tiffin Brand.
           </p>
-          <div className="flex items-center gap-8 text-[13px] text-slate-500 font-medium">
-            <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
-            <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
-            <span className="flex items-center gap-2">
+          <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8 text-[13px] text-slate-500 font-medium w-full md:w-auto">
+            <div className="flex items-center gap-6 justify-center">
+              <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
+              <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
+            </div>
+            <span className="flex items-center justify-center gap-2 flex-wrap">
               Built with <span className="text-[#E8392A]">❤️</span> by{" "}
               <a 
                 href="https://www.frequnsync.online/" 
@@ -171,7 +173,7 @@ export default function Footer() {
               <img 
                 src="https://flagcdn.com/w40/in.png" 
                 alt="India Flag" 
-                className="w-5 h-auto"
+                className="w-5 h-3.5 object-cover rounded-sm border border-white/10 shrink-0"
               />
             </span>
           </div>

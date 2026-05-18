@@ -45,19 +45,19 @@ export default function Hero() {
           </p>
 
           {/* CTA row */}
-          <div className="flex flex-wrap gap-4 mt-6">
+          <div className="flex gap-2.5 sm:gap-4 mt-6">
             <a
               href="tel:9770144899"
-              className="btn-glare flex items-center gap-2 px-8 py-3 rounded-full text-[14px] font-bold uppercase tracking-[1px] text-white transition-all duration-300 hover:scale-[1.03]"
+              className="btn-glare flex items-center gap-1.5 sm:gap-2 px-4 py-3 sm:px-8 sm:py-3 rounded-full text-[12px] sm:text-[14px] font-bold uppercase tracking-[1px] text-white transition-all duration-300 hover:scale-[1.03] whitespace-nowrap"
               style={{ background: "var(--emt-red)" }}
             >
-              Order Now <ArrowUpRight size={18} strokeWidth={2.5} />
+              Order Now <ArrowUpRight className="w-4 h-4 sm:w-[18px] sm:h-[18px]" strokeWidth={2.5} />
             </a>
             <a
               href="#meal-plans"
-              className="btn-glare btn-glare-dark flex items-center gap-2 px-8 py-3 rounded-full text-[14px] font-bold uppercase tracking-[1px] bg-white text-black transition-all duration-300 hover:scale-[1.03]"
+              className="btn-glare btn-glare-dark flex items-center gap-1.5 sm:gap-2 px-4 py-3 sm:px-8 sm:py-3 rounded-full text-[12px] sm:text-[14px] font-bold uppercase tracking-[1px] bg-white text-black transition-all duration-300 hover:scale-[1.03] whitespace-nowrap"
             >
-              View Plans <ArrowUpRight size={18} strokeWidth={2.5} />
+              View Plans <ArrowUpRight className="w-4 h-4 sm:w-[18px] sm:h-[18px]" strokeWidth={2.5} />
             </a>
           </div>
         </div>

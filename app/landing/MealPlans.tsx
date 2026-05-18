@@ -5,10 +5,10 @@ import { ArrowUpRight } from "lucide-react";
 
 type Tab = "veg" | "mix" | "nonveg";
 
-const tabs: { id: Tab; label: string; emoji: string; gradient: string }[] = [
-  { id: "veg",    label: "VEG MEALS",     emoji: "🌿", gradient: "linear-gradient(135deg,#1B5E30,#2D7A3A)" },
-  { id: "mix",    label: "MIX MEALS",     emoji: "🍛", gradient: "linear-gradient(135deg,#D35400,#E8650A)" },
-  { id: "nonveg", label: "NON-VEG MEALS", emoji: "🍖", gradient: "linear-gradient(135deg,#8B1A1A,#C0392B)" },
+const tabs: { id: Tab; label: string; mobileLabel: string; gradient: string }[] = [
+  { id: "veg",    label: "VEG MEALS",     mobileLabel: "VEG",     gradient: "linear-gradient(135deg,#1B5E30,#2D7A3A)" },
+  { id: "mix",    label: "MIX MEALS",     mobileLabel: "MIX",     gradient: "linear-gradient(135deg,#D35400,#E8650A)" },
+  { id: "nonveg", label: "NON-VEG MEALS", mobileLabel: "NON-VEG", gradient: "linear-gradient(135deg,#8B1A1A,#C0392B)" },
 ];
 
 const tabConfig: Record<Tab, { cardGradient: string; glow: string; sectionGradient: string }> = {
@@ -22,30 +22,30 @@ const planData: Record<Tab, {
   individual: { label: string; price: string; popular?: boolean }[];
 }> = {
   veg: {
-    name: "🌿 VEG MEALS",
+    name: "VEG MEALS",
     individual: [
       { label: "1 Meal Trial", price: "₹99",   popular: false },
       { label: "1 Meal",       price: "₹119",  popular: false },
       { label: "1 Day Meal",   price: "₹199",  popular: false },
-      { label: "1 Month",      price: "₹3,999", popular: true },
+      { label: "1 Month",      price: "₹3,199", popular: true },
     ],
   },
   mix: {
-    name: "🍛 MIX MEALS",
+    name: "MIX MEALS",
     individual: [
       { label: "1 Meal Trial", price: "₹109",  popular: false },
       { label: "1 Meal",       price: "₹139",  popular: false },
       { label: "1 Day Meal",   price: "₹299",  popular: false },
-      { label: "1 Month",      price: "₹4,699", popular: true },
+      { label: "1 Month",      price: "₹3,599", popular: true },
     ],
   },
   nonveg: {
-    name: "🍖 NON-VEG MEALS",
+    name: "NON-VEG MEALS",
     individual: [
       { label: "1 Meal Trial", price: "₹129",  popular: false },
       { label: "1 Meal",       price: "₹159",  popular: false },
       { label: "1 Day Meal",   price: "₹259",  popular: false },
-      { label: "1 Month",      price: "₹4,999", popular: true },
+      { label: "1 Month",      price: "₹4,299", popular: true },
     ],
   },
 };
@@ -66,7 +66,7 @@ export default function MealPlans() {
   return (
     <section
       id="meal-plans"
-      className="py-24 relative overflow-hidden"
+      className="py-12 sm:py-24 relative overflow-hidden"
       style={{ background: "#FAF9F6" }}
       aria-labelledby="meal-plans-heading"
     >
@@ -88,38 +88,57 @@ export default function MealPlans() {
               Choose Your <span style={{ color: "var(--emt-red)" }}>Perfect Plan</span>
             </h2>
           </div>
-          <div className="flex flex-col md:items-end">
-            <p className="text-[15px] font-semibold text-right" style={{ color: "var(--text-secondary)" }}>
+          <div className="flex flex-col items-start md:items-end">
+            <p className="text-[15px] font-semibold text-left md:text-right" style={{ color: "var(--text-secondary)" }}>
               Only 26 days a month · Sundays Closed
             </p>
-            <p className="text-[14px] font-medium opacity-60 text-right">Fresh daily delivery to your doorstep</p>
+            <p className="text-[14px] font-medium opacity-60 text-left md:text-right">Fresh daily delivery to your doorstep</p>
           </div>
         </div>
 
-        {/* Tab switcher - Ultra Clean */}
+        {/* Tab Switcher — Premium Warm Segmented Controls */}
         <div
-          className="flex flex-wrap gap-4 mb-14 border-b"
-          style={{ borderColor: "var(--border-warm)" }}
+          className="flex gap-1 sm:gap-2 mb-14 p-1.5 rounded-full w-full sm:w-fit border"
+          style={{ 
+            background: "rgba(244, 235, 224, 0.5)", 
+            borderColor: "rgba(212, 184, 150, 0.4)" 
+          }}
           role="tablist"
         >
           {tabs.map((tab) => {
             const isActive = active === tab.id;
+            const themeColors: Record<Tab, { text: string; border: string }> = {
+              veg:    { text: "#1B5E30", border: "#1B5E30" },
+              mix:    { text: "#D35400", border: "#D35400" },
+              nonveg: { text: "#E8392A", border: "#E8392A" },
+            };
+
             return (
               <button
                 key={tab.id}
                 role="tab"
                 aria-selected={isActive}
                 onClick={() => setActive(tab.id)}
-                className="pb-4 px-2 text-[14px] font-bold uppercase tracking-[1.5px] transition-all duration-300 relative"
-                style={{ color: isActive ? "var(--text-primary)" : "rgba(0,0,0,0.4)" }}
+                className="flex-1 sm:flex-initial flex items-center justify-center px-3 py-1.5 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-extrabold uppercase tracking-[0.5px] sm:tracking-[1.5px] transition-all duration-300 whitespace-nowrap"
+                style={
+                  isActive
+                    ? {
+                        background: "#FFFFFF",
+                        color: themeColors[tab.id].text,
+                        boxShadow: "0 6px 16px rgba(61, 31, 10, 0.08)",
+                        border: `2px solid ${themeColors[tab.id].border}`,
+                        transform: "translateY(-1px)",
+                      }
+                    : {
+                        background: "transparent",
+                        color: "#4A3A2A",
+                        opacity: 0.75,
+                        border: "2px solid transparent",
+                      }
+                }
               >
-                {tab.label}
-                {isActive && (
-                  <div
-                    className="absolute bottom-[-1px] left-0 w-full h-[3px] rounded-full"
-                    style={{ background: "var(--emt-red)" }}
-                  />
-                )}
+                <span className="hidden sm:inline">{tab.label}</span>
+                <span className="sm:hidden">{tab.mobileLabel}</span>
               </button>
             );
           })}
@@ -142,7 +161,7 @@ export default function MealPlans() {
                 Premium Choice
               </span>
               <h3 className="text-white text-5xl font-black tracking-tighter mb-4">
-                {plan.name.split(" ")[1]} <br />
+                {active === "nonveg" ? "NON-VEG" : active.toUpperCase()} <br />
                 <span style={{ color: "var(--emt-red)" }}>MEALS</span>
               </h3>
               <p className="text-white/70 text-[15px] font-medium leading-relaxed">
