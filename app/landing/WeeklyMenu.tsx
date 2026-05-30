@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowUpRight, CheckCircle2, Clock, Leaf, ShieldCheck, Truck } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 const menuData = [
   { day: "Monday", color: "#1B5E30", image: "/eazymytiffin-veg-meal-plan.png", lunch: { dish: "Aloo Gobhi Masala", sides: "Dal + Rice + 4 Roti" }, dinner: { dish: "Bhindi Fry Special", sides: "Dal + Rice + 4 Roti" } },
@@ -22,6 +23,82 @@ const badges = [
 
 export default function WeeklyMenu() {
   const [hoveredRow, setHoveredRow] = useState<number | null>(null);
+  const [cycles, setCycles] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchWeeklyMenu = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("weekly_menu_cycles")
+          .select(`
+            weekday,
+            menus (
+              id,
+              title,
+              description,
+              meal_type,
+              category,
+              image_url,
+              is_active
+            )
+          `);
+
+        if (!error && data) {
+          // Filter to only include active menus in our cycles list
+          const activeCycles = data.filter((c: any) => c.menus && c.menus.is_active !== false);
+          setCycles(activeCycles);
+        }
+      } catch (e) {
+        console.error("Error fetching landing page weekly menu cycles:", e);
+      }
+    };
+    fetchWeeklyMenu();
+  }, []);
+
+  const getWeeklyMenu = () => {
+    if (cycles && cycles.length > 0) {
+      const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+      const colors = ["#1B5E30", "#D35400", "#1B5E30", "#D35400", "#1B5E30", "#D35400", "#F5A623"];
+      const fallbackImages = [
+        "/eazymytiffin-veg-meal-plan.png",
+        "/eazymytiffin-light-meal-subscription.png",
+        "/eazymytiffin-mix-meal-plan.png",
+        "/eazymytiffin-non-veg-meal-plan.png",
+        "/eazymytiffin-veg-menu-preview.png",
+        "/eazymytiffin-mix-menu-preview.png",
+        "/eazymytiffin-weekly-special-meal.png",
+      ];
+      
+      return days.map((dayName, index) => {
+        const weekdayNum = index + 1; // 1-7
+        const dayCycles = cycles.filter((c) => c.weekday === weekdayNum);
+        
+        // Find lunch and dinner dishes from the cycle
+        const lunchCycle = dayCycles.find((c) => c.menus?.meal_type === "lunch" || c.menus?.meal_type === "both");
+        const dinnerCycle = dayCycles.find((c) => c.menus?.meal_type === "dinner" || c.menus?.meal_type === "both");
+        
+        const lunchDish = lunchCycle?.menus?.title || "Chef's Veg Special";
+        const lunchSides = lunchCycle?.menus?.description || "Dal + Rice + 4 Roti";
+        
+        const dinnerDish = dinnerCycle?.menus?.title || "Homestyle Seasonal Curry";
+        const dinnerSides = dinnerCycle?.menus?.description || "Dal + Rice + 4 Roti";
+        
+        const isSunday = weekdayNum === 7;
+        const bannerImage = lunchCycle?.menus?.image_url || fallbackImages[index];
+
+        return {
+          day: isSunday ? "Sunday ⭐" : dayName,
+          color: colors[index],
+          image: bannerImage,
+          special: isSunday,
+          lunch: { dish: lunchDish, sides: lunchSides },
+          dinner: { dish: dinnerDish, sides: dinnerSides },
+        };
+      });
+    }
+    
+    return menuData;
+  };
 
   return (
     <section id="weekly-menu" className="py-24 relative overflow-hidden" style={{ background: "#F4F9F4" }}>
@@ -48,7 +125,7 @@ export default function WeeklyMenu() {
 
         {/* Menu Grid - Premium Gourmet Style */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {menuData.map((row, i) => {
+          {getWeeklyMenu().map((row, i) => {
             const isHovered = hoveredRow === i;
             return (
               <div

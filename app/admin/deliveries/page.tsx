@@ -1,128 +1,178 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabase";
+import { RefreshCw, Truck } from "lucide-react";
+
+type Assignment = {
+  id: string; order_id: string; delivery_boy_id: string; status: string; eta: string | null; proof_image: string | null; created_at: string;
+  delivery_boy: { full_name: string; phone: string } | null;
+  order: { total_amount: number; time_slot: string; user: { full_name: string; phone: string } | null; address: { area: string; city: string } | null } | null;
+};
+
+const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
+  assigned: { bg: "rgba(14,165,233,0.1)", text: "#0EA5E9" },
+  on_the_way: { bg: "rgba(232,57,42,0.1)", text: "#E8392A" },
+  arriving: { bg: "rgba(245,158,11,0.1)", text: "#F59E0B" },
+  delivered: { bg: "rgba(27,94,48,0.1)", text: "#1B5E30" },
+  failed: { bg: "rgba(156,163,175,0.1)", text: "#6B7280" },
+};
 
 export default function AdminDeliveriesPage() {
-  const [deliveries, setDeliveries] = useState<any[]>([]);
+  const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [deliveryBoys, setDeliveryBoys] = useState<{ id: string; full_name: string }[]>([]);
   const [loading, setLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState("active");
+  const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
+  const channelRef = useRef<any>(null);
+
+  const showToast = (msg: string, type: "success" | "error" = "success") => {
+    setToast({ msg, type }); setTimeout(() => setToast(null), 3000);
+  };
+
+  const fetchData = async () => {
+    const q = supabase
+      .from("delivery_assignments")
+      .select(`id, order_id, delivery_boy_id, status, eta, proof_image, created_at,
+        delivery_boy:users!delivery_assignments_delivery_boy_id_fkey(full_name, phone),
+        order:food_orders(total_amount, time_slot,
+          user:users(full_name, phone),
+          address:addresses(area, city)
+        )`)
+      .order("created_at", { ascending: false })
+      .limit(100);
+
+    if (statusFilter === "active") {
+      q.not("status", "in", '("delivered","failed")');
+    }
+
+    const { data } = await q;
+    setAssignments((data as any) || []);
+
+    const { data: boys } = await supabase.from("users").select("id, full_name").eq("role", "delivery_boy").eq("status", "active");
+    setDeliveryBoys(boys || []);
+    setLoading(false);
+  };
 
   useEffect(() => {
-    const fetchDeliveries = async () => {
-      try {
-        const { data } = await supabase
-          .from("deliveries")
-          .select("*, orders:order_id(id, user_id, users:user_id(full_name, email))")
-          .order("created_at", { ascending: false })
-          .limit(50);
+    fetchData();
+    channelRef.current = supabase.channel("admin:deliveries")
+      .on("postgres_changes", { event: "*", schema: "public", table: "delivery_assignments" }, fetchData)
+      .subscribe();
+    return () => { if (channelRef.current) supabase.removeChannel(channelRef.current); };
+  }, [statusFilter]);
 
-        setDeliveries(data || []);
-      } catch (error) {
-        console.error("Error fetching deliveries:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const handleAssign = async (orderId: string, deliveryBoyId: string) => {
+    const { error } = await supabase.from("delivery_assignments").upsert([{
+      order_id: orderId, delivery_boy_id: deliveryBoyId, status: "assigned",
+    }], { onConflict: "order_id" });
+    await supabase.from("food_orders").update({ status: "assigned", assigned_delivery_boy: deliveryBoyId }).eq("id", orderId);
+    if (!error) showToast("Delivery boy assigned!");
+    else showToast("Assignment failed", "error");
+  };
 
-    fetchDeliveries();
-  }, []);
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "delivered":
-        return "bg-green-100 text-[#1B5E30]";
-      case "in_transit":
-        return "bg-orange-100 text-[#E8392A]";
-      default:
-        return "bg-gray-100 text-gray-700";
-    }
+  const stats = {
+    total: assignments.length,
+    active: assignments.filter((a) => !["delivered", "failed"].includes(a.status)).length,
+    delivered: assignments.filter((a) => a.status === "delivered").length,
+    delayed: assignments.filter((a) => a.eta === "Delayed").length,
   };
 
   return (
-    <div className="min-h-screen bg-[#FDF9F3]">
-      {/* Header */}
-      <div className="bg-white border-b border-[#D4B896]/20">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center gap-4">
-          <Link href="/admin" className="p-2 hover:bg-[#F8FAFC] rounded-lg">
-            <ArrowLeft size={20} className="text-[#1A1A1A]" />
-          </Link>
-          <h1 className="text-2xl font-800 text-[#1A1A1A]">Deliveries Tracking</h1>
+    <div>
+      {toast && <div style={{ position: "fixed", top: "20px", right: "20px", zIndex: 200, background: toast.type === "success" ? "#1B5E30" : "#E8392A", color: "white", borderRadius: "12px", padding: "12px 20px", fontSize: "13px", fontWeight: 600 }}>{toast.type === "success" ? "✅ " : "❌ "}{toast.msg}</div>}
+
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
+        <div>
+          <h1 style={{ fontWeight: 900, fontSize: "24px", color: "#1A1A1A", margin: 0 }}>Delivery Management</h1>
+          <p style={{ color: "#9CA3AF", fontSize: "13px", margin: "4px 0 0" }}>Monitor and assign deliveries</p>
         </div>
+        <button onClick={fetchData} style={{ display: "flex", alignItems: "center", gap: "6px", background: "white", border: "1px solid rgba(212,184,150,0.3)", borderRadius: "10px", padding: "8px 14px", fontSize: "12px", fontWeight: 700, cursor: "pointer" }}>
+          <RefreshCw size={14} /> Refresh
+        </button>
       </div>
 
-      {/* Content */}
-      <main className="max-w-7xl mx-auto px-4 py-8">
-        {loading ? (
-          <div className="text-center py-12">
-            <div className="inline-block animate-spin text-4xl">⏳</div>
-            <p className="text-gray-600 mt-4">Loading deliveries...</p>
+      {/* Stats row */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px", marginBottom: "20px" }}>
+        {[
+          { label: "Total", value: stats.total, color: "#1A1A1A" },
+          { label: "Active", value: stats.active, color: "#0EA5E9" },
+          { label: "Delivered", value: stats.delivered, color: "#1B5E30" },
+          { label: "Delayed", value: stats.delayed, color: "#E8392A" },
+        ].map((s) => (
+          <div key={s.label} style={{ background: "white", borderRadius: "14px", padding: "14px 16px", border: "1px solid rgba(212,184,150,0.15)", textAlign: "center" }}>
+            <p style={{ fontWeight: 900, fontSize: "28px", color: s.color, margin: "0 0 4px" }}>{s.value}</p>
+            <p style={{ fontSize: "11px", color: "#9CA3AF", fontWeight: 700, margin: 0 }}>{s.label}</p>
           </div>
-        ) : (
-          <div className="bg-white rounded-lg border border-[#D4B896]/20 overflow-hidden">
-            <table className="w-full">
-              <thead className="bg-[#F8FAFC] border-b border-[#D4B896]/20">
-                <tr>
-                  <th className="px-6 py-3 text-left text-sm font-700 text-[#1A1A1A]">
-                    Delivery ID
-                  </th>
-                  <th className="px-6 py-3 text-left text-sm font-700 text-[#1A1A1A]">
-                    Customer
-                  </th>
-                  <th className="px-6 py-3 text-left text-sm font-700 text-[#1A1A1A]">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-sm font-700 text-[#1A1A1A]">
-                    Location
-                  </th>
-                  <th className="px-6 py-3 text-left text-sm font-700 text-[#1A1A1A]">
-                    Time
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {deliveries.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="px-6 py-8 text-center text-gray-600">
-                      No deliveries found
-                    </td>
-                  </tr>
-                ) : (
-                  deliveries.map((delivery) => (
-                    <tr
-                      key={delivery.id}
-                      className="border-b border-[#D4B896]/20 hover:bg-[#F8FAFC]"
-                    >
-                      <td className="px-6 py-3 font-600 text-[#1A1A1A]">
-                        {delivery.id.slice(0, 8)}...
-                      </td>
-                      <td className="px-6 py-3 text-gray-600">
-                        {delivery.orders?.users?.full_name}
-                      </td>
-                      <td className="px-6 py-3">
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-600 ${getStatusColor(
-                            delivery.status
-                          )}`}
-                        >
-                          {delivery.status.replace(/_/g, " ").toUpperCase()}
-                        </span>
-                      </td>
-                      <td className="px-6 py-3 text-gray-600">
-                        {delivery.location_lat.toFixed(4)}, {delivery.location_lng.toFixed(4)}
-                      </td>
-                      <td className="px-6 py-3 text-gray-600">
-                        {new Date(delivery.created_at).toLocaleTimeString()}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </main>
+        ))}
+      </div>
+
+      {/* Filter */}
+      <div style={{ display: "flex", gap: "8px", marginBottom: "16px" }}>
+        {["active", "all"].map((f) => (
+          <button key={f} onClick={() => setStatusFilter(f)} style={{ padding: "7px 16px", borderRadius: "9px", fontSize: "12px", fontWeight: 700, cursor: "pointer", textTransform: "capitalize", border: "1px solid", background: statusFilter === f ? "#1A1A1A" : "white", color: statusFilter === f ? "white" : "#4A3A2A", borderColor: statusFilter === f ? "#1A1A1A" : "rgba(212,184,150,0.3)" }}>
+            {f === "active" ? "Active Only" : "All Today"}
+          </button>
+        ))}
+      </div>
+
+      {loading ? (
+        <div style={{ textAlign: "center", padding: "60px 0" }}>
+          <div style={{ width: "36px", height: "36px", borderRadius: "50%", border: "3px solid rgba(232,57,42,0.2)", borderTopColor: "#E8392A", animation: "spin 0.8s linear infinite", margin: "0 auto 16px" }} />
+          <p style={{ color: "#9CA3AF" }}>Loading deliveries…</p>
+        </div>
+      ) : assignments.length === 0 ? (
+        <div style={{ textAlign: "center", padding: "60px 0", background: "white", borderRadius: "16px" }}>
+          <Truck size={40} style={{ color: "#E5E7EB", margin: "0 auto 12px" }} />
+          <p style={{ fontWeight: 700, color: "#1A1A1A" }}>No deliveries found</p>
+        </div>
+      ) : (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "14px" }}>
+          {assignments.map((a) => {
+            const sc = STATUS_COLORS[a.status] || STATUS_COLORS.failed;
+            return (
+              <div key={a.id} style={{ background: "white", borderRadius: "16px", border: `1px solid ${sc.bg}`, boxShadow: "0 2px 8px rgba(0,0,0,0.06)", overflow: "hidden" }}>
+                <div style={{ padding: "12px 14px", borderBottom: "1px solid rgba(212,184,150,0.1)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div>
+                    <p style={{ fontWeight: 800, fontSize: "13px", color: "#1A1A1A", margin: 0 }}>
+                      🛵 {a.delivery_boy?.full_name || "Unassigned"}
+                    </p>
+                    <p style={{ fontSize: "10px", color: "#9CA3AF", margin: "2px 0 0" }}>{a.delivery_boy?.phone || "—"}</p>
+                  </div>
+                  <span style={{ fontSize: "11px", fontWeight: 700, padding: "4px 10px", borderRadius: "999px", background: sc.bg, color: sc.text, textTransform: "capitalize", whiteSpace: "nowrap" }}>
+                    {a.status.replace(/_/g, " ")}
+                  </span>
+                </div>
+                <div style={{ padding: "12px 14px" }}>
+                  <p style={{ fontWeight: 700, fontSize: "13px", color: "#1A1A1A", margin: "0 0 2px" }}>{a.order?.user?.full_name || "—"}</p>
+                  <p style={{ fontSize: "11px", color: "#9CA3AF", margin: "0 0 8px" }}>{a.order?.address?.area}, {a.order?.address?.city}</p>
+                  <div style={{ display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap" }}>
+                    <span style={{ fontSize: "11px", fontWeight: 700, color: "#6B7280" }}>
+                      {a.order?.time_slot === "lunch" ? "🌤️ Lunch" : "🌙 Dinner"} · ₹{a.order?.total_amount}
+                    </span>
+                    {a.eta && <span style={{ fontSize: "11px", fontWeight: 700, color: a.eta === "Delayed" ? "#E8392A" : "#D97706" }}>⏱ {a.eta}</span>}
+                    {a.proof_image && (
+                      <a href={a.proof_image} target="_blank" rel="noreferrer" style={{ fontSize: "11px", fontWeight: 700, color: "#0EA5E9", textDecoration: "none" }}>📸 Proof</a>
+                    )}
+                  </div>
+
+                  {/* Reassign */}
+                  {a.status !== "delivered" && (
+                    <div style={{ marginTop: "10px" }}>
+                      <select defaultValue={a.delivery_boy_id || ""} onChange={(e) => handleAssign(a.order_id, e.target.value)}
+                        style={{ width: "100%", padding: "7px 10px", borderRadius: "8px", border: "1px solid rgba(212,184,150,0.3)", fontSize: "12px", outline: "none", fontWeight: 600 }}>
+                        <option value="">— Reassign —</option>
+                        {deliveryBoys.map((b) => <option key={b.id} value={b.id}>{b.full_name}</option>)}
+                      </select>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+      <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }

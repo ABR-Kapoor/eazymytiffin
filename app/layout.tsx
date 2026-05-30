@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
+import { AppProvider } from "./providers";
 import "./globals.css";
 
 const montserrat = Montserrat({
@@ -60,7 +61,9 @@ export default function RootLayout({
           <a href="#main" className="skip-link">
             Skip to main content
           </a>
-          {children}
+          <AppProvider>
+            {children}
+          </AppProvider>
         </body>
       </html>
     </ClerkProvider>

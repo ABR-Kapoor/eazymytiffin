@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowUpRight } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 type Tab = "veg" | "mix" | "nonveg";
 
@@ -53,8 +54,43 @@ const planData: Record<Tab, {
 export default function MealPlans() {
   const [active, setActive] = useState<Tab>("veg");
   const [hoveredRow, setHoveredRow] = useState<number | null>(null);
+  const [plans, setPlans] = useState<any[]>([]);
   const plan = planData[active];
   const cfg = tabConfig[active];
+
+  useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        const { data } = await supabase
+          .from("subscription_plans")
+          .select("*")
+          .eq("is_active", true)
+          .order("duration_days", { ascending: true });
+        
+        if (data && data.length > 0) {
+          setPlans(data);
+        }
+      } catch (e) {
+        console.error("Error fetching landing page subscription plans:", e);
+      }
+    };
+    fetchPlans();
+  }, []);
+
+  const getPlanItemsForTab = (tabId: Tab) => {
+    const dbCategory = tabId === "nonveg" ? "non_veg" : tabId;
+    const tabPlans = plans.filter((p) => p.category === dbCategory);
+    
+    if (tabPlans.length > 0) {
+      return tabPlans.map((tp) => ({
+        label: tp.title,
+        price: `₹${tp.price}`,
+        popular: tp.duration_days >= 26,
+      }));
+    }
+    
+    return planData[tabId].individual;
+  };
 
   // Map active tab to banner image
   const bannerMap: Record<Tab, string> = {
@@ -167,7 +203,7 @@ export default function MealPlans() {
               </div>
               
               <div className="flex flex-col gap-2 flex-1">
-                {plan.individual.map((item, i) => {
+                {getPlanItemsForTab(active).map((item, i) => {
                   const isHovered = hoveredRow === i;
                   return (
                     <div
