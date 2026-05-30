@@ -17,7 +17,6 @@ export type Tables = {
     full_name: string;
     email: string;
     phone: string;
-    profile_image: string | null;
     role: "customer" | "delivery_boy" | "admin";
     status: "active" | "blocked";
     city: string;

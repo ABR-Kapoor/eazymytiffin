@@ -37,7 +37,7 @@ export default function AdminDeliveriesPage() {
         delivery_boy:users!delivery_assignments_delivery_boy_id_fkey(full_name, phone),
         order:food_orders(total_amount, time_slot,
           user:users(full_name, phone),
-          address:addresses(area, city)
+          address:addresses(area, city, google_map_link)
         )`)
       .order("created_at", { ascending: false })
       .limit(100);
@@ -145,7 +145,14 @@ export default function AdminDeliveriesPage() {
                 </div>
                 <div style={{ padding: "12px 14px" }}>
                   <p style={{ fontWeight: 700, fontSize: "13px", color: "#1A1A1A", margin: "0 0 2px" }}>{a.order?.user?.full_name || "—"}</p>
-                  <p style={{ fontSize: "11px", color: "#9CA3AF", margin: "0 0 8px" }}>{a.order?.address?.area}, {a.order?.address?.city}</p>
+                  <p style={{ fontSize: "11px", color: "#9CA3AF", margin: "0 0 8px" }}>
+                    {a.order?.address?.area}, {a.order?.address?.city}
+                    {a.order?.address?.google_map_link && (
+                      <a href={a.order.address.google_map_link} target="_blank" rel="noreferrer" style={{ marginLeft: "6px", color: "#0EA5E9", fontWeight: 700, textDecoration: "none" }}>
+                        📍 Map
+                      </a>
+                    )}
+                  </p>
                   <div style={{ display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap" }}>
                     <span style={{ fontSize: "11px", fontWeight: 700, color: "#6B7280" }}>
                       {a.order?.time_slot === "lunch" ? "🌤️ Lunch" : "🌙 Dinner"} · ₹{a.order?.total_amount}

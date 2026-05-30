@@ -81,7 +81,7 @@ export default function OrdersPage() {
       if (!activeDelivery?.delivery_boy_id) return;
       const { data } = await supabase
         .from("users")
-        .select("full_name, phone, profile_image")
+        .select("full_name, phone")
         .eq("id", activeDelivery.delivery_boy_id)
         .single();
       if (data) {

@@ -200,18 +200,14 @@ export default function ProfilePage() {
         }}>
           <div style={{ position: "absolute", right: "-20px", top: "-20px", width: "120px", height: "120px", borderRadius: "50%", background: "rgba(232,57,42,0.1)" }} />
           <div style={{ position: "relative", display: "flex", alignItems: "center", gap: "16px" }}>
-            {clerkUser?.imageUrl ? (
-              <img src={clerkUser.imageUrl} alt="Profile" style={{ width: "72px", height: "72px", borderRadius: "50%", border: "3px solid rgba(255,255,255,0.2)", objectFit: "cover" }} />
-            ) : (
-              <div style={{
-                width: "72px", height: "72px", borderRadius: "50%",
-                background: "linear-gradient(135deg, var(--emt-red), #B91C1C)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontWeight: 900, fontSize: "28px", border: "3px solid rgba(255,255,255,0.2)"
-              }}>
-                {user?.full_name?.charAt(0)?.toUpperCase() || "U"}
-              </div>
-            )}
+            <div style={{
+              width: "72px", height: "72px", borderRadius: "50%",
+              background: "linear-gradient(135deg, var(--emt-red), #B91C1C)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontWeight: 900, fontSize: "28px", border: "3px solid rgba(255,255,255,0.2)"
+            }}>
+              {user?.full_name?.charAt(0)?.toUpperCase() || "U"}
+            </div>
             <div>
               <h1 style={{ fontWeight: 900, fontSize: "20px", margin: 0, letterSpacing: "-0.02em" }}>{user?.full_name || "—"}</h1>
               <p style={{ fontSize: "12px", opacity: 0.6, margin: "4px 0" }}>{user?.email}</p>
@@ -366,6 +362,7 @@ export default function ProfilePage() {
                 { key: "area", label: "Area *", placeholder: "e.g. Sakri Road" },
                 { key: "house_flat_no", label: "House/Flat No.", placeholder: "e.g. B-42" },
                 { key: "landmark", label: "Landmark", placeholder: "Near bus stand" },
+                { key: "google_map_link", label: "Google Maps Link", placeholder: "https://maps.app.goo.gl/..." },
               ].map((field) => (
                 <div key={field.key} style={{ marginBottom: "8px" }}>
                   <label style={{ fontSize: "10px", fontWeight: 700, color: "#9CA3AF", display: "block", marginBottom: "3px" }}>{field.label}</label>
