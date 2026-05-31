@@ -7,7 +7,7 @@ import { RefreshCw, Truck } from "lucide-react";
 type Assignment = {
   id: string; order_id: string; delivery_boy_id: string; status: string; eta: string | null; proof_image: string | null; created_at: string;
   delivery_boy: { full_name: string; phone: string } | null;
-  order: { total_amount: number; time_slot: string; user: { full_name: string; phone: string } | null; address: { area: string; city: string } | null } | null;
+  order: { total_amount: number; time_slot: string; user: { full_name: string; phone: string } | null; address: { area: string; city: string; google_map_link: string | null } | null } | null;
 };
 
 const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
