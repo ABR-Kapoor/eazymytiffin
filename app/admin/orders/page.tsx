@@ -185,7 +185,7 @@ export default function AdminOrdersPage() {
                         </select>
                       </td>
                       <td style={{ padding: "12px 14px" }}>
-                        <span style={{ display: "inline-block", fontSize: "11px", fontWeight: 700, padding: "4px 8px", borderRadius: "999px", background: pc.bg, color: pc.text, textTransform: "uppercase", fontSize: "10px" }}>
+                        <span style={{ display: "inline-block", fontWeight: 700, padding: "4px 8px", borderRadius: "999px", background: pc.bg, color: pc.text, textTransform: "uppercase", fontSize: "10px" }}>
                           {order.payment_method === "cod" ? "COD" : "PhonePe"} · {order.payment_status}
                         </span>
                       </td>

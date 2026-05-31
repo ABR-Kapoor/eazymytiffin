@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import {
   Users, Package, TrendingUp, Pause, Clock, AlertTriangle,
-  Truck, ChefHat, Wallet, RefreshCw, ArrowUpRight, Bike
+  Truck, ChefHat, Wallet, RefreshCw, ArrowUpRight, Bike, Bell
 } from "lucide-react";
 import Link from "next/link";
 
