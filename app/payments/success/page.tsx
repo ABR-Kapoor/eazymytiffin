@@ -115,12 +115,4 @@ export default function PaymentSuccessPage() {
     </div>
   );
 }
-            }}
-          >
-            View Subscription
-          </Link>
-        </div>
-      </div>
-    </div>
-  );
-}
+
