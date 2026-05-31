@@ -13,8 +13,8 @@ type MenuItem = {
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
 const emptyForm = {
-  title: "", description: "", badge: "", category: "veg" as const,
-  meal_type: "both" as const, is_active: true, image_url: "",
+  title: "", description: "", badge: "", category: "veg" as "veg" | "non_veg",
+  meal_type: "both" as "lunch" | "dinner" | "both", is_active: true, image_url: "",
 };
 
 export default function AdminMealsPage() {
