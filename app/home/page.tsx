@@ -11,8 +11,7 @@ import { BottomNav } from "@/components/BottomNav";
 import Link from "next/link";
 import {
   Pause, Play, ChevronRight, Truck,
-  MessageCircle, Calendar, ShoppingBag, UtensilsCrossed,
-  Clock, Leaf
+  Clock, Leaf, ArrowRight, MapPin, Drumstick, PartyPopper, Bike, Sun, Moon, Utensils, MessageCircle, Calendar, ShoppingBag, UtensilsCrossed
 } from "lucide-react";
 
 interface TodayMenu {
@@ -146,7 +145,7 @@ export default function HomePage() {
           fontSize: "13px", fontWeight: 600, boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
           animation: "slideLeft 0.3s ease",
         }}>
-          {toast.type === "success" ? "✅ " : "❌ "}{toast.msg}
+          {toast.msg}
         </div>
       )}
 
@@ -154,12 +153,12 @@ export default function HomePage() {
         {/* Greeting */}
         <div className="animate-fade-up" style={{ marginBottom: "28px" }}>
           <p style={{ color: "#9CA3AF", fontSize: "13px", fontWeight: 500, marginBottom: "4px" }}>
-            {greeting} 👋
+            {greeting}
           </p>
           <h1 style={{ fontSize: "clamp(24px, 5vw, 32px)", fontWeight: 900, color: "#1A1A1A", letterSpacing: "-0.03em", lineHeight: 1.15 }}>
             {user?.full_name?.split(" ")[0] || "there"}!
           </h1>
-          <p style={{ color: "#6B7280", fontSize: "13px", marginTop: "4px" }}>📍 {user?.city || "Bilaspur"}</p>
+          <p style={{ color: "#6B7280", fontSize: "13px", marginTop: "4px", display: "flex", alignItems: "center", gap: "4px" }}><MapPin size={14} color="#E8392A" /> {user?.city || "Bilaspur"}</p>
         </div>
 
         {/* Active Subscription Card */}
@@ -180,8 +179,8 @@ export default function HomePage() {
                   {isPaused ? "Paused" : "Active Subscription"}
                 </span>
               </div>
-              <h2 style={{ fontWeight: 900, fontSize: "20px", marginBottom: "4px" }}>
-                {sub.category === "veg" ? "🥗 Pure Veg" : "🍗 Non-Veg"} — {sub.meal_type === "both" ? "Lunch & Dinner" : sub.meal_type === "lunch" ? "Lunch" : "Dinner"}
+              <h2 style={{ fontWeight: 900, fontSize: "20px", marginBottom: "4px", display: "flex", alignItems: "center", gap: "8px" }}>
+                {sub.category === "veg" ? <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", background: "rgba(255,255,255,0.2)", borderRadius: "6px", padding: "2px 6px", fontSize: "12px", textTransform: "uppercase", letterSpacing: "0.5px" }}><Leaf size={14} color="#4ade80" /> Pure Veg</span> : <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", background: "rgba(255,255,255,0.2)", borderRadius: "6px", padding: "2px 6px", fontSize: "12px", textTransform: "uppercase", letterSpacing: "0.5px" }}><Drumstick size={14} color="#fca5a5" /> Non-Veg</span>} <span style={{ opacity: 0.8 }}>— {sub.meal_type === "both" ? "Lunch & Dinner" : sub.meal_type === "lunch" ? "Lunch" : "Dinner"}</span>
               </h2>
               <p style={{ opacity: 0.85, fontSize: "13px", marginBottom: "16px" }}>
                 <strong style={{ fontSize: "22px", fontWeight: 900 }}>{sub.remaining_days}</strong> meal days remaining of {sub.total_days}
@@ -207,13 +206,13 @@ export default function HomePage() {
           </div>
         ) : (
           <div className="animate-fade-up stagger-child" style={{ borderRadius: "24px", background: "white", border: "2px dashed rgba(232,57,42,0.3)", padding: "28px", marginBottom: "24px", textAlign: "center" }}>
-            <div style={{ fontSize: "48px", marginBottom: "12px" }}>🍱</div>
+            <div style={{ marginBottom: "12px", color: "rgba(232,57,42,0.6)", display: "flex", justifyContent: "center" }}><UtensilsCrossed size={48} /></div>
             <h2 style={{ fontWeight: 800, fontSize: "20px", color: "#1A1A1A", marginBottom: "8px" }}>No Active Tiffin Plan</h2>
             <p style={{ color: "#6B7280", fontSize: "14px", marginBottom: "20px" }}>
-              {!user?.has_used_trial ? "Try your first tiffin meal for free! 🎉" : "Subscribe for fresh home-style meals daily"}
+              {!user?.has_used_trial ? "Try your first tiffin meal for free!" : "Subscribe for fresh home-style meals daily"}
             </p>
             <Link href="/subscription" className="btn-glare" style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "var(--emt-red)", color: "white", borderRadius: "14px", padding: "12px 28px", fontWeight: 800, fontSize: "14px", textDecoration: "none", boxShadow: "0 8px 24px rgba(232,57,42,0.3)" }}>
-              {!user?.has_used_trial ? "🎉 Try Free Trial" : "Browse Plans"} <ChevronRight size={16} />
+              {!user?.has_used_trial ? <><PartyPopper size={16} /> Try Free Trial</> : "Browse Plans"} <ChevronRight size={16} />
             </Link>
           </div>
         )}
@@ -226,11 +225,11 @@ export default function HomePage() {
                 <Truck size={22} />
               </div>
               <div style={{ flex: 1 }}>
-                <p style={{ fontWeight: 800, fontSize: "14px", margin: 0 }}>🛵 Order On the Way!</p>
+                <p style={{ fontWeight: 800, fontSize: "14px", margin: 0, display: "flex", alignItems: "center", gap: "6px" }}><Bike size={14} color="#86EFAC" /> Order On the Way!</p>
                 <p style={{ opacity: 0.8, fontSize: "12px", margin: "2px 0 0" }}>Status: {activeOrder.status.replace(/_/g, " ")}</p>
               </div>
-              <Link href="/orders" style={{ background: "rgba(255,255,255,0.2)", color: "white", borderRadius: "10px", padding: "8px 14px", fontSize: "12px", fontWeight: 700, textDecoration: "none", border: "1px solid rgba(255,255,255,0.3)" }}>
-                Track →
+              <Link href="/orders" style={{ background: "rgba(255,255,255,0.2)", color: "white", borderRadius: "10px", padding: "8px 14px", fontSize: "12px", fontWeight: 700, textDecoration: "none", border: "1px solid rgba(255,255,255,0.3)", display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                Track <ArrowRight size={12} />
               </Link>
             </div>
           </div>
@@ -255,24 +254,24 @@ export default function HomePage() {
         {(todayMenu.lunch || todayMenu.dinner) && (
           <div className="animate-fade-up stagger-child" style={{ marginBottom: "28px" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px" }}>
-              <h2 style={{ fontWeight: 800, fontSize: "18px", color: "#1A1A1A", letterSpacing: "-0.02em" }}>🍽️ Today's Menu</h2>
-              <Link href="/food" style={{ color: "var(--emt-red)", fontSize: "13px", fontWeight: 700, textDecoration: "none" }}>Order Food →</Link>
+              <h2 style={{ fontWeight: 800, fontSize: "18px", color: "#1A1A1A", letterSpacing: "-0.02em", display: "flex", alignItems: "center", gap: "6px" }}><Utensils size={18} color="#1A1A1A" /> Today's Menu</h2>
+              <Link href="/food" style={{ color: "var(--emt-red)", fontSize: "13px", fontWeight: 700, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "4px" }}>Order Food <ArrowRight size={13} /></Link>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: todayMenu.lunch && todayMenu.dinner ? "1fr 1fr" : "1fr", gap: "12px" }}>
               {todayMenu.lunch && (
                 <div style={{ background: "white", borderRadius: "16px", overflow: "hidden", border: "1px solid rgba(212,184,150,0.15)", boxShadow: "var(--shadow-sm)" }}>
-                  {todayMenu.lunch.image_url ? <img src={todayMenu.lunch.image_url} alt={todayMenu.lunch.title} style={{ width: "100%", height: "100px", objectFit: "cover" }} /> : <div style={{ height: "80px", background: "rgba(245,166,35,0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "36px" }}>🍛</div>}
+                  {todayMenu.lunch.image_url ? <img src={todayMenu.lunch.image_url} alt={todayMenu.lunch.title} style={{ width: "100%", height: "100px", objectFit: "cover" }} /> : <div style={{ height: "80px", background: "rgba(245,166,35,0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}><UtensilsCrossed size={36} color="#D97706" /></div>}
                   <div style={{ padding: "12px" }}>
-                    <span style={{ fontSize: "10px", fontWeight: 700, color: "#D97706", textTransform: "uppercase" }}>🌤️ Lunch · 12–2 PM</span>
+                    <span style={{ fontSize: "10px", fontWeight: 700, color: "#D97706", textTransform: "uppercase", display: "flex", alignItems: "center", gap: "4px" }}><Sun size={12} /> Lunch · 12–2 PM</span>
                     <p style={{ fontWeight: 800, fontSize: "13px", color: "#1A1A1A", margin: "4px 0 0" }}>{todayMenu.lunch.title}</p>
                   </div>
                 </div>
               )}
               {todayMenu.dinner && (
                 <div style={{ background: "white", borderRadius: "16px", overflow: "hidden", border: "1px solid rgba(212,184,150,0.15)", boxShadow: "var(--shadow-sm)" }}>
-                  {todayMenu.dinner.image_url ? <img src={todayMenu.dinner.image_url} alt={todayMenu.dinner.title} style={{ width: "100%", height: "100px", objectFit: "cover" }} /> : <div style={{ height: "80px", background: "rgba(232,57,42,0.08)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "36px" }}>🍛</div>}
+                  {todayMenu.dinner.image_url ? <img src={todayMenu.dinner.image_url} alt={todayMenu.dinner.title} style={{ width: "100%", height: "100px", objectFit: "cover" }} /> : <div style={{ height: "80px", background: "rgba(232,57,42,0.08)", display: "flex", alignItems: "center", justifyContent: "center" }}><UtensilsCrossed size={36} color="#E8392A" /></div>}
                   <div style={{ padding: "12px" }}>
-                    <span style={{ fontSize: "10px", fontWeight: 700, color: "#E8392A", textTransform: "uppercase" }}>🌙 Dinner · 7–9 PM</span>
+                    <span style={{ fontSize: "10px", fontWeight: 700, color: "#E8392A", textTransform: "uppercase", display: "flex", alignItems: "center", gap: "4px" }}><Moon size={12} /> Dinner · 7–9 PM</span>
                     <p style={{ fontWeight: 800, fontSize: "13px", color: "#1A1A1A", margin: "4px 0 0" }}>{todayMenu.dinner.title}</p>
                   </div>
                 </div>

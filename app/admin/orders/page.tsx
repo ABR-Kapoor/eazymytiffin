@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { Search, RefreshCw, ChevronDown } from "lucide-react";
+import { CustomSelect } from "@/components/CustomSelect";
 
 type Order = {
   id: string; user_id: string; status: string; payment_status: string;
@@ -45,7 +46,7 @@ export default function AdminOrdersPage() {
   const fetchOrders = async () => {
     const { data } = await supabase
       .from("food_orders")
-      .select("*, user:users(full_name, phone)")
+      .select("*, user:users!food_orders_user_id_fkey(full_name, phone)")
       .order("created_at", { ascending: false })
       .limit(100);
     setOrders((data as any) || []);
@@ -66,7 +67,7 @@ export default function AdminOrdersPage() {
   const handleStatusChange = async (orderId: string, newStatus: string) => {
     const { error } = await supabase.from("food_orders").update({ status: newStatus }).eq("id", orderId);
     if (!error) {
-      showToast(`Status updated to "${newStatus}"`);
+      showToast(`Status updated to "${newStatus}" successfully`);
       // If preparing: deduct meal day (subscription logic)
       if (newStatus === "preparing") {
         await fetch("/api/admin/orders/deduct-meal", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ orderId }) });
@@ -85,14 +86,14 @@ export default function AdminOrdersPage() {
 
   const handleAssignDelivery = async (orderId: string, boyId: string) => {
     const { error } = await supabase.from("food_orders").update({ assigned_delivery_boy: boyId }).eq("id", orderId);
-    if (!error) showToast("Delivery boy assigned!");
+    if (!error) showToast("Delivery boy assigned successfully!");
     else showToast("Failed", "error");
   };
 
   const handleVerifyCOD = async (orderId: string) => {
     const res = await fetch("/api/admin/payments/verify-cod", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ orderId }) });
     const result = await res.json();
-    if (result.success) showToast("COD payment verified!");
+    if (result.success) showToast("COD payment verified successfully!");
     else showToast(result.error || "Failed", "error");
   };
 
@@ -114,11 +115,11 @@ export default function AdminOrdersPage() {
 
   return (
     <div>
-      {toast && <div style={{ position: "fixed", top: "20px", right: "20px", zIndex: 200, background: toast.type === "success" ? "#1B5E30" : "#E8392A", color: "white", borderRadius: "12px", padding: "12px 20px", fontSize: "13px", fontWeight: 600, boxShadow: "0 8px 24px rgba(0,0,0,0.2)" }}>{toast.type === "success" ? "✅ " : "❌ "}{toast.msg}</div>}
+      {toast && <div style={{ position: "fixed", top: "20px", right: "20px", zIndex: 200, background: toast.type === "success" ? "#1B5E30" : "#E8392A", color: "white", borderRadius: "12px", padding: "12px 20px", fontSize: "13px", fontWeight: 600, boxShadow: "0 8px 24px rgba(0,0,0,0.2)" }}>{toast.msg}</div>}
 
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
         <div>
-          <h1 style={{ fontWeight: 900, fontSize: "24px", color: "#1A1A1A", margin: 0 }}>Food Orders</h1>
+          <h1 style={{ fontWeight: 900, fontSize: "36px", color: "#1A1A1A", margin: 0, letterSpacing: "-0.02em" }}>Food Orders</h1>
           <p style={{ color: "#9CA3AF", fontSize: "13px", margin: "4px 0 0" }}>{filtered.length} orders</p>
         </div>
         <button onClick={fetchOrders} style={{ display: "flex", alignItems: "center", gap: "6px", background: "white", border: "1px solid rgba(212,184,150,0.3)", borderRadius: "10px", padding: "8px 14px", fontSize: "12px", fontWeight: 700, cursor: "pointer" }}>
@@ -179,10 +180,12 @@ export default function AdminOrdersPage() {
                         <span style={{ fontWeight: 800, fontSize: "14px", color: "#1A1A1A" }}>₹{order.total_amount}</span>
                       </td>
                       <td style={{ padding: "12px 14px" }}>
-                        <select value={order.status} onChange={(e) => handleStatusChange(order.id, e.target.value)}
-                          style={{ fontSize: "11px", padding: "5px 8px", borderRadius: "7px", border: `1px solid ${sc.bg}`, background: sc.bg, color: sc.text, fontWeight: 700, cursor: "pointer", outline: "none" }}>
-                          {ORDER_STATUSES.map((s) => <option key={s} value={s}>{s.replace(/_/g, " ")}</option>)}
-                        </select>
+                        <CustomSelect 
+                          value={order.status} 
+                          onChange={(val) => handleStatusChange(order.id, val)}
+                          options={ORDER_STATUSES.map(s => ({ value: s, label: s.replace(/_/g, " ") }))}
+                          style={{ minWidth: "120px" }}
+                        />
                       </td>
                       <td style={{ padding: "12px 14px" }}>
                         <span style={{ display: "inline-block", fontWeight: 700, padding: "4px 8px", borderRadius: "999px", background: pc.bg, color: pc.text, textTransform: "uppercase", fontSize: "10px" }}>
@@ -190,11 +193,15 @@ export default function AdminOrdersPage() {
                         </span>
                       </td>
                       <td style={{ padding: "12px 14px" }}>
-                        <select defaultValue={order.assigned_delivery_boy || ""} onChange={(e) => handleAssignDelivery(order.id, e.target.value)}
-                          style={{ fontSize: "11px", padding: "5px 8px", borderRadius: "7px", border: "1px solid rgba(212,184,150,0.3)", background: "white", cursor: "pointer", outline: "none" }}>
-                          <option value="">Unassigned</option>
-                          {deliveryBoys.map((b) => <option key={b.id} value={b.id}>{b.full_name}</option>)}
-                        </select>
+                        <CustomSelect 
+                          value={order.assigned_delivery_boy || ""} 
+                          onChange={(val) => handleAssignDelivery(order.id, val)}
+                          options={[
+                            { value: "", label: "Unassigned" },
+                            ...deliveryBoys.map(b => ({ value: b.id, label: b.full_name }))
+                          ]}
+                          style={{ minWidth: "120px" }}
+                        />
                       </td>
                       <td style={{ padding: "12px 14px" }}>
                         {order.payment_method === "cod" && order.payment_status === "pending" && (

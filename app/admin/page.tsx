@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import {
   Users, Package, TrendingUp, Pause, Clock, AlertTriangle,
-  Truck, ChefHat, Wallet, RefreshCw, ArrowUpRight, Bike, Bell
+  Truck, ChefHat, Wallet, RefreshCw, ArrowUpRight, Bike, ArrowRight, Bell, Zap
 } from "lucide-react";
 import Link from "next/link";
 
@@ -153,7 +153,7 @@ export default function AdminDashboard() {
       {/* Header row */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "24px" }}>
         <div>
-          <h1 style={{ fontWeight: 900, fontSize: "28px", color: "#1A1A1A", margin: 0, letterSpacing: "-0.02em" }}>
+          <h1 style={{ fontWeight: 900, fontSize: "36px", color: "#1A1A1A", margin: 0, letterSpacing: "-0.02em" }}>
             Operations Center
           </h1>
           <p style={{ color: "#9CA3AF", fontSize: "13px", margin: "4px 0 0" }}>
@@ -200,7 +200,7 @@ export default function AdminDashboard() {
             {/* Activity Feed */}
             <div style={{ background: "white", borderRadius: "20px", padding: "20px", border: "1px solid rgba(212,184,150,0.15)", boxShadow: "0 1px 6px rgba(0,0,0,0.06)" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
-                <h2 style={{ fontWeight: 800, fontSize: "15px", color: "#1A1A1A", margin: 0 }}>🔔 Live Activity</h2>
+                <h2 style={{ display: "flex", alignItems: "center", gap: "6px", fontWeight: 800, fontSize: "15px", color: "#1A1A1A", margin: 0 }}><Bell size={16} color="#6366F1" /> Live Activity</h2>
                 <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#22C55E", boxShadow: "0 0 8px #22C55E", animation: "pulse 2s infinite" }} />
               </div>
               {activity.length === 0 ? (
@@ -229,8 +229,8 @@ export default function AdminDashboard() {
             {/* Active Deliveries */}
             <div style={{ background: "white", borderRadius: "20px", padding: "20px", border: "1px solid rgba(212,184,150,0.15)", boxShadow: "0 1px 6px rgba(0,0,0,0.06)" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
-                <h2 style={{ fontWeight: 800, fontSize: "15px", color: "#1A1A1A", margin: 0 }}>🚴 Live Deliveries</h2>
-                <Link href="/admin/deliveries" style={{ fontSize: "11px", fontWeight: 700, color: "#E8392A", textDecoration: "none" }}>View all →</Link>
+                <h2 style={{ display: "flex", alignItems: "center", gap: "6px", fontWeight: 800, fontSize: "15px", color: "#1A1A1A", margin: 0 }}><Bike size={16} color="#E8392A" /> Live Deliveries</h2>
+                <Link href="/admin/deliveries" style={{ fontSize: "11px", fontWeight: 700, color: "#E8392A", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "2px" }}>View all <ArrowRight size={10} /></Link>
               </div>
               {deliveries.length === 0 ? (
                 <div style={{ textAlign: "center", padding: "40px 0", color: "#D1D5DB" }}>
@@ -268,15 +268,15 @@ export default function AdminDashboard() {
 
           {/* Quick Actions */}
           <div style={{ background: "white", borderRadius: "20px", padding: "20px", border: "1px solid rgba(212,184,150,0.15)", boxShadow: "0 1px 6px rgba(0,0,0,0.06)" }}>
-            <h2 style={{ fontWeight: 800, fontSize: "15px", color: "#1A1A1A", marginBottom: "14px" }}>⚡ Quick Navigation</h2>
+            <h2 style={{ display: "flex", alignItems: "center", gap: "6px", fontWeight: 800, fontSize: "15px", color: "#1A1A1A", marginBottom: "14px" }}><Zap size={16} color="#F59E0B" /> Quick Navigation</h2>
             <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
               {[
-                { href: "/admin/subscriptions", label: "🍱 Manage Subscriptions", color: "#E8392A" },
-                { href: "/admin/orders", label: "📦 Process Orders", color: "#6366F1" },
-                { href: "/admin/deliveries", label: "🛵 Assign Deliveries", color: "#0EA5E9" },
-                { href: "/admin/meals", label: "🍲 Update Menu", color: "#1B5E30" },
-                { href: "/admin/users", label: "👥 Manage Users", color: "#D97706" },
-                { href: "/admin/notifications", label: "🔔 Send Notification", color: "#8B5CF6" },
+                { href: "/admin/subscriptions", label: "Manage Subscriptions", color: "#E8392A" },
+                { href: "/admin/orders", label: "Process Orders", color: "#6366F1" },
+                { href: "/admin/deliveries", label: "Assign Deliveries", color: "#0EA5E9" },
+                { href: "/admin/food-delivery", label: "Update Menu", color: "#1B5E30" },
+                { href: "/admin/users", label: "Manage Users", color: "#D97706" },
+                { href: "/admin/notifications", label: "Send Notification", color: "#8B5CF6" },
               ].map((a) => (
                 <Link
                   key={a.href}

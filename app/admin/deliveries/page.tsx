@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { RefreshCw, Truck } from "lucide-react";
+import { CustomSelect } from "@/components/CustomSelect";
 
 type Assignment = {
   id: string; order_id: string; delivery_boy_id: string; status: string; eta: string | null; proof_image: string | null; created_at: string;
@@ -36,7 +37,7 @@ export default function AdminDeliveriesPage() {
       .select(`id, order_id, delivery_boy_id, status, eta, proof_image, created_at,
         delivery_boy:users!delivery_assignments_delivery_boy_id_fkey(full_name, phone),
         order:food_orders(total_amount, time_slot,
-          user:users(full_name, phone),
+          user:users!food_orders_user_id_fkey(full_name, phone),
           address:addresses(area, city, google_map_link)
         )`)
       .order("created_at", { ascending: false })
@@ -80,11 +81,11 @@ export default function AdminDeliveriesPage() {
 
   return (
     <div>
-      {toast && <div style={{ position: "fixed", top: "20px", right: "20px", zIndex: 200, background: toast.type === "success" ? "#1B5E30" : "#E8392A", color: "white", borderRadius: "12px", padding: "12px 20px", fontSize: "13px", fontWeight: 600 }}>{toast.type === "success" ? "✅ " : "❌ "}{toast.msg}</div>}
+      {toast && <div style={{ position: "fixed", top: "20px", right: "20px", zIndex: 200, background: toast.type === "success" ? "#1B5E30" : "#E8392A", color: "white", borderRadius: "12px", padding: "12px 20px", fontSize: "13px", fontWeight: 600 }}>{toast.msg}</div>}
 
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
         <div>
-          <h1 style={{ fontWeight: 900, fontSize: "24px", color: "#1A1A1A", margin: 0 }}>Delivery Management</h1>
+          <h1 style={{ fontWeight: 900, fontSize: "36px", color: "#1A1A1A", margin: 0, letterSpacing: "-0.02em" }}>Delivery Management</h1>
           <p style={{ color: "#9CA3AF", fontSize: "13px", margin: "4px 0 0" }}>Monitor and assign deliveries</p>
         </div>
         <button onClick={fetchData} style={{ display: "flex", alignItems: "center", gap: "6px", background: "white", border: "1px solid rgba(212,184,150,0.3)", borderRadius: "10px", padding: "8px 14px", fontSize: "12px", fontWeight: 700, cursor: "pointer" }}>
@@ -166,11 +167,14 @@ export default function AdminDeliveriesPage() {
                   {/* Reassign */}
                   {a.status !== "delivered" && (
                     <div style={{ marginTop: "10px" }}>
-                      <select defaultValue={a.delivery_boy_id || ""} onChange={(e) => handleAssign(a.order_id, e.target.value)}
-                        style={{ width: "100%", padding: "7px 10px", borderRadius: "8px", border: "1px solid rgba(212,184,150,0.3)", fontSize: "12px", outline: "none", fontWeight: 600 }}>
-                        <option value="">— Reassign —</option>
-                        {deliveryBoys.map((b) => <option key={b.id} value={b.id}>{b.full_name}</option>)}
-                      </select>
+                      <CustomSelect 
+                        value={a.delivery_boy_id || ""} 
+                        onChange={(val) => handleAssign(a.order_id, val)}
+                        options={[
+                          { value: "", label: "— Reassign —" },
+                          ...deliveryBoys.map(b => ({ value: b.id, label: b.full_name }))
+                        ]}
+                      />
                     </div>
                   )}
                 </div>

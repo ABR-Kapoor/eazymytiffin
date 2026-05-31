@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Bike, UserPlus, UserMinus } from "lucide-react";
+import { CustomSelect } from "@/components/CustomSelect";
+import { useConfirm } from "@/components/ConfirmProvider";
 
 type DeliveryBoy = {
   id: string; full_name: string; phone: string; email: string; city: string;
@@ -14,6 +16,7 @@ export default function AdminDeliveryBoysPage() {
   const [boys, setBoys] = useState<DeliveryBoy[]>([]);
   const [customers, setCustomers] = useState<{ id: string; full_name: string; phone: string }[]>([]);
   const [loading, setLoading] = useState(true);
+  const { confirm } = useConfirm();
   const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
   const [promoteUserId, setPromoteUserId] = useState("");
 
@@ -35,25 +38,31 @@ export default function AdminDeliveryBoysPage() {
     if (!promoteUserId) return;
     const res = await fetch("/api/admin/users/role", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: promoteUserId, role: "delivery_boy" }) });
     const result = await res.json();
-    if (result.success) { showToast("User promoted to Delivery Boy!"); setPromoteUserId(""); fetchData(); }
+    if (result.success) { showToast("User promoted to Delivery Boy successfully!"); setPromoteUserId(""); fetchData(); }
     else showToast(result.error || "Failed", "error");
   };
 
   const handleDemote = async (userId: string) => {
-    if (!confirm("Remove delivery boy role? They'll become a customer.")) return;
-    const res = await fetch("/api/admin/users/role", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId, role: "customer" }) });
-    const result = await res.json();
-    if (result.success) { showToast("Role removed."); fetchData(); }
-    else showToast(result.error || "Failed", "error");
+    confirm({
+      title: "Remove Role",
+      message: "Remove delivery boy role? They'll become a customer.",
+      confirmText: "Remove",
+      onConfirm: async () => {
+        const res = await fetch("/api/admin/users/role", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId, role: "customer" }) });
+        const result = await res.json();
+        if (result.success) { showToast("Delivery Boy role removed successfully."); fetchData(); }
+        else showToast(result.error || "Failed", "error");
+      }
+    });
   };
 
   return (
     <div>
-      {toast && <div style={{ position: "fixed", top: "20px", right: "20px", zIndex: 200, background: toast.type === "success" ? "#1B5E30" : "#E8392A", color: "white", borderRadius: "12px", padding: "12px 20px", fontSize: "13px", fontWeight: 600 }}>{toast.type === "success" ? "✅ " : "❌ "}{toast.msg}</div>}
+      {toast && <div style={{ position: "fixed", top: "20px", right: "20px", zIndex: 200, background: toast.type === "success" ? "#1B5E30" : "#E8392A", color: "white", borderRadius: "12px", padding: "12px 20px", fontSize: "13px", fontWeight: 600 }}>{toast.msg}</div>}
 
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
         <div>
-          <h1 style={{ fontWeight: 900, fontSize: "24px", color: "#1A1A1A", margin: 0 }}>Delivery Boys</h1>
+          <h1 style={{ fontWeight: 900, fontSize: "36px", color: "#1A1A1A", margin: 0, letterSpacing: "-0.02em" }}>Delivery Boys</h1>
           <p style={{ color: "#9CA3AF", fontSize: "13px", margin: "4px 0 0" }}>{boys.length} active</p>
         </div>
       </div>
@@ -64,11 +73,14 @@ export default function AdminDeliveryBoysPage() {
           <label style={{ fontSize: "11px", fontWeight: 700, color: "#9CA3AF", display: "block", marginBottom: "6px" }}>
             <UserPlus size={12} style={{ display: "inline", marginRight: "4px" }} /> Promote customer to Delivery Boy
           </label>
-          <select value={promoteUserId} onChange={(e) => setPromoteUserId(e.target.value)}
-            style={{ width: "100%", padding: "9px 12px", borderRadius: "9px", border: "1px solid rgba(212,184,150,0.3)", fontSize: "13px", outline: "none" }}>
-            <option value="">— Select customer —</option>
-            {customers.map((c) => <option key={c.id} value={c.id}>{c.full_name} ({c.phone})</option>)}
-          </select>
+          <CustomSelect 
+            value={promoteUserId} 
+            onChange={(val) => setPromoteUserId(val)}
+            options={[
+              { value: "", label: "— Select customer —" },
+              ...customers.map(c => ({ value: c.id, label: `${c.full_name} (${c.phone})` }))
+            ]}
+          />
         </div>
         <button onClick={handlePromote} disabled={!promoteUserId}
           style={{ padding: "9px 20px", background: "#0EA5E9", color: "white", border: "none", borderRadius: "10px", fontWeight: 700, fontSize: "13px", cursor: !promoteUserId ? "not-allowed" : "pointer", opacity: !promoteUserId ? 0.5 : 1, whiteSpace: "nowrap" }}>

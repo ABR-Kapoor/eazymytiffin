@@ -4,12 +4,13 @@ import { useState, useEffect } from "react";
 import { useOrderStore } from "@/store/orderStore";
 import { useUserStore } from "@/store/userStore";
 import { supabase } from "@/lib/supabase";
+import { useConfirm } from "@/components/ConfirmProvider";
 import { NotificationBell } from "@/components/NotificationBell";
 import { BottomNav } from "@/components/BottomNav";
 import Link from "next/link";
 import {
   Package, Clock, CheckCircle2, Truck, ChefHat,
-  Phone, X, RefreshCw, AlertTriangle
+  Phone, X, RefreshCw, AlertTriangle, Bike, Utensils, ClipboardList, CreditCard, ArrowRight
 } from "lucide-react";
 
 const ORDER_STATUS_STEPS = [
@@ -42,6 +43,7 @@ export default function OrdersPage() {
   const [payments, setPayments] = useState<any[]>([]);
   const [subsLoading, setSubsLoading] = useState(false);
   const [cancelling, setCancelling] = useState<string | null>(null);
+  const { confirm } = useConfirm();
   const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
   const [deliveryUsers, setDeliveryUsers] = useState<Record<string, any>>({});
 
@@ -92,18 +94,24 @@ export default function OrdersPage() {
   }, [activeDelivery]);
 
   const handleCancelOrder = async (orderId: string) => {
-    if (!confirm("Cancel this order?")) return;
-    setCancelling(orderId);
-    try {
-      const res = await fetch(`/api/food-orders/${orderId}/cancel`, { method: "POST" });
-      const result = await res.json();
-      if (result.success) showToast("Order cancelled.");
-      else showToast(result.error || "Cannot cancel this order.", "error");
-    } catch {
-      showToast("Network error.", "error");
-    } finally {
-      setCancelling(null);
-    }
+    confirm({
+      title: "Cancel Order",
+      message: "Are you sure you want to cancel this order?",
+      confirmText: "Cancel Order",
+      onConfirm: async () => {
+        setCancelling(orderId);
+        try {
+          const res = await fetch(`/api/food-orders/${orderId}/cancel`, { method: "POST" });
+          const result = await res.json();
+          if (result.success) showToast("Order cancelled successfully!");
+          else showToast(result.error || "Cannot cancel this order.", "error");
+        } catch {
+          showToast("Network error.", "error");
+        } finally {
+          setCancelling(null);
+        }
+      }
+    });
   };
 
   return (
@@ -156,14 +164,14 @@ export default function OrdersPage() {
           fontSize: "13px", fontWeight: 600, boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
           animation: "slideLeft 0.3s ease",
         }}>
-          {toast.type === "success" ? "✅ " : "❌ "}{toast.msg}
+          {toast.msg}
         </div>
       )}
 
       <main id="main" style={{ maxWidth: "960px", margin: "0 auto", padding: "24px 16px 96px" }}>
         <div className="animate-fade-up" style={{ marginBottom: "24px" }}>
-          <h1 style={{ fontWeight: 900, fontSize: "clamp(22px, 5vw, 28px)", color: "#1A1A1A", letterSpacing: "-0.02em" }}>
-            📦 Orders & History
+          <h1 style={{ fontWeight: 900, fontSize: "clamp(22px, 5vw, 28px)", color: "#1A1A1A", letterSpacing: "-0.02em", display: "flex", alignItems: "center", gap: "8px" }}>
+            <Package size={28} /> Orders & History
           </h1>
         </div>
 
@@ -177,8 +185,8 @@ export default function OrdersPage() {
           }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
               <div>
-                <span style={{ fontSize: "10px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px", background: "rgba(255,255,255,0.2)", borderRadius: "999px", padding: "3px 10px" }}>
-                  🟢 Live Tracking
+                <span style={{ fontSize: "10px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px", background: "rgba(255,255,255,0.2)", borderRadius: "999px", padding: "3px 10px", display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                  <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#4ade80" }} /> Live Tracking
                 </span>
                 <h2 style={{ fontWeight: 900, fontSize: "18px", margin: "8px 0 0" }}>
                   {STATUS_COLORS[activeOrder.status]?.label || "Processing"}
@@ -230,7 +238,7 @@ export default function OrdersPage() {
             {activeDelivery?.delivery_boy_id && deliveryUsers[activeDelivery.delivery_boy_id] && (
               <div style={{ display: "flex", alignItems: "center", gap: "12px", background: "rgba(255,255,255,0.12)", borderRadius: "12px", padding: "12px" }}>
                 <div style={{ width: "44px", height: "44px", borderRadius: "50%", background: "rgba(255,255,255,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "18px" }}>
-                  🛵
+                  <Bike size={20} color="white" />
                 </div>
                 <div style={{ flex: 1 }}>
                   <p style={{ fontWeight: 700, fontSize: "14px", margin: 0 }}>
@@ -257,8 +265,8 @@ export default function OrdersPage() {
         {/* Tabs */}
         <div className="animate-fade-up stagger-child" style={{ display: "flex", gap: "4px", background: "white", borderRadius: "14px", padding: "4px", marginBottom: "20px", border: "1px solid rgba(212,184,150,0.15)" }}>
           {[
-            { key: "orders", label: "🍱 Food Orders" },
-            { key: "subs", label: "📋 Subscription History" },
+            { key: "orders", label: "Food Orders", icon: <Utensils size={14} /> },
+            { key: "subs", label: "Subscription History", icon: <ClipboardList size={14} /> },
           ].map((t) => (
             <button
               key={t.key}
@@ -268,9 +276,10 @@ export default function OrdersPage() {
                 background: tab === t.key ? "var(--emt-red)" : "transparent",
                 color: tab === t.key ? "white" : "#6B7280",
                 fontWeight: 700, fontSize: "13px", cursor: "pointer", transition: "all 200ms",
+                display: "flex", alignItems: "center", justifyContent: "center", gap: "6px"
               }}
             >
-              {t.label}
+              {t.icon} {t.label}
             </button>
           ))}
         </div>
@@ -289,7 +298,7 @@ export default function OrdersPage() {
                 <h3 style={{ fontWeight: 800, fontSize: "18px", color: "#1A1A1A", marginBottom: "8px" }}>No Orders Yet</h3>
                 <p style={{ color: "#9CA3AF", marginBottom: "20px" }}>Order fresh meals from our menu</p>
                 <Link href="/food" style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "var(--emt-red)", color: "white", borderRadius: "12px", padding: "10px 20px", textDecoration: "none", fontWeight: 700, fontSize: "13px" }}>
-                  Browse Food →
+                  Browse Food <ArrowRight size={14} />
                 </Link>
               </div>
             ) : (
@@ -373,7 +382,7 @@ export default function OrdersPage() {
             ) : (
               <>
                 {/* Subscriptions */}
-                <h3 style={{ fontWeight: 800, fontSize: "15px", color: "#1A1A1A", marginBottom: "12px" }}>📋 Subscriptions</h3>
+                <h3 style={{ fontWeight: 800, fontSize: "15px", color: "#1A1A1A", marginBottom: "12px", display: "flex", alignItems: "center", gap: "6px" }}><ClipboardList size={16} /> Subscriptions</h3>
                 {subscriptions.length === 0 ? (
                   <div style={{ textAlign: "center", padding: "40px", background: "white", borderRadius: "16px", marginBottom: "20px", border: "1px solid rgba(212,184,150,0.15)" }}>
                     <p style={{ color: "#9CA3AF" }}>No subscriptions yet</p>
@@ -406,7 +415,7 @@ export default function OrdersPage() {
                 )}
 
                 {/* Payments */}
-                <h3 style={{ fontWeight: 800, fontSize: "15px", color: "#1A1A1A", marginBottom: "12px" }}>💳 Payment History</h3>
+                <h3 style={{ fontWeight: 800, fontSize: "15px", color: "#1A1A1A", marginBottom: "12px", display: "flex", alignItems: "center", gap: "6px" }}><CreditCard size={16} /> Payment History</h3>
                 {payments.length === 0 ? (
                   <div style={{ textAlign: "center", padding: "40px", background: "white", borderRadius: "16px", border: "1px solid rgba(212,184,150,0.15)" }}>
                     <p style={{ color: "#9CA3AF" }}>No payment records yet</p>

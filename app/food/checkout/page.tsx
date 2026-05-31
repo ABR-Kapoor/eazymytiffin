@@ -6,11 +6,11 @@ import { useUserStore } from "@/store/userStore";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Minus, Plus, Trash2, MapPin, Clock, CreditCard, ChevronRight, Check } from "lucide-react";
+import { ArrowLeft, Minus, Plus, Trash2, MapPin, Clock, CreditCard, ChevronRight, Check, Leaf, Drumstick, Sun, Moon, Home, Building2, Briefcase, IndianRupee, Wallet } from "lucide-react";
 
 type Address = { id: string; type: "home" | "hostel" | "office"; house_flat_no: string | null; landmark: string | null; area: string; city: string; hostel_company_name: string | null; is_default: boolean; };
 
-const ADDR_ICONS: Record<string, string> = { home: "🏠", hostel: "🏢", office: "💼" };
+const ADDR_ICONS: Record<string, React.ReactNode> = { home: <Home size={18} />, hostel: <Building2 size={18} />, office: <Briefcase size={18} /> };
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -65,7 +65,7 @@ export default function CheckoutPage() {
         <button onClick={() => router.back()} style={{ background: "none", border: "none", cursor: "pointer", padding: "8px", color: "#1A1A1A" }}><ArrowLeft size={20} /></button>
         <span style={{ fontWeight: 800, fontSize: "18px", color: "#1A1A1A" }}>Checkout</span>
       </header>
-      {toast && <div style={{ position: "fixed", top: "72px", right: "16px", zIndex: 200, background: "#E8392A", color: "white", borderRadius: "12px", padding: "12px 20px", fontSize: "13px", fontWeight: 600, animation: "slideLeft 0.3s ease" }}>❌ {toast}</div>}
+      {toast && <div style={{ position: "fixed", top: "72px", right: "16px", zIndex: 200, background: "#E8392A", color: "white", borderRadius: "12px", padding: "12px 20px", fontSize: "13px", fontWeight: 600, animation: "slideLeft 0.3s ease" }}>{toast}</div>}
 
       <main style={{ maxWidth: "720px", margin: "0 auto", padding: "24px 16px 120px" }}>
         {/* Cart Items */}
@@ -74,7 +74,7 @@ export default function CheckoutPage() {
           <div style={{ background: "white", borderRadius: "16px", overflow: "hidden", border: "1px solid rgba(212,184,150,0.15)" }}>
             {items.map((item, i) => (
               <div key={item.menu_id} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "14px 16px", borderBottom: i < items.length - 1 ? "1px solid rgba(212,184,150,0.1)" : "none" }}>
-                <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: "var(--emt-cream)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "22px" }}>{item.category === "veg" ? "🥗" : "🍗"}</div>
+                <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: item.category === "veg" ? "rgba(27,94,48,0.1)" : "rgba(232,57,42,0.1)", color: item.category === "veg" ? "#1B5E30" : "#E8392A", display: "flex", alignItems: "center", justifyContent: "center" }}>{item.category === "veg" ? <Leaf size={18} /> : <Drumstick size={18} />}</div>
                 <div style={{ flex: 1 }}><p style={{ fontWeight: 700, fontSize: "13px", color: "#1A1A1A", margin: 0 }}>{item.title}</p><p style={{ fontSize: "11px", color: "#9CA3AF", margin: "2px 0 0" }}>₹{item.price} each</p></div>
                 <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
                   <button onClick={() => updateQty(item.menu_id, item.quantity - 1)} style={{ width: "26px", height: "26px", borderRadius: "8px", background: "rgba(232,57,42,0.1)", color: "var(--emt-red)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><Minus size={12} /></button>
@@ -96,7 +96,7 @@ export default function CheckoutPage() {
         <section style={{ marginBottom: "20px" }}>
           <h2 style={{ fontWeight: 800, fontSize: "15px", color: "#1A1A1A", marginBottom: "12px" }}><Clock size={14} style={{ display: "inline", marginRight: "6px" }} />Delivery Slot</h2>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
-            {([["lunch","🌤️ Lunch","12 PM – 2 PM"],["dinner","🌙 Dinner","7 PM – 9 PM"]] as const).map(([v,l,t]) => (
+            {([["lunch",<span style={{ display: "flex", alignItems: "center", gap: "6px" }}><Sun size={14} /> Lunch</span>,"12 PM – 2 PM"],["dinner",<span style={{ display: "flex", alignItems: "center", gap: "6px" }}><Moon size={14} /> Dinner</span>,"7 PM – 9 PM"]] as const).map(([v,l,t]) => (
               <button key={v} onClick={() => setTimeSlot(v)} style={{ padding: "14px", borderRadius: "14px", cursor: "pointer", textAlign: "left", border: `2px solid ${timeSlot === v ? "var(--emt-red)" : "rgba(212,184,150,0.2)"}`, background: timeSlot === v ? "rgba(232,57,42,0.04)" : "white", transition: "all 200ms" }}>
                 <p style={{ fontWeight: 800, fontSize: "14px", color: "#1A1A1A", margin: 0 }}>{l}</p>
                 <p style={{ fontSize: "11px", color: "#9CA3AF", margin: "3px 0 0" }}>{t}</p>
@@ -151,7 +151,7 @@ export default function CheckoutPage() {
         <section style={{ marginBottom: "32px" }}>
           <h2 style={{ fontWeight: 800, fontSize: "15px", color: "#1A1A1A", marginBottom: "12px" }}><CreditCard size={14} style={{ display: "inline", marginRight: "6px" }} />Payment Method</h2>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
-            {([["phonepe","💜 PhonePe","UPI · Cards · Wallets"],["cod","💵 Cash on Delivery","Pay when delivered"]] as const).map(([v,l,s]) => (
+            {([["phonepe",<span style={{ display: "flex", alignItems: "center", gap: "6px", color: "#6366F1" }}><Wallet size={14} /> PhonePe</span>,"UPI · Cards · Wallets"],["cod",<span style={{ display: "flex", alignItems: "center", gap: "6px", color: "#1B5E30" }}><IndianRupee size={14} /> Cash on Delivery</span>,"Pay when delivered"]] as const).map(([v,l,s]) => (
               <button key={v} onClick={() => setPaymentMethod(v)} style={{ padding: "14px", borderRadius: "14px", cursor: "pointer", textAlign: "left", border: `2px solid ${paymentMethod === v ? "var(--emt-red)" : "rgba(212,184,150,0.2)"}`, background: paymentMethod === v ? "rgba(232,57,42,0.04)" : "white", transition: "all 200ms" }}>
                 <p style={{ fontWeight: 800, fontSize: "13px", color: "#1A1A1A", margin: 0 }}>{l}</p>
                 <p style={{ fontSize: "11px", color: "#9CA3AF", margin: "3px 0 0" }}>{s}</p>

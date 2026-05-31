@@ -2,7 +2,9 @@
 
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabase";
-import { Plus, Edit2, Trash2, Upload, X, Check, Search } from "lucide-react";
+import { Plus, Edit2, Trash2, Upload, X, Check, Search, Calendar, Sun, Moon } from "lucide-react";
+import { CustomSelect } from "@/components/CustomSelect";
+import { useConfirm } from "@/components/ConfirmProvider";
 
 type MenuItem = {
   id: string; title: string; description: string | null; image_url: string | null;
@@ -17,7 +19,7 @@ const emptyForm = {
   meal_type: "both" as "lunch" | "dinner" | "both", is_active: true, image_url: "",
 };
 
-export default function AdminMealsPage() {
+export default function AdminFoodDeliveryPage() {
   const [items, setItems] = useState<MenuItem[]>([]);
   const [cycle, setCycle] = useState<Record<number, { lunch?: MenuItem; dinner?: MenuItem }>>({});
   const [loading, setLoading] = useState(true);
@@ -27,6 +29,7 @@ export default function AdminMealsPage() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [search, setSearch] = useState("");
+  const { confirm } = useConfirm();
   const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -59,13 +62,13 @@ export default function AdminMealsPage() {
   const handleImageUpload = async (file: File) => {
     setUploading(true);
     try {
-      const ext = file.name.split(".").pop();
-      const filename = `menu-${Date.now()}.${ext}`;
-      const { data, error } = await supabase.storage.from("menu-images").upload(filename, file, { upsert: true });
-      if (error) throw error;
-      const { data: { publicUrl } } = supabase.storage.from("menu-images").getPublicUrl(filename);
-      setForm((f) => ({ ...f, image_url: publicUrl }));
-      showToast("Image uploaded!");
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/admin/menus/upload", { method: "POST", body: formData });
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error || "Upload failed");
+      setForm((f) => ({ ...f, image_url: json.url }));
+      showToast("Image uploaded successfully!");
     } catch (err: any) {
       showToast(err.message || "Upload failed", "error");
     } finally {
@@ -78,13 +81,15 @@ export default function AdminMealsPage() {
     setSaving(true);
     try {
       if (editItem) {
-        const { error } = await supabase.from("menus").update({ ...form }).eq("id", editItem.id);
-        if (error) throw error;
-        showToast("Menu item updated!");
+        const res = await fetch("/api/admin/menus", { method: "PATCH", body: JSON.stringify({ id: editItem.id, ...form }) });
+        const json = await res.json();
+        if (!json.success) throw new Error(json.error);
+        showToast("Food item updated successfully!");
       } else {
-        const { error } = await supabase.from("menus").insert([{ ...form }]);
-        if (error) throw error;
-        showToast("Menu item created!");
+        const res = await fetch("/api/admin/menus", { method: "POST", body: JSON.stringify(form) });
+        const json = await res.json();
+        if (!json.success) throw new Error(json.error);
+        showToast("Food item created successfully!");
       }
       setShowForm(false);
       setEditItem(null);
@@ -98,15 +103,24 @@ export default function AdminMealsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this menu item?")) return;
-    const { error } = await supabase.from("menus").delete().eq("id", id);
-    if (!error) { showToast("Deleted!"); fetchData(); }
-    else showToast("Delete failed", "error");
+    confirm({
+      title: "Delete Item",
+      message: "Delete this food item?",
+      confirmText: "Delete",
+      onConfirm: async () => {
+        const res = await fetch(`/api/admin/menus?id=${id}`, { method: "DELETE" });
+        const json = await res.json();
+        if (json.success) { showToast("Food item deleted successfully!"); fetchData(); }
+        else showToast(json.error || "Delete failed", "error");
+      }
+    });
   };
 
   const handleToggleActive = async (id: string, current: boolean) => {
-    await supabase.from("menus").update({ is_active: !current }).eq("id", id);
-    fetchData();
+    const res = await fetch("/api/admin/menus", { method: "PATCH", body: JSON.stringify({ id, is_active: !current }) });
+    const json = await res.json();
+    if (json.success) fetchData();
+    else showToast(json.error || "Update failed", "error");
   };
 
   const handleSetCycle = async (weekday: number, menuId: string, slot: "lunch" | "dinner") => {
@@ -123,12 +137,12 @@ export default function AdminMealsPage() {
 
   return (
     <div>
-      {toast && <div style={{ position: "fixed", top: "20px", right: "20px", zIndex: 200, background: toast.type === "success" ? "#1B5E30" : "#E8392A", color: "white", borderRadius: "12px", padding: "12px 20px", fontSize: "13px", fontWeight: 600, boxShadow: "0 8px 24px rgba(0,0,0,0.2)" }}>{toast.type === "success" ? "✅ " : "❌ "}{toast.msg}</div>}
+      {toast && <div style={{ position: "fixed", top: "20px", right: "20px", zIndex: 200, background: toast.type === "success" ? "#1B5E30" : "#E8392A", color: "white", borderRadius: "12px", padding: "12px 20px", fontSize: "13px", fontWeight: 600, boxShadow: "0 8px 24px rgba(0,0,0,0.2)" }}>{toast.msg}</div>}
 
       {/* Form Modal */}
       {showForm && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 300, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}>
-          <div style={{ background: "white", borderRadius: "24px", padding: "28px", maxWidth: "500px", width: "100%", maxHeight: "90vh", overflowY: "auto" }}>
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 300, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px", boxSizing: "border-box" }}>
+          <div className="[&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]" style={{ background: "white", borderRadius: "24px", padding: "28px", maxWidth: "500px", width: "100%", maxHeight: "90vh", overflowY: "auto", overflowX: "hidden", boxSizing: "border-box" }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "20px" }}>
               <h3 style={{ fontWeight: 800, fontSize: "20px", margin: 0 }}>{editItem ? "Edit Menu Item" : "New Menu Item"}</h3>
               <button onClick={() => { setShowForm(false); setEditItem(null); setForm({ ...emptyForm }); }} style={{ background: "none", border: "none", cursor: "pointer" }}><X size={20} /></button>
@@ -150,40 +164,52 @@ export default function AdminMealsPage() {
               <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={(e) => e.target.files?.[0] && handleImageUpload(e.target.files[0])} />
               <div style={{ marginTop: "8px" }}>
                 <label style={{ fontSize: "11px", fontWeight: 700, color: "#9CA3AF", display: "block", marginBottom: "4px" }}>Or paste image URL</label>
-                <input type="url" placeholder="https://…" value={form.image_url} onChange={(e) => setForm((f) => ({ ...f, image_url: e.target.value }))}
+                <input type="url" placeholder="https://…" value={form.image_url || ""} onChange={(e) => setForm({ ...form, image_url: e.target.value })}
                   style={{ width: "100%", padding: "8px 12px", borderRadius: "8px", border: "1px solid rgba(212,184,150,0.3)", fontSize: "12px", outline: "none", boxSizing: "border-box" }} />
               </div>
             </div>
 
-            {[
-              { key: "title", label: "Title *", placeholder: "Dal Tadka" },
-              { key: "description", label: "Description", placeholder: "Creamy yellow dal with tadka" },
-              { key: "badge", label: "Badge", placeholder: "Chef's Special" },
-            ].map((f) => (
-              <div key={f.key} style={{ marginBottom: "12px" }}>
-                <label style={{ fontSize: "11px", fontWeight: 700, color: "#9CA3AF", display: "block", marginBottom: "4px" }}>{f.label}</label>
-                <input type="text" placeholder={f.placeholder} value={(form as any)[f.key]} onChange={(e) => setForm((prev) => ({ ...prev, [f.key]: e.target.value }))}
-                  style={{ width: "100%", padding: "9px 12px", borderRadius: "9px", border: "1px solid rgba(212,184,150,0.3)", fontSize: "13px", outline: "none", boxSizing: "border-box" }} />
-              </div>
-            ))}
+            <div style={{ marginBottom: "12px" }}>
+              <label style={{ fontSize: "11px", fontWeight: 700, color: "#9CA3AF", display: "block", marginBottom: "4px" }}>Title *</label>
+              <input type="text" placeholder="Dal Tadka" value={form.title || ""} onChange={(e) => setForm({ ...form, title: e.target.value })}
+                style={{ width: "100%", padding: "9px 12px", borderRadius: "9px", border: "1px solid rgba(212,184,150,0.3)", fontSize: "13px", outline: "none", boxSizing: "border-box" }} />
+            </div>
+
+            <div style={{ marginBottom: "12px" }}>
+              <label style={{ fontSize: "11px", fontWeight: 700, color: "#9CA3AF", display: "block", marginBottom: "4px" }}>Description</label>
+              <input type="text" placeholder="Creamy yellow dal with tadka" value={form.description || ""} onChange={(e) => setForm({ ...form, description: e.target.value })}
+                style={{ width: "100%", padding: "9px 12px", borderRadius: "9px", border: "1px solid rgba(212,184,150,0.3)", fontSize: "13px", outline: "none", boxSizing: "border-box" }} />
+            </div>
+
+            <div style={{ marginBottom: "12px" }}>
+              <label style={{ fontSize: "11px", fontWeight: 700, color: "#9CA3AF", display: "block", marginBottom: "4px" }}>Badge</label>
+              <input type="text" placeholder="Chef's Special" value={form.badge || ""} onChange={(e) => setForm({ ...form, badge: e.target.value })}
+                style={{ width: "100%", padding: "9px 12px", borderRadius: "9px", border: "1px solid rgba(212,184,150,0.3)", fontSize: "13px", outline: "none", boxSizing: "border-box" }} />
+            </div>
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "12px" }}>
               <div>
                 <label style={{ fontSize: "11px", fontWeight: 700, color: "#9CA3AF", display: "block", marginBottom: "4px" }}>Category</label>
-                <select value={form.category} onChange={(e) => setForm((f) => ({ ...f, category: e.target.value as any }))}
-                  style={{ width: "100%", padding: "9px", borderRadius: "9px", border: "1px solid rgba(212,184,150,0.3)", fontSize: "13px", outline: "none" }}>
-                  <option value="veg">🥗 Veg</option>
-                  <option value="non_veg">🍗 Non-Veg</option>
-                </select>
+                <CustomSelect 
+                  value={form.category} 
+                  onChange={(val) => setForm((f) => ({ ...f, category: val as any }))}
+                  options={[
+                    { value: "veg", label: "Veg" },
+                    { value: "non_veg", label: "Non-Veg" }
+                  ]}
+                />
               </div>
               <div>
                 <label style={{ fontSize: "11px", fontWeight: 700, color: "#9CA3AF", display: "block", marginBottom: "4px" }}>Meal Type</label>
-                <select value={form.meal_type} onChange={(e) => setForm((f) => ({ ...f, meal_type: e.target.value as any }))}
-                  style={{ width: "100%", padding: "9px", borderRadius: "9px", border: "1px solid rgba(212,184,150,0.3)", fontSize: "13px", outline: "none" }}>
-                  <option value="lunch">🌤️ Lunch</option>
-                  <option value="dinner">🌙 Dinner</option>
-                  <option value="both">Both</option>
-                </select>
+                <CustomSelect 
+                  value={form.meal_type} 
+                  onChange={(val) => setForm((f) => ({ ...f, meal_type: val as any }))}
+                  options={[
+                    { value: "lunch", label: "Lunch" },
+                    { value: "dinner", label: "Dinner" },
+                    { value: "both", label: "Both" }
+                  ]}
+                />
               </div>
             </div>
 
@@ -204,7 +230,7 @@ export default function AdminMealsPage() {
 
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
         <div>
-          <h1 style={{ fontWeight: 900, fontSize: "24px", color: "#1A1A1A", margin: 0 }}>Menu Management</h1>
+          <h1 style={{ fontWeight: 900, fontSize: "36px", color: "#1A1A1A", margin: 0, letterSpacing: "-0.02em" }}>Food Delivery</h1>
           <p style={{ color: "#9CA3AF", fontSize: "13px", margin: "4px 0 0" }}>{items.length} items</p>
         </div>
         <button onClick={() => { setForm({ ...emptyForm }); setEditItem(null); setShowForm(true); }}
@@ -224,13 +250,7 @@ export default function AdminMealsPage() {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: "14px", marginBottom: "32px" }}>
         {filtered.map((item) => (
           <div key={item.id} style={{ background: "white", borderRadius: "16px", border: "1px solid rgba(212,184,150,0.15)", overflow: "hidden", boxShadow: "0 1px 6px rgba(0,0,0,0.06)", opacity: item.is_active ? 1 : 0.5 }}>
-            {item.image_url ? (
-              <img src={item.image_url} alt={item.title} style={{ width: "100%", height: "140px", objectFit: "cover" }} />
-            ) : (
-              <div style={{ height: "100px", background: item.category === "veg" ? "rgba(27,94,48,0.08)" : "rgba(232,57,42,0.08)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "40px" }}>
-                {item.category === "veg" ? "🥗" : "🍗"}
-              </div>
-            )}
+            <img src={item.image_url || (item.category === "veg" ? "/images/veg-placeholder.png" : "/images/nonveg-placeholder.png")} alt={item.title} style={{ width: "100%", height: "140px", objectFit: "cover" }} />
             <div style={{ padding: "12px 14px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "6px" }}>
                 <p style={{ fontWeight: 800, fontSize: "14px", color: "#1A1A1A", margin: 0 }}>{item.title}</p>
@@ -263,7 +283,7 @@ export default function AdminMealsPage() {
 
       {/* Weekly Cycle Editor */}
       <div style={{ background: "white", borderRadius: "20px", padding: "20px", border: "1px solid rgba(212,184,150,0.15)", boxShadow: "0 1px 6px rgba(0,0,0,0.06)" }}>
-        <h2 style={{ fontWeight: 800, fontSize: "18px", color: "#1A1A1A", marginBottom: "16px" }}>📅 Weekly Menu Cycle</h2>
+        <h2 style={{ fontWeight: 800, fontSize: "18px", color: "#1A1A1A", marginBottom: "16px", display: "flex", alignItems: "center", gap: "8px" }}><Calendar size={20} color="#6366F1" /> Weekly Menu Cycle</h2>
         <p style={{ color: "#9CA3AF", fontSize: "12px", marginBottom: "16px" }}>Set which dish appears each day for lunch and dinner slots.</p>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: "12px" }}>
           {DAYS.map((day, idx) => {
@@ -276,26 +296,34 @@ export default function AdminMealsPage() {
                 {idx !== 6 && (
                   <>
                     <div style={{ marginBottom: "6px" }}>
-                      <label style={{ fontSize: "10px", fontWeight: 700, color: "#9CA3AF", display: "block", marginBottom: "3px" }}>🌤️ Lunch</label>
-                      <select onChange={(e) => handleSetCycle(weekday, e.target.value, "lunch")}
-                        defaultValue=""
-                        style={{ width: "100%", padding: "6px 8px", borderRadius: "7px", border: "1px solid rgba(212,184,150,0.3)", fontSize: "11px", outline: "none" }}>
-                        <option value="">— Not set —</option>
-                        {items.filter((m) => m.is_active && (m.meal_type === "lunch" || m.meal_type === "both")).map((m) => (
-                          <option key={m.id} value={m.id}>{m.category === "veg" ? "🥗" : "🍗"} {m.title}</option>
-                        ))}
-                      </select>
+                      <label style={{ fontSize: "10px", fontWeight: 700, color: "#9CA3AF", display: "flex", alignItems: "center", gap: "4px", marginBottom: "3px" }}><Sun size={12} color="#F59E0B" /> Lunch</label>
+                      <CustomSelect 
+                        value=""
+                        onChange={(val) => handleSetCycle(weekday, val, "lunch")}
+                        options={[
+                          { value: "", label: "— Not set —" },
+                          ...items.filter((m) => m.is_active && (m.meal_type === "lunch" || m.meal_type === "both")).map((m) => ({
+                            value: m.id,
+                            label: `${m.title} ${m.category === "veg" ? "(Veg)" : "(Non-veg)"}`
+                          }))
+                        ]}
+                        style={{ width: "100%" }}
+                      />
                     </div>
                     <div>
-                      <label style={{ fontSize: "10px", fontWeight: 700, color: "#9CA3AF", display: "block", marginBottom: "3px" }}>🌙 Dinner</label>
-                      <select onChange={(e) => handleSetCycle(weekday, e.target.value, "dinner")}
-                        defaultValue=""
-                        style={{ width: "100%", padding: "6px 8px", borderRadius: "7px", border: "1px solid rgba(212,184,150,0.3)", fontSize: "11px", outline: "none" }}>
-                        <option value="">— Not set —</option>
-                        {items.filter((m) => m.is_active && (m.meal_type === "dinner" || m.meal_type === "both")).map((m) => (
-                          <option key={m.id} value={m.id}>{m.category === "veg" ? "🥗" : "🍗"} {m.title}</option>
-                        ))}
-                      </select>
+                      <label style={{ fontSize: "10px", fontWeight: 700, color: "#9CA3AF", display: "flex", alignItems: "center", gap: "4px", marginBottom: "3px" }}><Moon size={12} color="#6366F1" /> Dinner</label>
+                      <CustomSelect 
+                        value=""
+                        onChange={(val) => handleSetCycle(weekday, val, "dinner")}
+                        options={[
+                          { value: "", label: "— Not set —" },
+                          ...items.filter((m) => m.is_active && (m.meal_type === "dinner" || m.meal_type === "both")).map((m) => ({
+                            value: m.id,
+                            label: `${m.title} ${m.category === "veg" ? "(Veg)" : "(Non-veg)"}`
+                          }))
+                        ]}
+                        style={{ width: "100%" }}
+                      />
                     </div>
                   </>
                 )}

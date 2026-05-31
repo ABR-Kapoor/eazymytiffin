@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Search, RefreshCw, Shield, Bike, User } from "lucide-react";
+import { CustomSelect } from "@/components/CustomSelect";
+import { useConfirm } from "@/components/ConfirmProvider";
 
 type AppUser = {
   id: string; full_name: string; email: string; phone: string;
@@ -21,6 +23,7 @@ export default function AdminUsersPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
+  const { confirm } = useConfirm();
   const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
 
   const showToast = (msg: string, type: "success" | "error" = "success") => {
@@ -36,25 +39,39 @@ export default function AdminUsersPage() {
   useEffect(() => { fetchUsers(); }, []);
 
   const handleRoleChange = async (userId: string, newRole: string) => {
-    const res = await fetch("/api/admin/users/role", {
-      method: "PATCH", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId, role: newRole }),
+    confirm({
+      title: "Change Role",
+      message: `Are you sure you want to change this user's role to ${newRole}?`,
+      confirmText: "Change Role",
+      onCancel: () => fetchUsers(),
+      onConfirm: async () => {
+        const res = await fetch("/api/admin/users/role", {
+          method: "PATCH", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId, role: newRole }),
+        });
+        const result = await res.json();
+        if (result.success) { showToast(`Role changed to ${newRole} successfully`); fetchUsers(); }
+        else showToast(result.error || "Failed", "error");
+      }
     });
-    const result = await res.json();
-    if (result.success) { showToast(`Role changed to ${newRole}`); fetchUsers(); }
-    else showToast(result.error || "Failed", "error");
   };
 
   const handleBlockToggle = async (userId: string, currentStatus: string) => {
     const newStatus = currentStatus === "blocked" ? "active" : "blocked";
-    if (!confirm(`${newStatus === "blocked" ? "Block" : "Unblock"} this user?`)) return;
-    const res = await fetch("/api/admin/users/status", {
-      method: "PATCH", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId, status: newStatus }),
+    confirm({
+      title: newStatus === "blocked" ? "Block User" : "Unblock User",
+      message: `${newStatus === "blocked" ? "Block" : "Unblock"} this user?`,
+      confirmText: newStatus === "blocked" ? "Block" : "Unblock",
+      onConfirm: async () => {
+        const res = await fetch("/api/admin/users/status", {
+          method: "PATCH", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId, status: newStatus }),
+        });
+        const result = await res.json();
+        if (result.success) { showToast(`User ${newStatus} successfully`); fetchUsers(); }
+        else showToast(result.error || "Failed", "error");
+      }
     });
-    const result = await res.json();
-    if (result.success) { showToast(`User ${newStatus}`); fetchUsers(); }
-    else showToast(result.error || "Failed", "error");
   };
 
   const filtered = users.filter((u) => {
@@ -68,11 +85,11 @@ export default function AdminUsersPage() {
 
   return (
     <div>
-      {toast && <div style={{ position: "fixed", top: "20px", right: "20px", zIndex: 200, background: toast.type === "success" ? "#1B5E30" : "#E8392A", color: "white", borderRadius: "12px", padding: "12px 20px", fontSize: "13px", fontWeight: 600, boxShadow: "0 8px 24px rgba(0,0,0,0.2)" }}>{toast.type === "success" ? "✅ " : "❌ "}{toast.msg}</div>}
+      {toast && <div style={{ position: "fixed", top: "20px", right: "20px", zIndex: 200, background: toast.type === "success" ? "#1B5E30" : "#E8392A", color: "white", borderRadius: "12px", padding: "12px 20px", fontSize: "13px", fontWeight: 600, boxShadow: "0 8px 24px rgba(0,0,0,0.2)" }}>{toast.msg}</div>}
 
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
         <div>
-          <h1 style={{ fontWeight: 900, fontSize: "24px", color: "#1A1A1A", margin: 0 }}>Users</h1>
+          <h1 style={{ fontWeight: 900, fontSize: "36px", color: "#1A1A1A", margin: 0, letterSpacing: "-0.02em" }}>Users</h1>
           <p style={{ color: "#9CA3AF", fontSize: "13px", margin: "4px 0 0" }}>{filtered.length} of {users.length}</p>
         </div>
         <button onClick={fetchUsers} style={{ display: "flex", alignItems: "center", gap: "6px", background: "white", border: "1px solid rgba(212,184,150,0.3)", borderRadius: "10px", padding: "8px 14px", fontSize: "12px", fontWeight: 700, cursor: "pointer" }}>
@@ -128,18 +145,22 @@ export default function AdminUsersPage() {
                       <p style={{ fontSize: "10px", color: "#9CA3AF", margin: "1px 0 0" }}>{u.email}</p>
                     </td>
                     <td style={{ padding: "12px 14px" }}>
-                      <select value={u.role} onChange={(e) => handleRoleChange(u.id, e.target.value)}
-                        style={{ fontSize: "11px", padding: "5px 8px", borderRadius: "7px", border: `1px solid ${rc.bg}`, background: rc.bg, color: rc.text, fontWeight: 700, cursor: "pointer", outline: "none" }}>
-                        <option value="customer">Customer</option>
-                        <option value="delivery_boy">Delivery Boy</option>
-                        <option value="admin">Admin</option>
-                      </select>
+                      <CustomSelect 
+                        value={u.role} 
+                        onChange={(val) => handleRoleChange(u.id, val)}
+                        options={[
+                          { value: "customer", label: "Customer" },
+                          { value: "delivery_boy", label: "Delivery Boy" },
+                          { value: "admin", label: "Admin" }
+                        ]}
+                        style={{ minWidth: "120px" }}
+                      />
                     </td>
                     <td style={{ padding: "12px 14px" }}>
                       <span style={{ display: "inline-block", fontSize: "11px", fontWeight: 700, padding: "4px 10px", borderRadius: "999px", background: u.status === "active" ? "rgba(27,94,48,0.1)" : "rgba(239,68,68,0.1)", color: u.status === "active" ? "#1B5E30" : "#EF4444" }}>{u.status}</span>
                     </td>
-                    <td style={{ padding: "12px 14px", fontSize: "18px" }}>{u.is_phone_verified ? "✅" : "❌"}</td>
-                    <td style={{ padding: "12px 14px", fontSize: "18px" }}>{u.has_used_trial ? "✅" : "—"}</td>
+                    <td style={{ padding: "12px 14px", fontSize: "18px" }}>{u.is_phone_verified ? "Yes" : "No"}</td>
+                    <td style={{ padding: "12px 14px", fontSize: "18px" }}>{u.has_used_trial ? "Yes" : "—"}</td>
                     <td style={{ padding: "12px 14px", fontSize: "11px", color: "#9CA3AF" }}>
                       {new Date(u.created_at).toLocaleDateString("en-IN")}
                     </td>

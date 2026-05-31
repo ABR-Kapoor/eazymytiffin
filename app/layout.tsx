@@ -34,8 +34,13 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider
+      signInUrl="/sign-in"
+      signUpUrl="/sign-up"
+      afterSignInUrl="/home"
+      afterSignUpUrl="/home"
       appearance={{
-        baseTheme: undefined,
+        theme: "simple",
+        cssLayerName: "clerk",
         variables: {
           colorPrimary: "#E8392A",
           colorText: "#1A1A1A",
@@ -44,15 +49,6 @@ export default function RootLayout({
           colorInputText: "#1A1A1A",
           spacingUnit: "8px",
           borderRadius: "8px",
-        },
-        elements: {
-          formButtonPrimary: "bg-[#E8392A] hover:bg-red-700 text-white",
-          card: "bg-white border border-[#D4B896]/20",
-          headerTitle: "text-[#1A1A1A] font-800",
-          headerSubtitle: "text-gray-600",
-          socialButtonsBlockButton: "border-[#D4B896]/20 hover:bg-[#F8FAFC]",
-          dividerLine: "bg-[#D4B896]/20",
-          footerActionLink: "text-[#E8392A] hover:text-red-700",
         },
       }}
     >

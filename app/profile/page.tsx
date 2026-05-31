@@ -6,10 +6,11 @@ import { useUserStore } from "@/store/userStore";
 import { supabase } from "@/lib/supabase";
 import { NotificationBell } from "@/components/NotificationBell";
 import { BottomNav } from "@/components/BottomNav";
+import { useConfirm } from "@/components/ConfirmProvider";
 import Link from "next/link";
 import {
   LogOut, Save, Edit2, Check, X, Phone, Mail, MapPin,
-  Shield, Star, Plus, Trash2, Home, Building, Briefcase
+  Shield, Star, Plus, Trash2, Home, Building, Briefcase, Smartphone
 } from "lucide-react";
 
 type Address = {
@@ -53,6 +54,7 @@ export default function ProfilePage() {
   const [addrLoading, setAddrLoading] = useState(true);
   const [addingAddr, setAddingAddr] = useState(false);
   const [newAddr, setNewAddr] = useState({ type: "home", area: "", house_flat_no: "", landmark: "", hostel_company_name: "", floor: "", google_map_link: "", city: "Bilaspur" });
+  const { confirm } = useConfirm();
   const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
 
   const showToast = (msg: string, type: "success" | "error" = "success") => {
@@ -120,14 +122,20 @@ export default function ProfilePage() {
       setAddresses((prev) => [...prev, data as any]);
       setAddingAddr(false);
       setNewAddr({ type: "home", area: "", house_flat_no: "", landmark: "", hostel_company_name: "", floor: "", google_map_link: "", city: "Bilaspur" });
-      showToast("Address added!");
+      showToast("Address added successfully!");
     }
   };
 
   const handleDeleteAddress = async (id: string) => {
-    if (!confirm("Remove this address?")) return;
-    const { error } = await supabase.from("addresses").delete().eq("id", id);
-    if (!error) setAddresses((prev) => prev.filter((a) => a.id !== id));
+    confirm({
+      title: "Remove Address",
+      message: "Are you sure you want to remove this address?",
+      confirmText: "Remove",
+      onConfirm: async () => {
+        const { error } = await supabase.from("addresses").delete().eq("id", id);
+        if (!error) setAddresses((prev) => prev.filter((a) => a.id !== id));
+      }
+    });
   };
 
   const handleSetDefault = async (id: string) => {
@@ -187,7 +195,7 @@ export default function ProfilePage() {
           fontSize: "13px", fontWeight: 600, boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
           animation: "slideLeft 0.3s ease",
         }}>
-          {toast.type === "success" ? "✅ " : "❌ "}{toast.msg}
+          {toast.msg}
         </div>
       )}
 
@@ -222,16 +230,17 @@ export default function ProfilePage() {
                   {user?.role || "customer"}
                 </span>
                 <span style={{
-                  fontSize: "10px", fontWeight: 800,
+                  fontSize: "10px", fontWeight: 800, display: "inline-flex", alignItems: "center", gap: "4px",
                   background: user?.status === "active" ? "rgba(27,94,48,0.3)" : "rgba(232,57,42,0.3)",
                   color: user?.status === "active" ? "#86EFAC" : "#FECACA",
                   borderRadius: "999px", padding: "3px 10px"
                 }}>
-                  {user?.status === "active" ? "✓ Active" : "✗ Blocked"}
+                  {user?.status === "active" ? <Check size={10} /> : <X size={10} />}
+                  {user?.status === "active" ? "Active" : "Blocked"}
                 </span>
                 {user?.is_phone_verified && (
-                  <span style={{ fontSize: "10px", fontWeight: 800, background: "rgba(99,102,241,0.3)", color: "#C7D2FE", borderRadius: "999px", padding: "3px 10px" }}>
-                    📱 Verified
+                  <span style={{ fontSize: "10px", fontWeight: 800, background: "rgba(99,102,241,0.3)", color: "#C7D2FE", borderRadius: "999px", padding: "3px 10px", display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                    <Smartphone size={10} /> Verified
                   </span>
                 )}
               </div>
@@ -322,7 +331,7 @@ export default function ProfilePage() {
           {user?.has_used_trial && (
             <div style={{ marginTop: "14px", padding: "10px 14px", background: "rgba(245,166,35,0.08)", borderRadius: "10px", border: "1px solid rgba(245,166,35,0.2)" }}>
               <p style={{ fontSize: "12px", fontWeight: 600, color: "#D97706", margin: 0 }}>
-                ✅ You've used your free trial meal
+                You've used your free trial meal
               </p>
             </div>
           )}

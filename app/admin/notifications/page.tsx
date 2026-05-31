@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { Send, Bell } from "lucide-react";
+import { Bell, Search, Filter, Trash2, RefreshCw, Send, ArrowRight, ClipboardList, Megaphone, User } from "lucide-react";
+import { CustomSelect } from "@/components/CustomSelect";
 
 type Notification = {
   id: string; title: string; body: string; type: string; channel: string; is_read: boolean; created_at: string;
@@ -46,14 +47,14 @@ export default function AdminNotificationsPage() {
         }));
         const { error } = await supabase.from("notifications").insert(inserts);
         if (error) throw error;
-        showToast(`Sent to ${users.length} users!`);
+        showToast(`Sent to ${users.length} users successfully!`);
       } else {
         const { error } = await supabase.from("notifications").insert([{
           user_id: form.userId, title: form.title, body: form.body,
           type: form.type, channel: form.channel,
         }]);
         if (error) throw error;
-        showToast("Notification sent!");
+        showToast("Notification sent successfully!");
       }
       setForm((f) => ({ ...f, title: "", body: "" }));
       fetchData();
@@ -67,9 +68,9 @@ export default function AdminNotificationsPage() {
 
   return (
     <div>
-      {toast && <div style={{ position: "fixed", top: "20px", right: "20px", zIndex: 200, background: toast.type === "success" ? "#1B5E30" : "#E8392A", color: "white", borderRadius: "12px", padding: "12px 20px", fontSize: "13px", fontWeight: 600 }}>{toast.type === "success" ? "✅ " : "❌ "}{toast.msg}</div>}
+      {toast && <div style={{ position: "fixed", top: "20px", right: "20px", zIndex: 200, background: toast.type === "success" ? "#1B5E30" : "#E8392A", color: "white", borderRadius: "12px", padding: "12px 20px", fontSize: "13px", fontWeight: 600 }}>{toast.msg}</div>}
 
-      <h1 style={{ fontWeight: 900, fontSize: "24px", color: "#1A1A1A", marginBottom: "20px" }}>Notifications</h1>
+      <h1 style={{ fontWeight: 900, fontSize: "36px", color: "#1A1A1A", marginBottom: "20px", letterSpacing: "-0.02em" }}>Notifications</h1>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: "20px" }}>
         {/* Send panel */}
@@ -80,22 +81,28 @@ export default function AdminNotificationsPage() {
 
           <div style={{ marginBottom: "12px" }}>
             <label style={{ fontSize: "11px", fontWeight: 700, color: "#9CA3AF", display: "block", marginBottom: "4px" }}>Recipient</label>
-            <select value={form.userId} onChange={(e) => setForm((f) => ({ ...f, userId: e.target.value }))}
-              style={{ width: "100%", padding: "9px", borderRadius: "9px", border: "1px solid rgba(212,184,150,0.3)", fontSize: "13px", outline: "none" }}>
-              <option value="all">📢 All Active Customers ({users.length})</option>
-              {users.map((u) => <option key={u.id} value={u.id}>👤 {u.full_name}</option>)}
-            </select>
+            <CustomSelect 
+              value={form.userId} 
+              onChange={(val) => setForm((f) => ({ ...f, userId: val }))}
+              options={[
+                { value: "all", label: <span style={{ display: "flex", alignItems: "center", gap: "6px" }}><Megaphone size={14} /> All Active Customers ({users.length})</span> },
+                ...users.map(u => ({ value: u.id, label: <span style={{ display: "flex", alignItems: "center", gap: "6px" }}><User size={14} /> {u.full_name}</span> }))
+              ]}
+            />
           </div>
 
           <div style={{ marginBottom: "12px" }}>
             <label style={{ fontSize: "11px", fontWeight: 700, color: "#9CA3AF", display: "block", marginBottom: "4px" }}>Type</label>
-            <select value={form.type} onChange={(e) => setForm((f) => ({ ...f, type: e.target.value }))}
-              style={{ width: "100%", padding: "9px", borderRadius: "9px", border: "1px solid rgba(212,184,150,0.3)", fontSize: "13px", outline: "none" }}>
-              <option value="system">System</option>
-              <option value="payment">Payment</option>
-              <option value="delivery">Delivery</option>
-              <option value="subscription">Subscription</option>
-            </select>
+            <CustomSelect 
+              value={form.type} 
+              onChange={(val) => setForm((f) => ({ ...f, type: val }))}
+              options={[
+                { value: "system", label: "System" },
+                { value: "payment", label: "Payment" },
+                { value: "delivery", label: "Delivery" },
+                { value: "subscription", label: "Subscription" }
+              ]}
+            />
           </div>
 
           <div style={{ marginBottom: "12px" }}>
@@ -120,7 +127,9 @@ export default function AdminNotificationsPage() {
 
         {/* History */}
         <div style={{ background: "white", borderRadius: "20px", padding: "20px", border: "1px solid rgba(212,184,150,0.15)" }}>
-          <h2 style={{ fontWeight: 800, fontSize: "16px", marginBottom: "16px" }}>📋 Recent Notifications</h2>
+          <h2 style={{ fontWeight: 800, fontSize: "16px", marginBottom: "16px", display: "flex", alignItems: "center", gap: "8px" }}>
+            <ClipboardList size={18} style={{ color: "#6B7280" }} /> Recent Notifications
+          </h2>
           {loading ? (
             <p style={{ color: "#9CA3AF", textAlign: "center", padding: "40px 0" }}>Loading…</p>
           ) : (
@@ -138,7 +147,7 @@ export default function AdminNotificationsPage() {
                     <p style={{ fontSize: "12px", color: "#6B7280", margin: "3px 0 4px" }}>{n.body}</p>
                     <div style={{ display: "flex", gap: "6px" }}>
                       <span style={{ fontSize: "10px", fontWeight: 700, background: `${TYPE_COLORS[n.type]}20`, color: TYPE_COLORS[n.type], borderRadius: "999px", padding: "2px 6px" }}>{n.type}</span>
-                      <span style={{ fontSize: "10px", color: "#9CA3AF" }}>→ {n.user?.full_name || "All"}</span>
+                      <span style={{ fontSize: "10px", color: "#9CA3AF", display: "inline-flex", alignItems: "center", gap: "2px" }}><ArrowRight size={10} /> {n.user?.full_name || "All"}</span>
                       {!n.is_read && <span style={{ fontSize: "10px", fontWeight: 700, background: "rgba(239,68,68,0.1)", color: "#EF4444", borderRadius: "999px", padding: "2px 6px" }}>Unread</span>}
                     </div>
                   </div>

@@ -7,7 +7,7 @@ import { useUserStore } from "@/store/userStore";
 import { BottomNav } from "@/components/BottomNav";
 import { NotificationBell } from "@/components/NotificationBell";
 import { useRouter } from "next/navigation";
-import { ShoppingCart, Plus, Minus, Leaf, Drumstick, Search, X, ChevronRight } from "lucide-react";
+import { ShoppingCart, Plus, Minus, Leaf, Drumstick, Search, X, ChevronRight, Utensils, UtensilsCrossed, Sun, Moon } from "lucide-react";
 import Link from "next/link";
 
 type Menu = {
@@ -31,6 +31,7 @@ export default function FoodPage() {
   useEffect(() => {
     const fetch_ = async () => {
       const { data } = await supabase.from("menus").select("*").eq("is_active", true).order("created_at", { ascending: false });
+      console.log("[debug] fetched menus:", data);
       setMenus(data || []);
       setFiltered(data || []);
       setLoading(false);
@@ -61,7 +62,7 @@ export default function FoodPage() {
 
       <main id="main" style={{ maxWidth: "960px", margin: "0 auto", padding: "24px 16px 96px" }}>
         <div className="animate-fade-up" style={{ marginBottom: "20px" }}>
-          <h1 style={{ fontWeight: 900, fontSize: "clamp(22px, 5vw, 28px)", color: "#1A1A1A", letterSpacing: "-0.02em" }}>🍽️ Food Delivery</h1>
+          <h1 style={{ fontWeight: 900, fontSize: "clamp(22px, 5vw, 28px)", color: "#1A1A1A", letterSpacing: "-0.02em", display: "flex", alignItems: "center", gap: "8px" }}><Utensils size={28} color="#1A1A1A" /> Food Delivery</h1>
           <p style={{ color: "#6B7280", fontSize: "13px", marginTop: "4px" }}>Order fresh meals — Lunch 12–2 PM · Dinner 7–9 PM</p>
         </div>
 
@@ -73,11 +74,11 @@ export default function FoodPage() {
             {search && <button onClick={() => setSearch("")} style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#9CA3AF" }}><X size={16} /></button>}
           </div>
           <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-            {([["all","All"],["veg","🥗 Veg"],["non_veg","🍗 Non-Veg"]] as const).map(([v,l]) => (
-              <button key={v} onClick={() => setCatFilter(v)} style={{ padding: "6px 14px", borderRadius: "999px", fontSize: "12px", fontWeight: 700, border: "1px solid", cursor: "pointer", background: catFilter === v ? "#1A1A1A" : "white", color: catFilter === v ? "white" : "#4A3A2A", borderColor: catFilter === v ? "#1A1A1A" : "rgba(212,184,150,0.3)", transition: "all 200ms" }}>{l}</button>
+            {([["all","All"],["veg",<span style={{ display: "flex", alignItems: "center", gap: "4px" }}><Leaf size={12} /> Veg</span>],["non_veg",<span style={{ display: "flex", alignItems: "center", gap: "4px" }}><Drumstick size={12} /> Non-Veg</span>]] as const).map(([v,l]) => (
+              <button key={v as string} onClick={() => setCatFilter(v as any)} style={{ padding: "6px 14px", borderRadius: "999px", fontSize: "12px", fontWeight: 700, border: "1px solid", cursor: "pointer", background: catFilter === v ? "#1A1A1A" : "white", color: catFilter === v ? "white" : "#4A3A2A", borderColor: catFilter === v ? "#1A1A1A" : "rgba(212,184,150,0.3)", transition: "all 200ms" }}>{l}</button>
             ))}
-            {([["lunch","🌤️ Lunch"],["dinner","🌙 Dinner"]] as const).map(([v,l]) => (
-              <button key={v} onClick={() => setMealFilter(mealFilter === v ? "all" : v)} style={{ padding: "6px 14px", borderRadius: "999px", fontSize: "12px", fontWeight: 700, border: "1px solid", cursor: "pointer", background: mealFilter === v ? "var(--emt-red)" : "white", color: mealFilter === v ? "white" : "#4A3A2A", borderColor: mealFilter === v ? "var(--emt-red)" : "rgba(212,184,150,0.3)", transition: "all 200ms" }}>{l}</button>
+            {([["lunch",<span style={{ display: "flex", alignItems: "center", gap: "4px" }}><Sun size={12} /> Lunch</span>],["dinner",<span style={{ display: "flex", alignItems: "center", gap: "4px" }}><Moon size={12} /> Dinner</span>]] as const).map(([v,l]) => (
+              <button key={v as string} onClick={() => setMealFilter(mealFilter === v ? "all" : (v as any))} style={{ padding: "6px 14px", borderRadius: "999px", fontSize: "12px", fontWeight: 700, border: "1px solid", cursor: "pointer", background: mealFilter === v ? "var(--emt-red)" : "white", color: mealFilter === v ? "white" : "#4A3A2A", borderColor: mealFilter === v ? "var(--emt-red)" : "rgba(212,184,150,0.3)", transition: "all 200ms" }}>{l}</button>
             ))}
           </div>
         </div>
@@ -86,7 +87,7 @@ export default function FoodPage() {
           <div style={{ textAlign: "center", padding: "60px" }}><div style={{ width: "40px", height: "40px", borderRadius: "50%", border: "3px solid rgba(232,57,42,0.2)", borderTopColor: "var(--emt-red)", animation: "spin 0.8s linear infinite", margin: "0 auto 16px" }} /><p style={{ color: "#9CA3AF" }}>Loading menu…</p></div>
         ) : filtered.length === 0 ? (
           <div style={{ textAlign: "center", padding: "60px", background: "white", borderRadius: "20px", border: "1px solid rgba(212,184,150,0.15)" }}>
-            <div style={{ fontSize: "48px", marginBottom: "12px" }}>🍽️</div>
+            <div style={{ display: "flex", justifyContent: "center", marginBottom: "12px", color: "rgba(232,57,42,0.6)" }}><UtensilsCrossed size={48} /></div>
             <h3 style={{ fontWeight: 800, color: "#1A1A1A", marginBottom: "8px" }}>No dishes found</h3>
             <p style={{ color: "#9CA3AF" }}>Try adjusting your filters or check back later</p>
           </div>
@@ -105,7 +106,7 @@ export default function FoodPage() {
                     </div>
                   ) : (
                     <div style={{ height: "100px", background: menu.category === "veg" ? "rgba(27,94,48,0.06)" : "rgba(232,57,42,0.06)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "44px", position: "relative" }}>
-                      {menu.category === "veg" ? "🥗" : "🍗"}
+                      {menu.category === "veg" ? <Leaf size={44} color="#1B5E30" /> : <Drumstick size={44} color="#E8392A" />}
                       <div style={{ position: "absolute", top: "10px", left: "10px", width: "22px", height: "22px", borderRadius: "5px", background: menu.category === "veg" ? "#1B5E30" : "#E8392A", display: "flex", alignItems: "center", justifyContent: "center" }}>
                         {menu.category === "veg" ? <Leaf size={12} color="white" /> : <Drumstick size={12} color="white" />}
                       </div>
@@ -118,8 +119,8 @@ export default function FoodPage() {
                     </div>
                     {menu.description && <p style={{ fontSize: "11px", color: "#9CA3AF", margin: "0 0 10px", lineHeight: 1.4 }}>{menu.description}</p>}
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                      <span style={{ fontSize: "10px", color: "#9CA3AF", fontWeight: 600 }}>
-                        {menu.meal_type === "lunch" ? "🌤️ Lunch" : menu.meal_type === "dinner" ? "🌙 Dinner" : "🌤️🌙"}
+                      <span style={{ fontSize: "10px", color: "#9CA3AF", fontWeight: 600, display: "flex", alignItems: "center", gap: "4px" }}>
+                        {menu.meal_type === "lunch" ? <><Sun size={12} /> Lunch</> : menu.meal_type === "dinner" ? <><Moon size={12} /> Dinner</> : <><Sun size={12}/><Moon size={12}/></>}
                       </span>
                       {q === 0 ? (
                         <button onClick={() => addItem({ menu_id: menu.id, title: menu.title, price: 120, category: menu.category, image_url: menu.image_url, badge: menu.badge })} style={{ display: "flex", alignItems: "center", gap: "5px", background: "var(--emt-red)", color: "white", border: "none", borderRadius: "10px", padding: "8px 14px", fontSize: "12px", fontWeight: 700, cursor: "pointer" }}>
