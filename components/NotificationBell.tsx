@@ -1,10 +1,6 @@
 "use client";
 
-<<<<<<< HEAD
 import { useState, useRef, useEffect, forwardRef, useImperativeHandle } from "react";
-=======
-import { useState, useRef, useEffect } from "react";
->>>>>>> 21ee6eafa5645584d057b626d86c88c24d1d1434
 import { Bell, Check, CheckCheck } from "lucide-react";
 import { useNotificationStore } from "@/store/notificationStore";
 
@@ -22,20 +18,13 @@ const typeIcons: Record<string, string> = {
   system: "🔔",
 };
 
-<<<<<<< HEAD
 export const NotificationBell = forwardRef<{ toggle: () => void }, { compact?: boolean }>(({ compact }, ref) => {
-=======
-export function NotificationBell() {
->>>>>>> 21ee6eafa5645584d057b626d86c88c24d1d1434
   const [open, setOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
   const { notifications, unreadCount, markRead, markAllRead } = useNotificationStore();
 
-<<<<<<< HEAD
   useImperativeHandle(ref, () => ({ toggle: handleOpen }));
 
-=======
->>>>>>> 21ee6eafa5645584d057b626d86c88c24d1d1434
   // Close on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -78,41 +67,16 @@ export function NotificationBell() {
       <button
         id="notification-bell"
         onClick={handleOpen}
-<<<<<<< HEAD
         className={`relative rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer ${open ? "text-emt-red" : ""} ${compact ? "w-[20px] h-[20px] text-[#374151]" : "w-[34px] h-[34px] shadow-sm hover:scale-105 bg-white border border-[#D4B896]/30 text-[#1A1A1A]"} ${!compact && (open ? "bg-emt-red/15 border border-emt-red/20" : "")}`}
         aria-label="Notifications"
       >
         <Bell size={compact ? 14 : 20} strokeWidth={1.8} />
-=======
-        style={{
-          position: "relative",
-          width: "40px",
-          height: "40px",
-          borderRadius: "12px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          background: open ? "rgba(232,57,42,0.08)" : "transparent",
-          border: "none",
-          cursor: "pointer",
-          transition: "background 200ms ease",
-          color: "#4A3A2A",
-        }}
-        aria-label="Notifications"
-      >
-        <Bell size={20} strokeWidth={1.8} />
->>>>>>> 21ee6eafa5645584d057b626d86c88c24d1d1434
         {count > 0 && (
           <span
             style={{
               position: "absolute",
-<<<<<<< HEAD
               top: "-2px",
               right: "-2px",
-=======
-              top: "6px",
-              right: "6px",
->>>>>>> 21ee6eafa5645584d057b626d86c88c24d1d1434
               background: "var(--emt-red)",
               color: "white",
               borderRadius: "999px",
@@ -126,10 +90,7 @@ export function NotificationBell() {
               padding: "0 3px",
               lineHeight: 1,
               animation: "countUp 0.4s cubic-bezier(0.34,1.56,0.64,1) both",
-<<<<<<< HEAD
               border: "2px solid white",
-=======
->>>>>>> 21ee6eafa5645584d057b626d86c88c24d1d1434
             }}
           >
             {count > 9 ? "9+" : count}
@@ -296,8 +257,4 @@ export function NotificationBell() {
       )}
     </div>
   );
-<<<<<<< HEAD
 });
-=======
-}
->>>>>>> 21ee6eafa5645584d057b626d86c88c24d1d1434
