@@ -34,8 +34,12 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider
+      signInUrl="/sign-in"
+      signUpUrl="/sign-up"
+      fallbackRedirectUrl="/home"
       appearance={{
-        baseTheme: undefined,
+        theme: "simple",
+        cssLayerName: "clerk",
         variables: {
           colorPrimary: "#E8392A",
           colorText: "#1A1A1A",
@@ -45,18 +49,9 @@ export default function RootLayout({
           spacingUnit: "8px",
           borderRadius: "8px",
         },
-        elements: {
-          formButtonPrimary: "bg-[#E8392A] hover:bg-red-700 text-white",
-          card: "bg-white border border-[#D4B896]/20",
-          headerTitle: "text-[#1A1A1A] font-800",
-          headerSubtitle: "text-gray-600",
-          socialButtonsBlockButton: "border-[#D4B896]/20 hover:bg-[#F8FAFC]",
-          dividerLine: "bg-[#D4B896]/20",
-          footerActionLink: "text-[#E8392A] hover:text-red-700",
-        },
       }}
     >
-      <html lang="en" className={`${montserrat.variable} h-full`}>
+      <html lang="en" className={`${montserrat.variable} h-full`} suppressHydrationWarning>
         <body className="min-h-full flex flex-col font-[family-name:var(--font-montserrat)]">
           <a href="#main" className="skip-link">
             Skip to main content

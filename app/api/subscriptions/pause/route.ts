@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
     // Create in-app notification
     await supabaseAdmin.from("notifications").insert([{
       user_id: userData.id,
-      title: "Subscription Paused ⏸️",
+      title: "Subscription Paused ",
       body: "Your tiffin subscription has been paused for today. It will resume tomorrow automatically.",
       type: "subscription",
       channel: "in_app",

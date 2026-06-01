@@ -6,10 +6,10 @@ import { supabase } from "@/lib/supabase";
 
 type Tab = "veg" | "mix" | "nonveg";
 
-const tabs: { id: Tab; label: string; emoji: string; gradient: string }[] = [
-  { id: "veg",    label: "VEG MEALS",     emoji: "🌿", gradient: "linear-gradient(135deg,#1B5E30,#2D7A3A)" },
-  { id: "mix",    label: "MIX MEALS",     emoji: "🍛", gradient: "linear-gradient(135deg,#D35400,#E8650A)" },
-  { id: "nonveg", label: "NON-VEG MEALS", emoji: "🍖", gradient: "linear-gradient(135deg,#8B1A1A,#C0392B)" },
+const tabs: { id: Tab; label: string; gradient: string }[] = [
+  { id: "veg",    label: "VEG MEALS",     gradient: "linear-gradient(135deg,#1B5E30,#2D7A3A)" },
+  { id: "mix",    label: "MIX MEALS",     gradient: "linear-gradient(135deg,#D35400,#E8650A)" },
+  { id: "nonveg", label: "NON-VEG MEALS", gradient: "linear-gradient(135deg,#8B1A1A,#C0392B)" },
 ];
 
 const tabConfig: Record<Tab, { cardGradient: string; glow: string; sectionGradient: string }> = {
@@ -23,7 +23,7 @@ const planData: Record<Tab, {
   individual: { label: string; price: string; popular?: boolean }[];
 }> = {
   veg: {
-    name: "🌿 VEG MEALS",
+    name: "VEG MEALS",
     individual: [
       { label: "1 Meal Trial", price: "₹99",   popular: false },
       { label: "1 Meal",       price: "₹119",  popular: false },
@@ -32,7 +32,7 @@ const planData: Record<Tab, {
     ],
   },
   mix: {
-    name: "🍛 MIX MEALS",
+    name: "MIX MEALS",
     individual: [
       { label: "1 Meal Trial", price: "₹109",  popular: false },
       { label: "1 Meal",       price: "₹139",  popular: false },
@@ -41,7 +41,7 @@ const planData: Record<Tab, {
     ],
   },
   nonveg: {
-    name: "🍖 NON-VEG MEALS",
+    name: "NON-VEG MEALS",
     individual: [
       { label: "1 Meal Trial", price: "₹129",  popular: false },
       { label: "1 Meal",       price: "₹159",  popular: false },
@@ -178,7 +178,7 @@ export default function MealPlans() {
                 Premium Choice
               </span>
               <h3 className="text-white text-5xl font-black tracking-tighter mb-4">
-                {plan.name.split(" ")[1]} <br />
+                {plan.name.split(" ")[0]} <br />
                 <span style={{ color: "var(--emt-red)" }}>MEALS</span>
               </h3>
               <p className="text-white/70 text-[15px] font-medium leading-relaxed">
