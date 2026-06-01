@@ -112,7 +112,6 @@ create table public.users (
   full_name text not null,
   email text unique not null,
   phone text unique not null,
-  profile_image text,
   role public.user_role default 'customer',
   status public.user_status default 'active',
   city text default 'Bilaspur',
