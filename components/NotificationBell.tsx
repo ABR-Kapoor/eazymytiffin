@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, forwardRef, useImperativeHandle } from "react";
 import { Bell, Check, CheckCheck } from "lucide-react";
 import { useNotificationStore } from "@/store/notificationStore";
 
@@ -18,10 +18,12 @@ const typeIcons: Record<string, string> = {
   system: "🔔",
 };
 
-export function NotificationBell() {
+export const NotificationBell = forwardRef<{ toggle: () => void }, { compact?: boolean }>(({ compact }, ref) => {
   const [open, setOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
   const { notifications, unreadCount, markRead, markAllRead } = useNotificationStore();
+
+  useImperativeHandle(ref, () => ({ toggle: handleOpen }));
 
   // Close on outside click
   useEffect(() => {
@@ -65,29 +67,16 @@ export function NotificationBell() {
       <button
         id="notification-bell"
         onClick={handleOpen}
-        style={{
-          position: "relative",
-          width: "40px",
-          height: "40px",
-          borderRadius: "12px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          background: open ? "rgba(232,57,42,0.08)" : "transparent",
-          border: "none",
-          cursor: "pointer",
-          transition: "background 200ms ease",
-          color: "#4A3A2A",
-        }}
+        className={`relative rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer ${open ? "text-emt-red" : ""} ${compact ? "w-[20px] h-[20px] text-[#374151]" : "w-[34px] h-[34px] shadow-sm hover:scale-105 bg-white border border-[#D4B896]/30 text-[#1A1A1A]"} ${!compact && (open ? "bg-emt-red/15 border border-emt-red/20" : "")}`}
         aria-label="Notifications"
       >
-        <Bell size={20} strokeWidth={1.8} />
+        <Bell size={compact ? 14 : 20} strokeWidth={1.8} />
         {count > 0 && (
           <span
             style={{
               position: "absolute",
-              top: "6px",
-              right: "6px",
+              top: "-2px",
+              right: "-2px",
               background: "var(--emt-red)",
               color: "white",
               borderRadius: "999px",
@@ -101,6 +90,7 @@ export function NotificationBell() {
               padding: "0 3px",
               lineHeight: 1,
               animation: "countUp 0.4s cubic-bezier(0.34,1.56,0.64,1) both",
+              border: "2px solid white",
             }}
           >
             {count > 9 ? "9+" : count}
@@ -267,4 +257,4 @@ export function NotificationBell() {
       )}
     </div>
   );
-}
+});
