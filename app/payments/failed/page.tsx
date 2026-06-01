@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { RefreshCw, X } from "lucide-react";
 
 export default function PaymentFailedPage() {
   return (
@@ -33,10 +34,9 @@ export default function PaymentFailedPage() {
             fontSize: "48px",
             margin: "0 auto 24px",
             boxShadow: "0 16px 48px rgba(232,57,42,0.3)",
-            animation: "countUp 0.6s cubic-bezier(0.34,1.56,0.64,1) both",
           }}
         >
-          ❌
+          <X size={48} color="white" />
         </div>
 
         <h1
@@ -66,9 +66,12 @@ export default function PaymentFailedPage() {
               fontSize: "14px",
               textDecoration: "none",
               boxShadow: "0 8px 24px rgba(232,57,42,0.3)",
+              display: "flex",
+              alignItems: "center",
+              gap: "6px"
             }}
           >
-            🔄 Try Again
+            <RefreshCw size={14} /> Try Again
           </Link>
           <Link
             href="/home"
