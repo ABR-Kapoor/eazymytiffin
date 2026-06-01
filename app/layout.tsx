@@ -36,7 +36,8 @@ export default function RootLayout({
     <ClerkProvider
       signInUrl="/sign-in"
       signUpUrl="/sign-up"
-      fallbackRedirectUrl="/home"
+      signInFallbackRedirectUrl="/home"
+      signUpFallbackRedirectUrl="/home"
       appearance={{
         theme: "simple",
         cssLayerName: "clerk",

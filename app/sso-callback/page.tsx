@@ -1,5 +1,5 @@
 import { AuthenticateWithRedirectCallback } from "@clerk/nextjs";
 
 export default function SSOCallback() {
-  return <AuthenticateWithRedirectCallback fallbackRedirectUrl="/home" />;
+  return <AuthenticateWithRedirectCallback signInFallbackRedirectUrl="/home" signUpFallbackRedirectUrl="/home" />;
 }

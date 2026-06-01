@@ -115,8 +115,8 @@ export default function SignUpPage() {
     try {
       await signUp.authenticateWithRedirect({
         strategy: "oauth_google",
-        forceRedirectUrl: "/sso-callback",
-        fallbackRedirectUrl: "/home",
+        redirectUrl: "/sso-callback",
+        redirectUrlComplete: "/home",
       });
     } catch (err: any) {
       setError(err.errors?.[0]?.message || "Google sign-up failed");
