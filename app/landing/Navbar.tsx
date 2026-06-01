@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { ArrowUpRight } from "lucide-react";
+import { useAuth, useUser } from "@clerk/nextjs";
 
 const navLinks = [
   { label: "Home", href: "#home" },
@@ -12,14 +13,36 @@ const navLinks = [
 ];
 
 export default function Navbar() {
+  const { isSignedIn } = useAuth();
+  const { user } = useUser();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  useEffect(() => {
+    if (user?.id) {
+      const checkAdmin = async () => {
+        try {
+          const res = await fetch("/api/users/sync");
+          const json = await res.json();
+          if (json.success && json.user?.role === "admin") {
+            setIsAdmin(true);
+          }
+        } catch (e) {
+          console.error("Error checking admin status:", e);
+        }
+      };
+      checkAdmin();
+    } else {
+      setIsAdmin(false);
+    }
+  }, [user]);
 
   return (
     <nav
@@ -81,6 +104,32 @@ export default function Navbar() {
           >
             Book Now <ArrowUpRight size={16} strokeWidth={3} />
           </a>
+          {!isSignedIn && (
+            <a
+              href="/sign-in"
+              className="border-[1.5px] border-[#E8392A] text-[#E8392A] hover:bg-[#E8392A] hover:text-white flex items-center gap-2 px-6 py-2 rounded-full text-[13px] font-bold uppercase tracking-[1.2px] transition-all duration-200 hover:-translate-y-0.5"
+            >
+              Login
+            </a>
+          )}
+          {isSignedIn && (
+            <div className="flex items-center gap-4">
+              {isAdmin && (
+                <a
+                  href="/admin"
+                  className="bg-[#E8392A] text-white hover:bg-red-700 flex items-center gap-2 px-6 py-2 rounded-full text-[13px] font-bold uppercase tracking-[1.2px] transition-all duration-200 hover:-translate-y-0.5"
+                >
+                  Admin Panel
+                </a>
+              )}
+              <a
+                href="/home"
+                className="border-[1.5px] border-[#5A4A3A] text-[#5A4A3A] hover:bg-[#5A4A3A] hover:text-white flex items-center gap-2 px-6 py-2 rounded-full text-[13px] font-bold uppercase tracking-[1.2px] transition-all duration-200 hover:-translate-y-0.5"
+              >
+                Dashboard
+              </a>
+            </div>
+          )}
         </div>
 
         {/* Mobile hamburger */}
@@ -136,6 +185,35 @@ export default function Navbar() {
           >
             Book Now <ArrowUpRight size={18} strokeWidth={3} />
           </a>
+          {!isSignedIn && (
+            <a
+              href="/sign-in"
+              className="w-full text-center border-[1.5px] border-[#E8392A] text-[#E8392A] py-2.5 rounded-full text-[14px] font-bold uppercase tracking-[1.2px] transition-all duration-200"
+              onClick={() => setMenuOpen(false)}
+            >
+              Login
+            </a>
+          )}
+          {isSignedIn && (
+            <div className="flex flex-col gap-3 w-full">
+              {isAdmin && (
+                <a
+                  href="/admin"
+                  className="w-full text-center bg-[#E8392A] text-white py-2.5 rounded-full text-[14px] font-bold uppercase tracking-[1.2px] transition-all duration-200"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Admin Panel
+                </a>
+              )}
+              <a
+                href="/home"
+                className="w-full text-center border-[1.5px] border-[#5A4A3A] text-[#5A4A3A] py-2.5 rounded-full text-[14px] font-bold uppercase tracking-[1.2px] transition-all duration-200"
+                onClick={() => setMenuOpen(false)}
+              >
+                Dashboard
+              </a>
+            </div>
+          )}
         </div>
       )}
     </nav>
