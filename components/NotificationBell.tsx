@@ -18,7 +18,7 @@ const typeIcons: Record<string, string> = {
   system: "🔔",
 };
 
-export function NotificationBell() {
+export function NotificationBell({ compact }: { compact?: boolean }) {
   const [open, setOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
   const { notifications, unreadCount, markRead, markAllRead } = useNotificationStore();
@@ -65,10 +65,10 @@ export function NotificationBell() {
       <button
         id="notification-bell"
         onClick={handleOpen}
-        className={`relative w-[34px] h-[34px] rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer shadow-sm hover:scale-105 ${open ? "bg-emt-red/15 text-emt-red border border-emt-red/20" : "bg-white text-[#1A1A1A] border border-[#D4B896]/30 hover:bg-black/5"}`}
+        className={`relative rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer ${open ? "text-emt-red" : ""} ${compact ? "w-[20px] h-[20px] text-[#374151]" : "w-[34px] h-[34px] shadow-sm hover:scale-105 bg-white border border-[#D4B896]/30 text-[#1A1A1A]"} ${!compact && (open ? "bg-emt-red/15 border border-emt-red/20" : "")}`}
         aria-label="Notifications"
       >
-        <Bell size={20} strokeWidth={1.8} />
+        <Bell size={compact ? 14 : 20} strokeWidth={1.8} />
         {count > 0 && (
           <span
             style={{

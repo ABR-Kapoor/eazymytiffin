@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { MessageCircle } from "lucide-react";
 import { useUserStore } from "@/store/userStore";
 import { NotificationBell } from "@/components/NotificationBell";
 import { BottomNav } from "@/components/BottomNav";
@@ -36,14 +37,31 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
         </Link>
         <div className="flex items-center gap-3">
           {isAdmin && (
-            <Link href="/admin" className="bg-[#E8392A] text-white text-[10px] font-extrabold uppercase tracking-widest px-3.5 py-1.5 rounded-full no-underline hover:bg-[#B91C1C] transition-colors">
+            <Link href="/admin" className="text-[11px] font-bold px-3 py-1.5 rounded-full no-underline transition-all hover:scale-105" style={{ background: "#FEF3C7", color: "#92400E" }}>
               Admin
             </Link>
           )}
-          <NotificationBell />
+          <a
+            href="https://wa.me/919770144899"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 no-underline px-3 py-1.5 rounded-full text-[11px] font-bold transition-all hover:scale-105"
+            style={{ background: "#DCFCE7", color: "#166534" }}
+            aria-label="WhatsApp us"
+          >
+            <MessageCircle size={14} />
+            WhatsApp
+          </a>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold transition-all hover:scale-105" style={{ background: "#F1F5F9", color: "#374151" }}>
+            <NotificationBell compact />
+            <span>Notifications</span>
+          </div>
           <Link href="/profile" className="no-underline">
-            <div className="w-[34px] h-[34px] rounded-full bg-gradient-to-br from-[#E8392A] to-[#B91C1C] flex items-center justify-center text-white font-extrabold text-[13px] cursor-pointer shadow-sm hover:scale-105 transition-transform">
-              {user?.full_name?.charAt(0)?.toUpperCase() || "U"}
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold transition-all hover:scale-105" style={{ background: "#FEF2F2", color: "#374151" }}>
+              <div className="w-[20px] h-[20px] rounded-full bg-gradient-to-br from-[#E8392A] to-[#B91C1C] flex items-center justify-center text-white font-extrabold text-[10px]">
+                {user?.full_name?.charAt(0)?.toUpperCase() || "U"}
+              </div>
+              <span>Profile</span>
             </div>
           </Link>
         </div>
