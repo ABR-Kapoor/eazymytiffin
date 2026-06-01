@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabase";
-import { Search, RefreshCw, Pause, Play, X, Plus, ChevronDown, Check, Users, ArrowRight } from "lucide-react";
+import { Search, RefreshCw, Pause, Play, X, Plus, ChevronDown, Check, Users, ArrowRight, Sun, Moon } from "lucide-react";
 import Link from "next/link";
 import { CustomSelect } from "@/components/CustomSelect";
 import { useConfirm } from "@/components/ConfirmProvider";
@@ -206,8 +206,8 @@ export default function AdminSubscriptionsPage() {
                     onChange={(val) => setCreateForm({ ...createForm, mealType: val })} 
                     disabled={!!createForm.planId}
                     options={[
-                      { value: "lunch", label: "🌤️ Lunch" },
-                      { value: "dinner", label: "🌙 Dinner" },
+                      { value: "lunch", label: <span className="flex items-center gap-1.5"><Sun size={14}/> Lunch</span> },
+                      { value: "dinner", label: <span className="flex items-center gap-1.5"><Moon size={14}/> Dinner</span> },
                       { value: "both", label: "Both" }
                     ]}
                   />
@@ -247,88 +247,119 @@ export default function AdminSubscriptionsPage() {
         </div>
       )}
 
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
+      {/* Page Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 animate-fade-up">
         <div>
-          <h1 style={{ fontWeight: 900, fontSize: "36px", color: "#1A1A1A", margin: 0, letterSpacing: "-0.02em" }}>Subscriptions</h1>
-          <p style={{ color: "#9CA3AF", fontSize: "13px", margin: "4px 0 0" }}>{filtered.length} of {subs.length} plans</p>
+          <h1 className="font-extrabold text-[28px] text-[#1A1A1A] m-0 tracking-tight flex items-center gap-2">
+            <div className="w-10 h-10 rounded-xl bg-[#E8392A]/10 flex items-center justify-center text-[#E8392A]">
+              <Users size={20} />
+            </div>
+            Subscriptions
+          </h1>
+          <p className="text-[#9CA3AF] text-[13px] mt-1.5 font-medium ml-[48px]">
+            {filtered.length} of {subs.length} plans
+          </p>
         </div>
-        <div style={{ display: "flex", gap: "8px" }}>
-          <button onClick={fetchData} style={{ display: "flex", alignItems: "center", gap: "6px", background: "white", border: "1px solid rgba(212,184,150,0.3)", borderRadius: "10px", padding: "8px 14px", fontSize: "12px", fontWeight: 700, cursor: "pointer" }}>
-            <RefreshCw size={14} /> Refresh
+        <div className="flex items-center gap-2">
+          <button onClick={fetchData} className="btn-glare flex items-center justify-center gap-2 bg-white border border-[rgba(212,184,150,0.3)] hover:border-[#E8392A] hover:text-[#E8392A] text-[#4A3A2A] rounded-xl px-5 py-2.5 text-[13px] font-bold shadow-sm transition-all h-fit w-fit">
+            <RefreshCw size={16} /> Refresh
           </button>
           <button onClick={() => { setShowCreateModal(true); fetchCreateOptions(); }}
-            style={{ display: "flex", alignItems: "center", gap: "6px", background: "#E8392A", color: "white", border: "none", borderRadius: "10px", padding: "8px 16px", fontSize: "12px", fontWeight: 700, cursor: "pointer" }}>
-            <Plus size={14} /> New Subscription
+            className="btn-glare flex items-center justify-center gap-2 bg-[#E8392A] text-white rounded-xl px-5 py-2.5 text-[13px] font-bold shadow-sm shadow-[#E8392A]/30 hover:shadow-[#E8392A]/50 hover:-translate-y-0.5 transition-all h-fit w-fit">
+            <Plus size={16} /> New Subscription
           </button>
         </div>
       </div>
 
       {/* Filters */}
-      <div style={{ display: "flex", gap: "10px", marginBottom: "16px", flexWrap: "wrap" }}>
-        <div style={{ position: "relative", flex: "1", minWidth: "200px" }}>
-          <Search size={15} style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "#9CA3AF" }} />
+      <div className="flex flex-col md:flex-row gap-4 mb-6 animate-fade-up" style={{ animationDelay: "0.1s" }}>
+        <div className="relative flex-1 min-w-[240px]">
+          <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#9CA3AF]" />
           <input placeholder="Search by name, phone, ID…" value={search} onChange={(e) => setSearch(e.target.value)}
-            style={{ width: "100%", padding: "9px 12px 9px 36px", borderRadius: "10px", border: "1px solid rgba(212,184,150,0.3)", background: "white", fontSize: "13px", outline: "none", boxSizing: "border-box" }} />
+            className="w-full pl-11 pr-4 py-3 rounded-xl border border-[rgba(212,184,150,0.3)] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#E8392A] focus:border-transparent transition-all shadow-sm" />
         </div>
-        {["all", "active", "paused", "expired", "cancelled"].map((s) => (
-          <button key={s} onClick={() => setStatusFilter(s)} style={{ padding: "8px 16px", borderRadius: "10px", fontSize: "12px", fontWeight: 700, cursor: "pointer", textTransform: "capitalize", border: "1px solid", background: statusFilter === s ? "#1A1A1A" : "white", color: statusFilter === s ? "white" : "#4A3A2A", borderColor: statusFilter === s ? "#1A1A1A" : "rgba(212,184,150,0.3)" }}>
-            {s}
-          </button>
-        ))}
+        <div className="flex flex-wrap gap-2 items-center bg-white p-1.5 rounded-xl border border-[rgba(212,184,150,0.2)] shadow-sm h-fit no-scrollbar overflow-x-auto">
+          {["all", "active", "paused", "expired", "cancelled"].map((s) => (
+            <button key={s} onClick={() => setStatusFilter(s)}
+              className={`px-3 py-2 rounded-lg text-[12px] font-bold capitalize transition-all duration-200 whitespace-nowrap ${statusFilter === s ? "bg-[#1A1A1A] text-white shadow-md" : "text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#1A1A1A]"}`}>
+              {s}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Table */}
-      <div style={{ background: "white", borderRadius: "16px", border: "1px solid rgba(212,184,150,0.15)", overflow: "hidden", boxShadow: "0 1px 6px rgba(0,0,0,0.06)" }}>
-        <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+      <div className="bg-white rounded-[24px] border border-[rgba(212,184,150,0.2)] overflow-hidden shadow-sm animate-fade-up" style={{ animationDelay: "0.2s" }}>
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse text-left">
             <thead>
-              <tr style={{ background: "#F8FAFC", borderBottom: "1px solid rgba(212,184,150,0.15)" }}>
+              <tr className="bg-[#E5E7EB] border-b border-[#D1D5DB]">
                 {["Customer", "Plan", "Remaining", "Status", "Starts", "Delivery Boy", "Tiffin", "Actions"].map((h) => (
-                  <th key={h} style={{ padding: "12px 14px", textAlign: "left", fontSize: "11px", fontWeight: 800, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: "0.5px", whiteSpace: "nowrap" }}>{h}</th>
+                  <th key={h} className="px-6 py-4 text-[11px] font-extrabold text-[#4B5563] uppercase tracking-wider whitespace-nowrap">{h}</th>
                 ))}
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-[rgba(212,184,150,0.1)]">
               {loading ? (
-                <tr><td colSpan={8} style={{ textAlign: "center", padding: "40px", color: "#9CA3AF" }}>Loading…</td></tr>
+                <tr>
+                  <td colSpan={8} className="text-center py-12 text-[#9CA3AF]">
+                    <div className="w-8 h-8 border-4 border-[#E8392A] border-opacity-20 border-t-[#E8392A] rounded-full animate-spin mx-auto mb-3" />
+                    <span className="font-medium text-sm">Loading subscriptions…</span>
+                  </td>
+                </tr>
               ) : filtered.length === 0 ? (
-                <tr><td colSpan={8} style={{ textAlign: "center", padding: "40px", color: "#9CA3AF" }}>No subscriptions found</td></tr>
+                <tr>
+                  <td colSpan={8} className="text-center py-16 text-[#9CA3AF]">
+                    <Users size={48} className="text-gray-200 mx-auto mb-4" />
+                    <p className="font-extrabold text-[18px] text-[#1A1A1A] m-0 mb-1">No subscriptions found</p>
+                    <p className="text-[13px] m-0">Try changing filters or create a new one</p>
+                  </td>
+                </tr>
               ) : filtered.map((sub) => {
                 const sc = STATUS_CHIP[sub.status] || STATUS_CHIP.cancelled;
                 const isProcessing = actionLoading?.startsWith(sub.id);
                 return (
-                  <tr key={sub.id} style={{ borderBottom: "1px solid rgba(212,184,150,0.1)", transition: "background 150ms" }}
-                    onMouseEnter={(e) => (e.currentTarget.style.background = "#FAFAFA")}
-                    onMouseLeave={(e) => (e.currentTarget.style.background = "")}>
-                    <td style={{ padding: "12px 14px" }}>
-                      <p style={{ fontWeight: 700, fontSize: "13px", color: "#1A1A1A", margin: 0 }}>{sub.user?.full_name || "—"}</p>
-                      <p style={{ fontSize: "11px", color: "#9CA3AF", margin: "2px 0 0" }}>{sub.user?.phone || "—"}</p>
+                  <tr key={sub.id} className="even:bg-gray-100 hover:bg-gray-200 transition-colors group">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-extrabold text-[14px] shadow-sm flex-shrink-0 group-hover:scale-110 transition-transform duration-300"
+                          style={{ background: sub.category === "veg" ? "linear-gradient(135deg,#1B5E30,#064E3B)" : "linear-gradient(135deg,#E8392A,#B91C1C)" }}>
+                          {sub.user?.full_name?.charAt(0)?.toUpperCase() || "?"}
+                        </div>
+                        <div>
+                          <p className="font-bold text-[14px] text-[#1A1A1A] m-0">{sub.user?.full_name || "—"}</p>
+                          <p className="text-[11px] text-[#9CA3AF] font-medium m-0 mt-0.5">{sub.user?.phone || "—"}</p>
+                        </div>
+                      </div>
                     </td>
-                    <td style={{ padding: "12px 14px" }}>
-                      <div style={{ display: "flex", gap: "6px" }}>
-                        <span style={{ fontSize: "10px", fontWeight: 800, background: sub.category === "veg" ? "rgba(27,94,48,0.1)" : "rgba(232,57,42,0.1)", color: sub.category === "veg" ? "#1B5E30" : "#E8392A", borderRadius: "999px", padding: "2px 8px", flexShrink: 0 }}>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex flex-col items-start gap-1.5">
+                        <span className={`text-[10px] font-extrabold rounded-md px-2 py-1 flex-shrink-0 uppercase tracking-wider ${sub.category === "veg" ? "bg-[#1B5E30]/10 text-[#1B5E30]" : "bg-[#E8392A]/10 text-[#E8392A]"}`}>
                           {sub.category === "veg" ? "VEG" : "NON-VEG"}
                         </span>
-                        <span style={{ fontSize: "10px", fontWeight: 800, background: "rgba(99,102,241,0.1)", color: "#4F46E5", borderRadius: "999px", padding: "2px 8px", textTransform: "uppercase", flexShrink: 0 }}>
+                        <span className="text-[10px] font-extrabold bg-[#6366F1]/10 text-[#4F46E5] rounded-md px-2 py-1 uppercase tracking-wider flex-shrink-0">
                           {sub.meal_type === "both" ? "LUNCH & DINNER" : sub.meal_type}
                         </span>
                       </div>
                     </td>
-                    <td style={{ padding: "12px 14px" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                        <div style={{ width: "60px", height: "6px", borderRadius: "999px", background: "#F3F4F6", overflow: "hidden" }}>
-                          <div style={{ height: "100%", width: `${Math.max(4, (sub.remaining_days / sub.total_days) * 100)}%`, background: sub.remaining_days <= 3 ? "#EF4444" : sub.remaining_days <= 7 ? "#F59E0B" : "#1B5E30", borderRadius: "999px" }} />
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-3">
+                        <div className="w-[60px] h-1.5 rounded-full bg-gray-200 overflow-hidden relative shadow-inner">
+                          <div className={`absolute top-0 left-0 h-full rounded-full transition-all duration-500 ${sub.remaining_days <= 3 ? "bg-[#EF4444]" : sub.remaining_days <= 7 ? "bg-[#F59E0B]" : "bg-[#1B5E30]"}`} 
+                               style={{ width: `${Math.max(4, (sub.remaining_days / sub.total_days) * 100)}%` }} />
                         </div>
-                        <span style={{ fontSize: "12px", fontWeight: 700, color: "#4A3A2A" }}>{sub.remaining_days}d</span>
+                        <span className="text-[13px] font-bold text-[#4A3A2A]">{sub.remaining_days}d</span>
                       </div>
                     </td>
-                    <td style={{ padding: "12px 14px" }}>
-                      <span style={{ display: "inline-block", fontSize: "11px", fontWeight: 700, padding: "4px 10px", borderRadius: "999px", background: sc.bg, color: sc.text, textTransform: "capitalize" }}>{sub.status}</span>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="inline-flex items-center text-[11px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider" style={{ background: sc.bg, color: sc.text }}>
+                        {sub.status}
+                      </span>
                     </td>
-                    <td style={{ padding: "12px 14px", fontSize: "12px", color: "#6B7280" }}>
-                      {new Date(sub.starts_at).toLocaleDateString("en-IN")}
+                    <td className="px-6 py-4 whitespace-nowrap text-[13px] font-semibold text-[#6B7280]">
+                      {new Date(sub.starts_at).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
                     </td>
-                    <td style={{ padding: "12px 14px" }}>
+                    <td className="px-6 py-4 whitespace-nowrap w-[180px]">
                       <CustomSelect
                         value={sub.assigned_delivery_boy || ""}
                         onChange={(val) => handleAssign(sub.id, val)}
@@ -336,31 +367,32 @@ export default function AdminSubscriptionsPage() {
                           { value: "", label: "Unassigned" },
                           ...deliveryBoys.map(b => ({ value: b.id, label: b.full_name }))
                         ]}
-                        style={{ minWidth: "120px" }}
                       />
                     </td>
-                    <td style={{ padding: "12px 14px" }}>
+                    <td className="px-6 py-4 whitespace-nowrap">
                       <Link href={`/admin/tiffin-orders?subscription_id=${sub.id}`}
-                        style={{ fontSize: "11px", fontWeight: 700, color: "#6366F1", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "2px" }}>
-                        View Orders <ArrowRight size={10} />
+                        className="text-[12px] font-bold text-[#6366F1] hover:text-[#4F46E5] transition-colors inline-flex items-center gap-1">
+                        View Orders <ArrowRight size={12} />
                       </Link>
                     </td>
-                    <td style={{ padding: "12px 14px" }}>
-                      <div style={{ display: "flex", gap: "4px" }}>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex gap-2">
                         {sub.status === "active" && (
                           <button onClick={() => handleAction("pause", sub.id)} disabled={isProcessing}
-                            title="Pause" style={{ padding: "5px 8px", borderRadius: "6px", background: "rgba(217,119,6,0.1)", color: "#D97706", border: "none", cursor: "pointer", fontSize: "11px", fontWeight: 700 }}>
-                            <Pause size={12} />
+                            title="Pause" className="px-2 py-1.5 rounded-lg bg-[#D97706]/10 text-[#D97706] hover:bg-[#D97706] hover:text-white border-none cursor-pointer text-[12px] font-bold transition-colors">
+                            <Pause size={14} />
                           </button>
                         )}
                         {sub.status === "paused" && (
                           <button onClick={() => handleAction("resume", sub.id)} disabled={isProcessing}
-                            title="Resume" style={{ padding: "5px 8px", borderRadius: "6px", background: "rgba(27,94,48,0.1)", color: "#1B5E30", border: "none", cursor: "pointer", fontSize: "11px", fontWeight: 700 }}>
-                            <Play size={12} />
+                            title="Resume" className="px-2 py-1.5 rounded-lg bg-[#1B5E30]/10 text-[#1B5E30] hover:bg-[#1B5E30] hover:text-white border-none cursor-pointer text-[12px] font-bold transition-colors">
+                            <Play size={14} />
                           </button>
                         )}
                         <button onClick={() => setShowExtendModal(sub.id)}
-                          title="Extend" style={{ padding: "5px 8px", borderRadius: "6px", background: "rgba(99,102,241,0.1)", color: "#6366F1", border: "none", cursor: "pointer", fontSize: "10px", fontWeight: 700 }}>+d</button>
+                          title="Extend" className="px-2 py-1.5 rounded-lg bg-[#6366F1]/10 text-[#6366F1] hover:bg-[#6366F1] hover:text-white border-none cursor-pointer text-[11px] font-bold transition-colors">
+                          +d
+                        </button>
                         {["active", "paused"].includes(sub.status) && (
                           <button onClick={() => {
                             confirm({
@@ -370,8 +402,8 @@ export default function AdminSubscriptionsPage() {
                               onConfirm: () => handleAction("cancel", sub.id)
                             });
                           }} disabled={isProcessing}
-                            title="Cancel" style={{ padding: "5px 8px", borderRadius: "6px", background: "rgba(239,68,68,0.1)", color: "#EF4444", border: "none", cursor: "pointer", fontSize: "11px", fontWeight: 700 }}>
-                            <X size={12} />
+                            title="Cancel" className="px-2 py-1.5 rounded-lg bg-[#EF4444]/10 text-[#EF4444] hover:bg-[#EF4444] hover:text-white border-none cursor-pointer text-[12px] font-bold transition-colors">
+                            <X size={14} />
                           </button>
                         )}
                       </div>

@@ -36,8 +36,7 @@ export default function RootLayout({
     <ClerkProvider
       signInUrl="/sign-in"
       signUpUrl="/sign-up"
-      afterSignInUrl="/home"
-      afterSignUpUrl="/home"
+      fallbackRedirectUrl="/home"
       appearance={{
         theme: "simple",
         cssLayerName: "clerk",
@@ -52,7 +51,7 @@ export default function RootLayout({
         },
       }}
     >
-      <html lang="en" className={`${montserrat.variable} h-full`}>
+      <html lang="en" className={`${montserrat.variable} h-full`} suppressHydrationWarning>
         <body className="min-h-full flex flex-col font-[family-name:var(--font-montserrat)]">
           <a href="#main" className="skip-link">
             Skip to main content

@@ -402,111 +402,131 @@ export default function AdminTiffinOrdersPage() {
       )}
 
       {/* Page Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 animate-fade-up">
         <div>
-          <h1 style={{ fontWeight: 900, fontSize: "36px", color: "#1A1A1A", margin: 0, letterSpacing: "-0.02em" }}>Tiffin Orders</h1>
-          <p style={{ color: "#9CA3AF", fontSize: "13px", margin: "4px 0 0" }}>
+          <h1 className="font-extrabold text-[28px] text-[#1A1A1A] m-0 tracking-tight flex items-center gap-2">
+            <div className="w-10 h-10 rounded-xl bg-[#E8392A]/10 flex items-center justify-center text-[#E8392A]">
+              <Calendar size={20} />
+            </div>
+            Tiffin Orders
+          </h1>
+          <p className="text-[#9CA3AF] text-[13px] mt-1.5 font-medium ml-[48px]">
             {orders.length} records · auto-refreshes every 30s
           </p>
         </div>
-        <div style={{ display: "flex", gap: "8px" }}>
-          <button onClick={() => fetchOrders()} style={{ display: "flex", alignItems: "center", gap: "6px", background: "white", border: "1px solid rgba(212,184,150,0.3)", borderRadius: "10px", padding: "8px 14px", fontSize: "12px", fontWeight: 700, cursor: "pointer" }}>
-            <RefreshCw size={14} /> Refresh
+        <div className="flex items-center gap-2">
+          <button onClick={() => fetchOrders()} className="btn-glare flex items-center justify-center gap-2 bg-white border border-[rgba(212,184,150,0.3)] hover:border-[#E8392A] hover:text-[#E8392A] text-[#4A3A2A] rounded-xl px-5 py-2.5 text-[13px] font-bold shadow-sm transition-all h-fit w-fit">
+            <RefreshCw size={16} /> Refresh
           </button>
           <button
             onClick={() => { setShowCreate(true); fetchSubscriptionsForCreate(); }}
-            style={{ display: "flex", alignItems: "center", gap: "6px", background: "#E8392A", color: "white", border: "none", borderRadius: "10px", padding: "8px 16px", fontSize: "12px", fontWeight: 700, cursor: "pointer" }}>
-            <Plus size={14} /> New Order
+            className="btn-glare flex items-center justify-center gap-2 bg-[#E8392A] text-white rounded-xl px-5 py-2.5 text-[13px] font-bold shadow-sm shadow-[#E8392A]/30 hover:shadow-[#E8392A]/50 hover:-translate-y-0.5 transition-all h-fit w-fit">
+            <Plus size={16} /> New Order
           </button>
         </div>
       </div>
 
       {/* Filters */}
-      <div style={{ display: "flex", gap: "10px", marginBottom: "16px", flexWrap: "wrap" }}>
-        <div style={{ position: "relative", flex: 1, minWidth: "200px" }}>
-          <Search size={15} style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "#9CA3AF" }} />
+      <div className="flex flex-col md:flex-row gap-4 mb-6 animate-fade-up" style={{ animationDelay: "0.1s" }}>
+        <div className="relative flex-1 min-w-[240px]">
+          <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#9CA3AF]" />
           <input placeholder="Search customer name or phone…" value={search}
             onChange={(e) => setSearch(e.target.value)}
-            style={{ width: "100%", padding: "9px 12px 9px 36px", borderRadius: "10px", border: "1px solid rgba(212,184,150,0.3)", background: "white", fontSize: "13px", outline: "none", boxSizing: "border-box" }} />
+            className="w-full pl-11 pr-4 py-3 rounded-xl border border-[rgba(212,184,150,0.3)] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#E8392A] focus:border-transparent transition-all shadow-sm" />
         </div>
+        <div className="flex flex-wrap gap-2 items-center bg-white p-1.5 rounded-xl border border-[rgba(212,184,150,0.2)] shadow-sm h-fit no-scrollbar overflow-x-auto">
         {ALL_STATUSES.map((s) => {
           const chip = STATUS_CHIP[s];
           const isActive = statusFilter === s;
           return (
             <button key={s} onClick={() => setStatusFilter(s)}
-              style={{ padding: "8px 14px", borderRadius: "10px", fontSize: "11px", fontWeight: 700, cursor: "pointer", textTransform: "capitalize", border: "1px solid", background: isActive ? "#1A1A1A" : "white", color: isActive ? "white" : "#4A3A2A", borderColor: isActive ? "#1A1A1A" : "rgba(212,184,150,0.3)" }}>
+              className={`px-3 py-2 rounded-lg text-[12px] font-bold capitalize transition-all duration-200 whitespace-nowrap ${isActive ? "bg-[#1A1A1A] text-white shadow-md" : "text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#1A1A1A]"}`}>
               {s === "all" ? "All" : chip?.label || s}
             </button>
           );
         })}
+        </div>
       </div>
 
       {/* Table */}
-      <div style={{ background: "white", borderRadius: "16px", border: "1px solid rgba(212,184,150,0.15)", overflow: "hidden", boxShadow: "0 1px 6px rgba(0,0,0,0.06)" }}>
-        <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+      <div className="bg-white rounded-[24px] border border-[rgba(212,184,150,0.2)] overflow-hidden shadow-sm animate-fade-up" style={{ animationDelay: "0.2s" }}>
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse text-left">
             <thead>
-              <tr style={{ background: "#F8FAFC", borderBottom: "1px solid rgba(212,184,150,0.15)" }}>
+              <tr className="bg-[#E5E7EB] border-b border-[#D1D5DB]">
                 {["Customer", "Date", "Meal Type", "Category", "Status", "Deducted", "Actions"].map((h) => (
-                  <th key={h} style={{ padding: "12px 14px", textAlign: "left", fontSize: "11px", fontWeight: 800, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: "0.5px", whiteSpace: "nowrap" }}>{h}</th>
+                  <th key={h} className="px-6 py-4 text-[11px] font-extrabold text-[#4B5563] uppercase tracking-wider whitespace-nowrap">{h}</th>
                 ))}
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-[rgba(212,184,150,0.1)]">
               {loading ? (
-                <tr><td colSpan={7} style={{ textAlign: "center", padding: "50px", color: "#9CA3AF" }}>
-                  <div style={{ width: "32px", height: "32px", borderRadius: "50%", border: "3px solid rgba(232,57,42,0.2)", borderTopColor: "#E8392A", animation: "spin 0.8s linear infinite", margin: "0 auto 12px" }} />
-                  Loading…
-                </td></tr>
+                <tr>
+                  <td colSpan={7} className="text-center py-12 text-[#9CA3AF]">
+                    <div className="w-8 h-8 border-4 border-[#E8392A] border-opacity-20 border-t-[#E8392A] rounded-full animate-spin mx-auto mb-3" />
+                    <span className="font-medium text-sm">Loading…</span>
+                  </td>
+                </tr>
               ) : orders.length === 0 ? (
-                <tr><td colSpan={7} style={{ textAlign: "center", padding: "60px", color: "#D1D5DB" }}>
-                  <Calendar size={36} style={{ margin: "0 auto 12px" }} />
-                  <p style={{ fontWeight: 700, color: "#1A1A1A", margin: 0 }}>No tiffin orders found</p>
-                  <p style={{ fontSize: "12px", color: "#9CA3AF", margin: "4px 0 0" }}>Try changing filters or create a new one</p>
-                </td></tr>
+                <tr>
+                  <td colSpan={7} className="text-center py-16 text-[#9CA3AF]">
+                    <Calendar size={48} className="text-gray-200 mx-auto mb-4" />
+                    <p className="font-extrabold text-[18px] text-[#1A1A1A] m-0 mb-1">No tiffin orders found</p>
+                    <p className="text-[13px] m-0">Try changing filters or create a new one</p>
+                  </td>
+                </tr>
               ) : orders.map((order) => {
                 const sc = STATUS_CHIP[order.status] || STATUS_CHIP.upcoming;
                 return (
-                  <tr key={order.id} style={{ borderBottom: "1px solid rgba(212,184,150,0.08)", transition: "background 150ms" }}
-                    onMouseEnter={(e) => (e.currentTarget.style.background = "#FAFAFA")}
-                    onMouseLeave={(e) => (e.currentTarget.style.background = "")}>
-                    <td style={{ padding: "12px 14px" }}>
-                      <p style={{ fontWeight: 700, fontSize: "13px", color: "#1A1A1A", margin: 0 }}>{order.subscription?.user?.full_name || "—"}</p>
-                      <p style={{ fontSize: "11px", color: "#9CA3AF", margin: "1px 0 0" }}>{order.subscription?.user?.phone || "—"}</p>
+                  <tr key={order.id} className="even:bg-gray-100 hover:bg-gray-200 transition-colors group">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-extrabold text-[14px] shadow-sm flex-shrink-0 group-hover:scale-110 transition-transform duration-300"
+                          style={{ background: order.subscription?.category === "veg" ? "linear-gradient(135deg,#1B5E30,#064E3B)" : "linear-gradient(135deg,#E8392A,#B91C1C)" }}>
+                          {order.subscription?.user?.full_name?.charAt(0)?.toUpperCase() || "?"}
+                        </div>
+                        <div>
+                          <p className="font-bold text-[14px] text-[#1A1A1A] m-0">{order.subscription?.user?.full_name || "—"}</p>
+                          <p className="text-[11px] text-[#9CA3AF] font-medium m-0 mt-0.5">{order.subscription?.user?.phone || "—"}</p>
+                        </div>
+                      </div>
                     </td>
-                    <td style={{ padding: "12px 14px", fontSize: "12px", color: "#4A3A2A", fontWeight: 600 }}>
-                      {new Date(order.meal_date).toLocaleDateString("en-IN", { weekday: "short", day: "2-digit", month: "short" })}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <p className="text-[13px] font-semibold text-[#4A3A2A] m-0">
+                        {new Date(order.meal_date).toLocaleDateString("en-IN", { weekday: "short", day: "2-digit", month: "short" })}
+                      </p>
                     </td>
-                    <td style={{ padding: "12px 14px" }}>
-                      <span style={{ fontSize: "12px", fontWeight: 700, color: "#6B7280", textTransform: "capitalize", display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                        {order.meal_type === "both" ? <><Sun size={12}/><Moon size={12}/> Both</> : order.meal_type === "lunch" ? <><Sun size={12}/> Lunch</> : <><Moon size={12}/> Dinner</>}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="text-[12px] font-bold text-[#6B7280] capitalize inline-flex items-center gap-1.5">
+                        {order.meal_type === "both" ? <><Sun size={14}/><Moon size={14}/> Both</> : order.meal_type === "lunch" ? <><Sun size={14}/> Lunch</> : <><Moon size={14}/> Dinner</>}
                       </span>
                     </td>
-                    <td style={{ padding: "12px 14px" }}>
-                      <span style={{ fontSize: "11px", fontWeight: 700, background: order.subscription?.category === "veg" ? "rgba(27,94,48,0.1)" : "rgba(232,57,42,0.1)", color: order.subscription?.category === "veg" ? "#1B5E30" : "#E8392A", borderRadius: "999px", padding: "3px 8px", display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`text-[11px] font-bold rounded-full px-2.5 py-1 inline-flex items-center gap-1.5 ${order.subscription?.category === "veg" ? "bg-[#1B5E30]/10 text-[#1B5E30]" : "bg-[#E8392A]/10 text-[#E8392A]"}`}>
                         {order.subscription?.category === "veg" ? <><Leaf size={12}/> Veg</> : <><Drumstick size={12}/> Non-Veg</>}
                       </span>
                     </td>
-                    <td style={{ padding: "12px 14px" }}>
+                    <td className="px-6 py-4 whitespace-nowrap w-[180px]">
                       <CustomSelect 
                         value={order.status}
                         onChange={(val) => handleStatusChange(order.id, val, order.status)}
                         options={Object.entries(STATUS_CHIP).map(([k, v]) => ({ value: k, label: v.label }))}
-                        style={{ minWidth: "100px" }}
                       />
                     </td>
-                    <td style={{ padding: "12px 14px", fontSize: "16px" }}>
-                      {order.deducted ? "Yes" : "—"}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <p className={`text-[13px] font-bold m-0 ${order.deducted ? "text-[#1A1A1A]" : "text-[#9CA3AF]"}`}>
+                        {order.deducted ? "Yes" : "—"}
+                      </p>
                     </td>
-                    <td style={{ padding: "12px 14px" }}>
-                      <div style={{ display: "flex", gap: "4px" }}>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex gap-2">
                         <button onClick={() => openDrawer(order)}
-                          style={{ padding: "5px 10px", borderRadius: "7px", background: "rgba(99,102,241,0.1)", color: "#6366F1", border: "none", cursor: "pointer", fontSize: "11px", fontWeight: 700, display: "flex", alignItems: "center", gap: "4px" }}>
-                          <FileText size={12} /> Details
+                          className="px-3 py-1.5 rounded-lg bg-[#6366F1]/10 text-[#6366F1] hover:bg-[#6366F1] hover:text-white border-none cursor-pointer text-[12px] font-bold flex items-center gap-1.5 transition-colors">
+                          <FileText size={14} /> Details
                         </button>
                         <button onClick={() => handleDelete(order.id, order.meal_date)}
-                          style={{ padding: "5px 8px", borderRadius: "7px", background: "rgba(239,68,68,0.08)", color: "#EF4444", border: "none", cursor: "pointer" }}>
-                          <Trash2 size={12} />
+                          className="px-2 py-1.5 rounded-lg bg-[#EF4444]/10 text-[#EF4444] hover:bg-[#EF4444] hover:text-white border-none cursor-pointer transition-colors">
+                          <Trash2 size={14} />
                         </button>
                       </div>
                     </td>

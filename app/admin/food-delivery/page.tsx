@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabase";
-import { Plus, Edit2, Trash2, Upload, X, Check, Search, Calendar, Sun, Moon } from "lucide-react";
+import { Plus, Edit2, Trash2, Upload, X, Check, Search, Calendar, Sun, Moon, Utensils } from "lucide-react";
 import { CustomSelect } from "@/components/CustomSelect";
 import { useConfirm } from "@/components/ConfirmProvider";
 
@@ -228,52 +228,63 @@ export default function AdminFoodDeliveryPage() {
         </div>
       )}
 
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 animate-fade-up">
         <div>
-          <h1 style={{ fontWeight: 900, fontSize: "36px", color: "#1A1A1A", margin: 0, letterSpacing: "-0.02em" }}>Food Delivery</h1>
-          <p style={{ color: "#9CA3AF", fontSize: "13px", margin: "4px 0 0" }}>{items.length} items</p>
+          <h1 className="font-extrabold text-[28px] text-[#1A1A1A] m-0 tracking-tight flex items-center gap-2">
+            <div className="w-10 h-10 rounded-xl bg-[#E8392A]/10 flex items-center justify-center text-[#E8392A]">
+              <Utensils size={20} />
+            </div>
+            Menu & Cycles
+          </h1>
+          <p className="text-[#9CA3AF] text-[13px] mt-1.5 font-medium ml-[48px]">{items.length} food items managed</p>
         </div>
         <button onClick={() => { setForm({ ...emptyForm }); setEditItem(null); setShowForm(true); }}
-          style={{ display: "flex", alignItems: "center", gap: "6px", background: "#E8392A", color: "white", border: "none", borderRadius: "12px", padding: "10px 18px", fontSize: "13px", fontWeight: 700, cursor: "pointer" }}>
-          <Plus size={16} /> Add Item
+          className="btn-glare flex items-center justify-center gap-2 bg-[#E8392A] text-white rounded-xl px-5 py-2.5 text-[13px] font-bold shadow-lg shadow-[#E8392A]/30 hover:shadow-[#E8392A]/50 hover:-translate-y-0.5 transition-all w-fit">
+          <Plus size={16} /> Add Menu Item
         </button>
       </div>
 
       {/* Search */}
-      <div style={{ position: "relative", marginBottom: "16px", maxWidth: "320px" }}>
-        <Search size={15} style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "#9CA3AF" }} />
-        <input placeholder="Search menu…" value={search} onChange={(e) => setSearch(e.target.value)}
-          style={{ width: "100%", padding: "9px 12px 9px 36px", borderRadius: "10px", border: "1px solid rgba(212,184,150,0.3)", background: "white", fontSize: "13px", outline: "none", boxSizing: "border-box" }} />
+      <div className="relative mb-6 w-full animate-fade-up" style={{ animationDelay: "0.1s" }}>
+        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#9CA3AF]" />
+        <input placeholder="Search menu items…" value={search} onChange={(e) => setSearch(e.target.value)}
+          className="w-full pl-11 pr-4 py-3 rounded-xl border border-[rgba(212,184,150,0.3)] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#E8392A] focus:border-transparent transition-all shadow-sm" />
       </div>
 
       {/* Menu Items Grid */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: "14px", marginBottom: "32px" }}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 mb-10 animate-fade-up" style={{ animationDelay: "0.2s" }}>
         {filtered.map((item) => (
-          <div key={item.id} style={{ background: "white", borderRadius: "16px", border: "1px solid rgba(212,184,150,0.15)", overflow: "hidden", boxShadow: "0 1px 6px rgba(0,0,0,0.06)", opacity: item.is_active ? 1 : 0.5 }}>
-            <img src={item.image_url || (item.category === "veg" ? "/images/veg-placeholder.png" : "/images/nonveg-placeholder.png")} alt={item.title} style={{ width: "100%", height: "140px", objectFit: "cover" }} />
-            <div style={{ padding: "12px 14px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "6px" }}>
-                <p style={{ fontWeight: 800, fontSize: "14px", color: "#1A1A1A", margin: 0 }}>{item.title}</p>
-                <span style={{ fontSize: "10px", fontWeight: 700, background: item.category === "veg" ? "rgba(27,94,48,0.1)" : "rgba(232,57,42,0.1)", color: item.category === "veg" ? "#1B5E30" : "#E8392A", borderRadius: "999px", padding: "2px 7px", flexShrink: 0 }}>
-                  {item.category === "veg" ? "VEG" : "NON-VEG"}
+          <div key={item.id} className={`card-lift bg-white rounded-2xl border border-[rgba(212,184,150,0.2)] overflow-hidden shadow-sm flex flex-col transition-all duration-300 ${!item.is_active ? 'opacity-60 grayscale-[30%]' : ''}`}>
+            <div className="relative">
+              <img src={item.image_url || (item.category === "veg" ? "/images/veg-placeholder.png" : "/images/nonveg-placeholder.png")} alt={item.title} className="w-full h-[160px] object-cover" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+              <div className="absolute bottom-3 left-3 right-3 flex justify-between items-end">
+                <span className={`text-[10px] font-extrabold px-2.5 py-1 rounded-md shadow-sm uppercase tracking-wider ${item.category === "veg" ? "bg-[#1B5E30] text-white" : "bg-[#E8392A] text-white"}`}>
+                  {item.category === "veg" ? "Veg" : "Non-Veg"}
                 </span>
+                {item.badge && <span className="text-[10px] font-bold bg-[#F59E0B] text-white rounded-md px-2.5 py-1 shadow-sm">{item.badge}</span>}
               </div>
-              {item.badge && <span style={{ fontSize: "10px", fontWeight: 700, background: "rgba(245,158,11,0.1)", color: "#D97706", borderRadius: "999px", padding: "2px 8px", display: "inline-block", marginBottom: "6px" }}>{item.badge}</span>}
-              <p style={{ fontSize: "11px", color: "#9CA3AF", margin: "0 0 10px", textTransform: "capitalize" }}>
-                {item.meal_type === "both" ? "Lunch + Dinner" : item.meal_type}
-              </p>
-              <div style={{ display: "flex", gap: "6px" }}>
+            </div>
+            <div className="p-4 flex flex-col flex-1">
+              <div className="mb-auto">
+                <p className="font-extrabold text-[16px] text-[#1A1A1A] m-0 mb-1 leading-tight">{item.title}</p>
+                <p className="text-[12px] font-medium text-[#6B7280] m-0 capitalize mb-4 flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#D1D5DB]" />
+                  {item.meal_type === "both" ? "Lunch & Dinner" : item.meal_type}
+                </p>
+              </div>
+              <div className="flex gap-2 mt-2 pt-3 border-t border-gray-100">
                 <button onClick={() => { setEditItem(item); setForm({ title: item.title, description: item.description || "", badge: item.badge || "", category: item.category, meal_type: item.meal_type, is_active: item.is_active, image_url: item.image_url || "" }); setShowForm(true); }}
-                  style={{ flex: 1, padding: "7px", borderRadius: "8px", background: "rgba(99,102,241,0.08)", color: "#6366F1", border: "none", cursor: "pointer", fontSize: "11px", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", gap: "4px" }}>
-                  <Edit2 size={12} /> Edit
+                  className="flex-1 py-2 rounded-lg bg-[#F3F4F6] text-[#4B5563] hover:bg-[#E5E7EB] hover:text-[#1F2937] border-none cursor-pointer text-[12px] font-bold flex items-center justify-center gap-1.5 transition-colors">
+                  <Edit2 size={14} /> Edit
                 </button>
                 <button onClick={() => handleToggleActive(item.id, item.is_active)}
-                  style={{ padding: "7px 10px", borderRadius: "8px", background: item.is_active ? "rgba(27,94,48,0.08)" : "rgba(156,163,175,0.1)", color: item.is_active ? "#1B5E30" : "#9CA3AF", border: "none", cursor: "pointer", fontSize: "11px", fontWeight: 700 }}>
-                  {item.is_active ? <Check size={12} /> : "Off"}
+                  className={`px-3 py-2 rounded-lg border-none cursor-pointer text-[12px] font-bold flex items-center justify-center transition-colors ${item.is_active ? "bg-[#1B5E30]/10 text-[#1B5E30] hover:bg-[#1B5E30] hover:text-white" : "bg-gray-100 text-gray-500 hover:bg-gray-200"}`}>
+                  {item.is_active ? <Check size={14} /> : "Off"}
                 </button>
                 <button onClick={() => handleDelete(item.id)}
-                  style={{ padding: "7px", borderRadius: "8px", background: "rgba(239,68,68,0.08)", color: "#EF4444", border: "none", cursor: "pointer" }}>
-                  <Trash2 size={13} />
+                  className="px-3 py-2 rounded-lg bg-[#EF4444]/10 text-[#EF4444] hover:bg-[#EF4444] hover:text-white border-none cursor-pointer transition-colors flex items-center justify-center">
+                  <Trash2 size={14} />
                 </button>
               </div>
             </div>
@@ -282,23 +293,45 @@ export default function AdminFoodDeliveryPage() {
       </div>
 
       {/* Weekly Cycle Editor */}
-      <div style={{ background: "white", borderRadius: "20px", padding: "20px", border: "1px solid rgba(212,184,150,0.15)", boxShadow: "0 1px 6px rgba(0,0,0,0.06)" }}>
-        <h2 style={{ fontWeight: 800, fontSize: "18px", color: "#1A1A1A", marginBottom: "16px", display: "flex", alignItems: "center", gap: "8px" }}><Calendar size={20} color="#6366F1" /> Weekly Menu Cycle</h2>
-        <p style={{ color: "#9CA3AF", fontSize: "12px", marginBottom: "16px" }}>Set which dish appears each day for lunch and dinner slots.</p>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: "12px" }}>
+      <div className="bg-white rounded-[24px] p-6 lg:p-8 border border-[rgba(212,184,150,0.2)] shadow-sm animate-fade-up" style={{ animationDelay: "0.3s" }}>
+        <div className="flex items-center gap-3 mb-2">
+          <div className="w-10 h-10 rounded-xl bg-[#6366F1]/10 flex items-center justify-center text-[#6366F1]">
+            <Calendar size={20} />
+          </div>
+          <h2 className="font-extrabold text-[20px] text-[#1A1A1A] m-0">Weekly Menu Cycle</h2>
+        </div>
+        <p className="text-[#6B7280] text-[13px] mb-8 font-medium ml-[52px]">Set which dish appears each day for lunch and dinner slots.</p>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {DAYS.map((day, idx) => {
             const weekday = idx === 6 ? 0 : idx + 1; // Sun=0 in JS but idx 6 in array
+            const CARD_COLORS = ["#1B5E30", "#E8392A", "#D35400", "#6366F1", "#0EA5E9", "#8B5CF6", "#F59E0B", "#10B981"];
+            const color = CARD_COLORS[idx % CARD_COLORS.length];
             return (
-              <div key={day} style={{ border: "1px solid rgba(212,184,150,0.2)", borderRadius: "12px", padding: "12px" }}>
-                <p style={{ fontWeight: 800, fontSize: "13px", color: idx === 6 ? "#9CA3AF" : "#1A1A1A", marginBottom: "8px" }}>
-                  {day} {idx === 6 && <span style={{ fontSize: "10px" }}>(Closed)</span>}
-                </p>
+              <div key={day} 
+                className={`rounded-[20px] p-5 relative overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 group ${idx === 6 ? 'opacity-60 grayscale-[30%]' : ''}`}
+                style={{ 
+                  background: idx === 6 ? '#F9FAFB' : `linear-gradient(135deg, ${color}12, ${color}03)`, 
+                  border: idx === 6 ? '1px solid #E5E7EB' : `1px solid ${color}25` 
+                }}
+              >
+                <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-white to-transparent opacity-50 pointer-events-none rounded-bl-full" />
+                
+                <div className="flex items-center justify-between mb-4 relative z-10">
+                  <p className={`font-extrabold text-[16px] m-0 ${idx === 6 ? 'text-[#9CA3AF]' : 'text-[#1A1A1A]'}`}>
+                    {day}
+                  </p>
+                  {idx === 6 && <span className="text-[10px] font-bold bg-gray-200 text-gray-500 px-2 py-0.5 rounded-full uppercase tracking-wider">Closed</span>}
+                </div>
+                
                 {idx !== 6 && (
-                  <>
-                    <div style={{ marginBottom: "6px" }}>
-                      <label style={{ fontSize: "10px", fontWeight: 700, color: "#9CA3AF", display: "flex", alignItems: "center", gap: "4px", marginBottom: "3px" }}><Sun size={12} color="#F59E0B" /> Lunch</label>
+                  <div className="space-y-4 relative z-10">
+                    <div>
+                      <label className="text-[11px] font-bold text-[#6B7280] flex items-center gap-1.5 mb-2 uppercase tracking-wide">
+                        <Sun size={14} className="text-[#F59E0B]" /> Lunch Slot
+                      </label>
                       <CustomSelect 
-                        value=""
+                        value={cycle[weekday]?.lunch?.id || ""}
                         onChange={(val) => handleSetCycle(weekday, val, "lunch")}
                         options={[
                           { value: "", label: "— Not set —" },
@@ -311,9 +344,11 @@ export default function AdminFoodDeliveryPage() {
                       />
                     </div>
                     <div>
-                      <label style={{ fontSize: "10px", fontWeight: 700, color: "#9CA3AF", display: "flex", alignItems: "center", gap: "4px", marginBottom: "3px" }}><Moon size={12} color="#6366F1" /> Dinner</label>
+                      <label className="text-[11px] font-bold text-[#6B7280] flex items-center gap-1.5 mb-2 uppercase tracking-wide">
+                        <Moon size={14} className="text-[#6366F1]" /> Dinner Slot
+                      </label>
                       <CustomSelect 
-                        value=""
+                        value={cycle[weekday]?.dinner?.id || ""}
                         onChange={(val) => handleSetCycle(weekday, val, "dinner")}
                         options={[
                           { value: "", label: "— Not set —" },
@@ -325,7 +360,7 @@ export default function AdminFoodDeliveryPage() {
                         style={{ width: "100%" }}
                       />
                     </div>
-                  </>
+                  </div>
                 )}
               </div>
             );

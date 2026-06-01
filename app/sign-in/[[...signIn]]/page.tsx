@@ -105,8 +105,8 @@ export default function SignInPage() {
     try {
       await signIn.authenticateWithRedirect({
         strategy: "oauth_google",
-        redirectUrl: "/sso-callback",
-        redirectUrlComplete: "/home",
+        forceRedirectUrl: "/sso-callback",
+        fallbackRedirectUrl: "/home",
       });
     } catch (err: any) {
       setError(err.errors?.[0]?.message || "Google sign-in failed");
@@ -120,7 +120,7 @@ export default function SignInPage() {
         <div className="w-full max-w-md">
           <div className="max-w-[380px] mx-auto">
           <div className="mb-8 text-center md:text-left">
-            <h1 className="text-3xl text-[#1A1A1A] tracking-tight font-bold">Welcome Back to EazyMy-<span className="text-[#E8392A]">Tiffin</span></h1>
+            <h1 className="text-2xl text-[#1A1A1A] tracking-tight font-bold">Welcome Back to<br />EazyMy<span className="text-[#E8392A]">Tiffin</span></h1>
             <p className="text-gray-600 text-sm mt-1">Sign in to your account</p>
           </div>
 

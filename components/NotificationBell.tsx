@@ -65,20 +65,7 @@ export function NotificationBell() {
       <button
         id="notification-bell"
         onClick={handleOpen}
-        style={{
-          position: "relative",
-          width: "40px",
-          height: "40px",
-          borderRadius: "12px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          background: open ? "rgba(232,57,42,0.08)" : "transparent",
-          border: "none",
-          cursor: "pointer",
-          transition: "background 200ms ease",
-          color: "#4A3A2A",
-        }}
+        className={`relative w-[34px] h-[34px] rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer shadow-sm hover:scale-105 ${open ? "bg-emt-red/15 text-emt-red border border-emt-red/20" : "bg-white text-[#1A1A1A] border border-[#D4B896]/30 hover:bg-black/5"}`}
         aria-label="Notifications"
       >
         <Bell size={20} strokeWidth={1.8} />
@@ -86,8 +73,8 @@ export function NotificationBell() {
           <span
             style={{
               position: "absolute",
-              top: "6px",
-              right: "6px",
+              top: "-2px",
+              right: "-2px",
               background: "var(--emt-red)",
               color: "white",
               borderRadius: "999px",
@@ -101,6 +88,7 @@ export function NotificationBell() {
               padding: "0 3px",
               lineHeight: 1,
               animation: "countUp 0.4s cubic-bezier(0.34,1.56,0.64,1) both",
+              border: "2px solid white",
             }}
           >
             {count > 9 ? "9+" : count}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, X, Edit2, Trash2, ChefHat, ToggleLeft, ToggleRight } from "lucide-react";
+import { Plus, X, Edit2, Trash2, ChefHat, ToggleLeft, ToggleRight, ClipboardList } from "lucide-react";
 import { CustomSelect } from "@/components/CustomSelect";
 import { useConfirm } from "@/components/ConfirmProvider";
 
@@ -196,14 +196,19 @@ export default function AdminPlansPage() {
       )}
 
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 animate-fade-up">
         <div>
-          <h1 style={{ fontWeight: 900, fontSize: "36px", color: "#1A1A1A", margin: 0, letterSpacing: "-0.02em" }}>Subscription Plans</h1>
-          <p style={{ color: "#9CA3AF", fontSize: "13px", margin: "4px 0 0" }}>{plans.length} plans configured</p>
+          <h1 className="font-extrabold text-[28px] text-[#1A1A1A] m-0 tracking-tight flex items-center gap-2">
+            <div className="w-10 h-10 rounded-xl bg-[#E8392A]/10 flex items-center justify-center text-[#E8392A]">
+              <ClipboardList size={20} />
+            </div>
+            Subscription Plans
+          </h1>
+          <p className="text-[#9CA3AF] text-[13px] mt-1.5 font-medium ml-[48px]">{plans.length} plans configured</p>
         </div>
         <button onClick={openCreate}
-          style={{ display: "flex", alignItems: "center", gap: "6px", background: "#E8392A", color: "white", border: "none", borderRadius: "10px", padding: "10px 18px", fontSize: "13px", fontWeight: 700, cursor: "pointer" }}>
-          <Plus size={15} /> New Plan
+          className="btn-glare flex items-center justify-center gap-2 bg-[#E8392A] text-white rounded-xl px-5 py-2.5 text-[13px] font-bold shadow-lg shadow-[#E8392A]/30 hover:shadow-[#E8392A]/50 hover:-translate-y-0.5 transition-all w-fit">
+          <Plus size={16} /> New Plan
         </button>
       </div>
 
@@ -214,63 +219,76 @@ export default function AdminPlansPage() {
           <p style={{ color: "#9CA3AF" }}>Loading plans…</p>
         </div>
       ) : plans.length === 0 ? (
-        <div style={{ textAlign: "center", padding: "80px 20px", background: "white", borderRadius: "16px", border: "1px solid rgba(212,184,150,0.15)" }}>
-          <ChefHat size={40} style={{ color: "#E5E7EB", margin: "0 auto 12px" }} />
-          <p style={{ fontWeight: 700, color: "#1A1A1A", margin: "0 0 4px" }}>No plans created yet</p>
-          <p style={{ fontSize: "13px", color: "#9CA3AF", margin: "0 0 16px" }}>Create your first subscription plan</p>
-          <button onClick={openCreate} style={{ padding: "10px 20px", borderRadius: "10px", background: "#E8392A", color: "white", border: "none", fontWeight: 700, cursor: "pointer" }}>+ Create Plan</button>
+        <div className="text-center py-20 px-5 bg-white rounded-2xl border border-[rgba(212,184,150,0.15)] shadow-sm animate-fade-up" style={{ animationDelay: "0.1s" }}>
+          <ChefHat size={40} className="text-gray-200 mx-auto mb-3" />
+          <p className="font-bold text-gray-900 m-0 mb-1">No plans created yet</p>
+          <p className="text-[13px] text-gray-400 m-0 mb-4">Create your first subscription plan</p>
+          <button onClick={openCreate} className="px-5 py-2.5 rounded-xl bg-[#E8392A] text-white border-none font-bold cursor-pointer hover:bg-red-700 transition-colors shadow-md">+ Create Plan</button>
         </div>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "14px" }}>
-          {plans.map((plan) => (
-            <div key={plan.id} style={{ background: "white", borderRadius: "20px", padding: "20px", border: `1px solid ${plan.is_active ? "rgba(212,184,150,0.2)" : "rgba(156,163,175,0.2)"}`, boxShadow: "0 2px 8px rgba(0,0,0,0.05)", opacity: plan.is_active ? 1 : 0.65, transition: "opacity 200ms" }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 animate-fade-up" style={{ animationDelay: "0.1s" }}>
+          {plans.map((plan, index) => {
+            const CARD_COLORS = ["#1B5E30", "#E8392A", "#D35400", "#6366F1", "#0EA5E9", "#8B5CF6", "#F59E0B", "#10B981"];
+            const color = CARD_COLORS[index % CARD_COLORS.length];
+            return (
+            <div key={plan.id} 
+              className={`rounded-[24px] p-5 relative overflow-hidden flex flex-col shadow-sm transition-all duration-300 hover:shadow-md group ${!plan.is_active ? 'opacity-60 grayscale-[30%]' : ''}`}
+              style={{ 
+                background: plan.is_active ? `linear-gradient(135deg, ${color}12, ${color}03)` : '#F9FAFB', 
+                border: plan.is_active ? `1px solid ${color}25` : '1px solid #E5E7EB' 
+              }}
+            >
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white to-transparent opacity-50 pointer-events-none rounded-bl-full" />
               {/* Card header */}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "12px" }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: "flex", gap: "6px", marginBottom: "6px", flexWrap: "wrap" }}>
-                    {plan.is_trial && <span style={{ fontSize: "10px", fontWeight: 800, background: "rgba(245,158,11,0.15)", color: "#D97706", borderRadius: "999px", padding: "2px 8px" }}>TRIAL</span>}
-                    {!plan.is_active && <span style={{ fontSize: "10px", fontWeight: 800, background: "rgba(156,163,175,0.15)", color: "#6B7280", borderRadius: "999px", padding: "2px 8px" }}>INACTIVE</span>}
-                    <span style={{ fontSize: "10px", fontWeight: 800, background: plan.category === "veg" ? "rgba(27,94,48,0.1)" : "rgba(232,57,42,0.1)", color: plan.category === "veg" ? "#1B5E30" : "#E8392A", borderRadius: "999px", padding: "2px 8px" }}>
+              <div className="flex justify-between items-start mb-4 relative z-10">
+                <div className="flex-1">
+                  <div className="flex gap-2 mb-2.5 flex-wrap">
+                    {plan.is_trial && <span className="text-[10px] font-extrabold bg-[#F59E0B]/10 text-[#D97706] rounded-full px-2.5 py-0.5 tracking-wider uppercase border border-[#F59E0B]/20">Trial</span>}
+                    {!plan.is_active && <span className="text-[10px] font-extrabold bg-gray-100 text-gray-500 rounded-full px-2.5 py-0.5 tracking-wider uppercase border border-gray-200">Inactive</span>}
+                    <span className={`text-[10px] font-extrabold rounded-full px-2.5 py-0.5 tracking-wider uppercase border ${plan.category === "veg" ? "bg-[#1B5E30]/10 text-[#1B5E30] border-[#1B5E30]/20" : "bg-[#E8392A]/10 text-[#E8392A] border-[#E8392A]/20"}`}>
                       {plan.category === "veg" ? "VEG" : "NON-VEG"}
                     </span>
                   </div>
-                  <h3 style={{ fontWeight: 800, fontSize: "15px", color: "#1A1A1A", margin: 0 }}>{plan.title}</h3>
-                  {plan.description && <p style={{ fontSize: "12px", color: "#6B7280", margin: "4px 0 0", lineHeight: 1.4 }}>{plan.description}</p>}
+                  <h3 className="font-extrabold text-[17px] text-[#1A1A1A] m-0 leading-tight">{plan.title}</h3>
+                  {plan.description && <p className="text-[12px] font-medium text-[#6B7280] mt-1.5 mb-0 leading-relaxed">{plan.description}</p>}
                 </div>
               </div>
 
               {/* Stats */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "8px", marginBottom: "14px" }}>
+              <div className="grid grid-cols-3 gap-2 mb-5 mt-auto relative z-10">
                 {[
                   { label: "Duration", value: `${plan.duration_days}d` },
                   { label: "Price", value: plan.is_trial ? "FREE" : `₹${plan.price}` },
                   { label: "Meals", value: plan.meal_type === "both" ? "Both" : plan.meal_type === "lunch" ? "Lunch" : "Dinner" },
                 ].map((s) => (
-                  <div key={s.label} style={{ background: "#F8FAFC", borderRadius: "10px", padding: "8px", textAlign: "center" }}>
-                    <p style={{ fontWeight: 900, fontSize: "15px", color: "#1A1A1A", margin: "0 0 2px" }}>{s.value}</p>
-                    <p style={{ fontSize: "10px", fontWeight: 700, color: "#9CA3AF", margin: 0 }}>{s.label}</p>
+                  <div key={s.label} className="bg-white rounded-xl p-2.5 text-center shadow-sm" style={{ border: `1px solid ${color}20` }}>
+                    <p className="font-extrabold text-[15px] text-[#1A1A1A] m-0 mb-0.5">{s.value}</p>
+                    <p className="text-[10px] font-bold text-[#9CA3AF] m-0 uppercase tracking-wide">{s.label}</p>
                   </div>
                 ))}
               </div>
 
               {/* Actions */}
-              <div style={{ display: "flex", gap: "6px" }}>
+              <div className="flex gap-2 pt-4 border-t border-black/5 relative z-10">
                 <button onClick={() => openEdit(plan)}
-                  style={{ flex: 1, padding: "8px", borderRadius: "9px", background: "rgba(99,102,241,0.08)", color: "#6366F1", border: "none", cursor: "pointer", fontWeight: 700, fontSize: "12px", display: "flex", alignItems: "center", justifyContent: "center", gap: "5px" }}>
-                  <Edit2 size={12} /> Edit
+                  className="flex-1 py-2 rounded-lg bg-white shadow-sm text-gray-700 hover:text-[#1A1A1A] cursor-pointer text-[12px] font-bold flex items-center justify-center gap-1.5 transition-all hover:-translate-y-0.5"
+                  style={{ border: `1px solid ${color}20` }}>
+                  <Edit2 size={13} /> Edit
                 </button>
                 <button onClick={() => handleToggleActive(plan)}
-                  style={{ flex: 1, padding: "8px", borderRadius: "9px", background: plan.is_active ? "rgba(245,158,11,0.08)" : "rgba(27,94,48,0.08)", color: plan.is_active ? "#D97706" : "#1B5E30", border: "none", cursor: "pointer", fontWeight: 700, fontSize: "12px", display: "flex", alignItems: "center", justifyContent: "center", gap: "5px" }}>
-                  {plan.is_active ? <ToggleRight size={12} /> : <ToggleLeft size={12} />}
+                  className={`flex-1 py-2 rounded-lg bg-white shadow-sm cursor-pointer text-[12px] font-bold flex items-center justify-center gap-1.5 transition-all hover:-translate-y-0.5 ${plan.is_active ? "text-[#D97706] hover:bg-[#F59E0B] hover:text-white" : "text-[#1B5E30] hover:bg-[#1B5E30] hover:text-white"}`}
+                  style={{ border: `1px solid ${color}20` }}>
+                  {plan.is_active ? <ToggleRight size={13} /> : <ToggleLeft size={13} />}
                   {plan.is_active ? "Deactivate" : "Activate"}
                 </button>
                 <button onClick={() => handleDelete(plan)}
-                  style={{ padding: "8px 10px", borderRadius: "9px", background: "rgba(239,68,68,0.08)", color: "#EF4444", border: "none", cursor: "pointer" }}>
-                  <Trash2 size={13} />
+                  className="px-2.5 py-2 rounded-lg bg-[#EF4444]/10 text-[#EF4444] hover:bg-[#EF4444] hover:text-white border-none cursor-pointer transition-colors flex items-center justify-center">
+                  <Trash2 size={14} />
                 </button>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
 

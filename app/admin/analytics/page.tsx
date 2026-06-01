@@ -6,6 +6,29 @@ import { TrendingUp, BarChart3, Users, ChefHat, FlaskConical, BarChart, LineChar
 
 type RevenueDay = { date: string; amount: number };
 
+const MetricCard = ({ label, value, sub, icon, color, delay = "0s" }: any) => (
+  <div className="animate-fade-up" style={{ animationDelay: delay }}>
+    <div 
+      className="card-lift rounded-[24px] p-6 shadow-sm relative overflow-hidden group h-full"
+      style={{ background: `linear-gradient(135deg, ${color}12, ${color}03)`, border: `1px solid ${color}25` }}
+    >
+      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white to-transparent opacity-50 pointer-events-none rounded-bl-full" />
+      <div className="flex justify-between items-start mb-4 relative z-10">
+        <div className="w-12 h-12 rounded-[16px] flex items-center justify-center relative transition-transform group-hover:scale-110 duration-300 ease-out" style={{ background: `${color}15`, color }}>
+          {icon}
+        </div>
+      </div>
+      <p className="font-bold text-3xl text-[#121212] mb-1 tracking-tight">{value}</p>
+      <p className="text-xs font-bold text-[#6B7280] uppercase tracking-wider mb-2">{label}</p>
+      {sub && (
+        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg mt-2 transition-colors duration-300" style={{ background: `${color}10`, color }}>
+          <span className="text-[11px] font-bold">{sub}</span>
+        </div>
+      )}
+    </div>
+  </div>
+);
+
 export default function AdminAnalyticsPage() {
   const [loading, setLoading] = useState(true);
   const [revenue, setRevenue] = useState<RevenueDay[]>([]);
@@ -77,16 +100,7 @@ export default function AdminAnalyticsPage() {
 
   const maxRevenue = Math.max(...revenue.map((r) => r.amount), 1);
 
-  const MetricCard = ({ label, value, sub, icon, color }: any) => (
-    <div style={{ background: "white", borderRadius: "16px", padding: "18px", border: "1px solid rgba(212,184,150,0.15)", boxShadow: "0 1px 6px rgba(0,0,0,0.06)" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "12px" }}>
-        <div style={{ width: "38px", height: "38px", borderRadius: "10px", background: `${color}18`, display: "flex", alignItems: "center", justifyContent: "center", color }}>{icon}</div>
-      </div>
-      <p style={{ fontWeight: 900, fontSize: "26px", color: "#1A1A1A", margin: "0 0 4px", letterSpacing: "-0.02em" }}>{value}</p>
-      <p style={{ fontSize: "11px", color: "#9CA3AF", fontWeight: 700, margin: "0 0 4px" }}>{label}</p>
-      {sub && <p style={{ fontSize: "11px", color: color, fontWeight: 600, margin: 0 }}>{sub}</p>}
-    </div>
-  );
+
 
   const renderAreaChart = () => {
     if (revenue.length === 0) return null;
@@ -119,7 +133,12 @@ export default function AdminAnalyticsPage() {
 
   return (
     <div>
-      <h1 style={{ fontWeight: 900, fontSize: "36px", color: "#1A1A1A", marginBottom: "20px", letterSpacing: "-0.02em" }}>Analytics</h1>
+      <h1 className="font-extrabold text-[28px] text-[#1A1A1A] m-0 tracking-tight flex items-center gap-2 mb-8 animate-fade-up">
+        <div className="w-10 h-10 rounded-xl bg-[#E8392A]/10 flex items-center justify-center text-[#E8392A]">
+          <BarChart3 size={20} />
+        </div>
+        Analytics
+      </h1>
 
       {loading ? (
         <div style={{ textAlign: "center", padding: "80px 0" }}>
@@ -129,16 +148,18 @@ export default function AdminAnalyticsPage() {
       ) : (
         <>
           {/* Metrics Grid */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "14px", marginBottom: "24px" }}>
-            <MetricCard label="Total Revenue" value={`₹${metrics.totalRevenue.toLocaleString("en-IN")}`} icon={<TrendingUp size={18} />} color="#1B5E30" sub={`Sub: ₹${metrics.subRevenue.toLocaleString("en-IN")}`} />
-            <MetricCard label="Food Revenue" value={`₹${metrics.foodRevenue.toLocaleString("en-IN")}`} icon={<BarChart3 size={18} />} color="#E8392A" />
-            <MetricCard label="Total Subscriptions" value={metrics.totalSubs} icon={<ChefHat size={18} />} color="#6366F1" />
-            <MetricCard label="Total Users" value={metrics.totalUsers} icon={<Users size={18} />} color="#0EA5E9" sub={`${metrics.activeUsers} active`} />
-            <MetricCard label="Trial Users" value={metrics.trialSubs} icon={<FlaskConical size={18} />} color="#F59E0B" sub={`${metrics.conversionRate}% of total`} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-8">
+            <MetricCard label="Total Revenue" value={`₹${metrics.totalRevenue.toLocaleString("en-IN")}`} icon={<TrendingUp size={22} />} color="#1B5E30" sub={`Sub: ₹${metrics.subRevenue.toLocaleString("en-IN")}`} delay="0.05s" />
+            <MetricCard label="Food Revenue" value={`₹${metrics.foodRevenue.toLocaleString("en-IN")}`} icon={<BarChart3 size={22} />} color="#E8392A" delay="0.1s" />
+            <MetricCard label="Total Subscriptions" value={metrics.totalSubs} icon={<ChefHat size={22} />} color="#6366F1" delay="0.15s" />
+            <MetricCard label="Total Users" value={metrics.totalUsers} icon={<Users size={22} />} color="#0EA5E9" sub={`${metrics.activeUsers} active`} delay="0.2s" />
+            <MetricCard label="Trial Users" value={metrics.trialSubs} icon={<FlaskConical size={22} />} color="#F59E0B" sub={`${metrics.conversionRate}% of total`} delay="0.25s" />
           </div>
 
-          {/* Revenue Chart */}
-          <div style={{ background: "white", borderRadius: "20px", padding: "20px", border: "1px solid rgba(212,184,150,0.15)", marginBottom: "20px" }}>
+          <div 
+            className="card-lift rounded-[24px] p-6 shadow-sm mb-8 animate-fade-up" 
+            style={{ animationDelay: "0.3s", background: `rgba(232, 57, 42, 0.02)`, border: `1px solid rgba(232, 57, 42, 0.15)` }}
+          >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", flexWrap: "wrap", gap: "10px" }}>
               <h2 style={{ fontWeight: 800, fontSize: "16px", color: "#1A1A1A", margin: 0 }}>Revenue</h2>
               <div style={{ display: "flex", gap: "10px" }}>
