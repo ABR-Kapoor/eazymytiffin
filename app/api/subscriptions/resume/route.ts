@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
     // Notification
     await supabaseAdmin.from("notifications").insert([{
       user_id: userData.id,
-      title: "Subscription Resumed ",
+      title: "Subscription Resumed ▶️",
       body: "Your tiffin subscription is active again. Fresh meals will be delivered tomorrow!",
       type: "subscription",
       channel: "in_app",

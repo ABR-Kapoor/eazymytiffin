@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { ArrowUpRight } from "lucide-react";
-import { useAuth, useUser } from "@clerk/nextjs";
+import { SignedIn, SignedOut, UserButton, useUser } from "@clerk/nextjs";
 
 const navLinks = [
   { label: "Home", href: "#home" },
@@ -13,7 +13,6 @@ const navLinks = [
 ];
 
 export default function Navbar() {
-  const { isSignedIn } = useAuth();
   const { user } = useUser();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -104,15 +103,15 @@ export default function Navbar() {
           >
             Book Now <ArrowUpRight size={16} strokeWidth={3} />
           </a>
-          {!isSignedIn && (
+          <SignedOut>
             <a
               href="/sign-in"
               className="border-[1.5px] border-[#E8392A] text-[#E8392A] hover:bg-[#E8392A] hover:text-white flex items-center gap-2 px-6 py-2 rounded-full text-[13px] font-bold uppercase tracking-[1.2px] transition-all duration-200 hover:-translate-y-0.5"
             >
               Login
             </a>
-          )}
-          {isSignedIn && (
+          </SignedOut>
+          <SignedIn>
             <div className="flex items-center gap-4">
               {isAdmin && (
                 <a
@@ -128,8 +127,9 @@ export default function Navbar() {
               >
                 Dashboard
               </a>
+              <UserButton />
             </div>
-          )}
+          </SignedIn>
         </div>
 
         {/* Mobile hamburger */}
@@ -185,7 +185,7 @@ export default function Navbar() {
           >
             Book Now <ArrowUpRight size={18} strokeWidth={3} />
           </a>
-          {!isSignedIn && (
+          <SignedOut>
             <a
               href="/sign-in"
               className="w-full text-center border-[1.5px] border-[#E8392A] text-[#E8392A] py-2.5 rounded-full text-[14px] font-bold uppercase tracking-[1.2px] transition-all duration-200"
@@ -193,8 +193,8 @@ export default function Navbar() {
             >
               Login
             </a>
-          )}
-          {isSignedIn && (
+          </SignedOut>
+          <SignedIn>
             <div className="flex flex-col gap-3 w-full">
               {isAdmin && (
                 <a
@@ -212,8 +212,11 @@ export default function Navbar() {
               >
                 Dashboard
               </a>
+              <div className="flex justify-center pt-1">
+                <UserButton />
+              </div>
             </div>
-          )}
+          </SignedIn>
         </div>
       )}
     </nav>

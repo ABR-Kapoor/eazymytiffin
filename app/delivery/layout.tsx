@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useUser, useClerk } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { Bike } from "lucide-react";
 
 export default function DeliveryLayout({ children }: { children: React.ReactNode }) {
   const { user, isLoaded } = useUser();
@@ -46,7 +45,7 @@ export default function DeliveryLayout({ children }: { children: React.ReactNode
     <div style={{ minHeight: "100vh", background: "#F8FAFC" }}>
       <header style={{ background: "#1A1A1A", padding: "0 20px", height: "56px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 30 }}>
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <div style={{ width: "32px", height: "32px", borderRadius: "8px", background: "linear-gradient(135deg, #0EA5E9, #0284C7)", display: "flex", alignItems: "center", justifyContent: "center", color: "white" }}><Bike size={18} /></div>
+          <div style={{ width: "32px", height: "32px", borderRadius: "8px", background: "linear-gradient(135deg, #0EA5E9, #0284C7)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "16px" }}>🛵</div>
           <span style={{ color: "white", fontWeight: 800, fontSize: "15px" }}>EazyMyTiffin <span style={{ color: "#0EA5E9" }}>Delivery</span></span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>

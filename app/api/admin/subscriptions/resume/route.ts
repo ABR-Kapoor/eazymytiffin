@@ -24,20 +24,10 @@ export async function POST(req: NextRequest) {
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     if (data?.user_id) {
       await supabaseAdmin.from("notifications").insert([{
-        user_id: data.user_id, title: "Subscription Resumed ",
+        user_id: data.user_id, title: "Subscription Resumed ▶️",
         body: "Your subscription has been resumed by the admin. Fresh meals coming soon!", type: "subscription", channel: "in_app",
       }]);
     }
-    
-    // Admin log
-    const { data: adminUser } = await supabaseAdmin.from("users").select("id").eq("clerk_user_id", userId).single();
-    if (adminUser) {
-      await supabaseAdmin.from("admin_logs").insert([{
-        admin_id: adminUser.id, action: "subscription_resumed", entity: "subscriptions",
-        entity_id: subscriptionId, metadata: {},
-      }]);
-    }
-    
     return NextResponse.json({ success: true });
   } catch (err: any) { return NextResponse.json({ error: err.message }, { status: 500 }); }
 }

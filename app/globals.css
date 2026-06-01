@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@layer theme, base, clerk, components, utilities;
 
 :root {
   --emt-red:        #E8392A;
@@ -25,106 +24,6 @@
   --shadow-md: 0 4px 8px rgba(0,0,0,0.04), 0 12px 32px rgba(0,0,0,0.08);
   --shadow-lg: 0 8px 16px rgba(0,0,0,0.06), 0 24px 64px rgba(0,0,0,0.12);
   --max-width: 1280px;
-}
-
-@layer components {
-  .emt-clerk-card,
-  .cl-card {
-    background: white;
-    border: 1px solid rgba(212, 184, 150, 0.2);
-    box-shadow: 0 24px 48px rgba(61, 31, 10, 0.12);
-    border-radius: 24px;
-  }
-
-  .emt-clerk-header-title,
-  .cl-headerTitle {
-    color: #1A1A1A;
-    font-size: 2rem;
-    font-weight: 900;
-  }
-
-  .emt-clerk-header-subtitle,
-  .cl-headerSubtitle {
-    color: #6B7280;
-    font-size: 0.95rem;
-  }
-
-  .emt-clerk-label,
-  .cl-formFieldLabel {
-    color: #4A3A2A;
-    font-weight: 700;
-  }
-
-  .emt-clerk-input,
-  .cl-input,
-  .cl-textInput {
-    background: white;
-    color: #1A1A1A;
-    border: 1px solid rgba(212, 184, 150, 0.4);
-    border-radius: 16px;
-    padding: 0.95rem 1rem;
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
-  }
-
-  .emt-clerk-input:focus,
-  .cl-input:focus,
-  .cl-textInput:focus {
-    outline: 2px solid #E8392A;
-    outline-offset: 2px;
-  }
-
-  .emt-clerk-button-primary,
-  .cl-formButtonPrimary,
-  .cl-buttonPrimary {
-    background-color: #E8392A;
-    color: white;
-    border-radius: 999px;
-    padding: 0.95rem 1.6rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    box-shadow: 0 16px 32px rgba(232, 57, 42, 0.18);
-  }
-
-  .emt-clerk-button-primary:hover,
-  .cl-formButtonPrimary:hover,
-  .cl-buttonPrimary:hover {
-    background-color: #C72E1F;
-  }
-
-  .emt-clerk-social-button,
-  .cl-socialButtonsBlockButton {
-    border-color: rgba(212, 184, 150, 0.35);
-    background: white;
-    color: #1A1A1A;
-    border-radius: 16px;
-  }
-
-  .emt-clerk-social-button:hover,
-  .cl-socialButtonsBlockButton:hover {
-    background: rgba(248, 248, 248, 0.95);
-  }
-
-  .emt-clerk-divider,
-  .cl-dividerLine {
-    background: rgba(212, 184, 150, 0.35);
-  }
-
-  .emt-clerk-footer-link,
-  .cl-footerActionLink,
-  .cl-actionLink {
-    color: #E8392A;
-  }
-
-  .emt-clerk-footer-link:hover,
-  .cl-footerActionLink:hover,
-  .cl-actionLink:hover {
-    color: #C72E1F;
-  }
-
-  .emt-clerk-form-field,
-  .cl-formField {
-    margin-bottom: 1rem;
-  }
 }
 
 body {
@@ -203,29 +102,6 @@ body {
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
-}
-@keyframes orb1 {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  25%      { transform: translate(120px, -100px) scale(1.4); }
-  50%      { transform: translate(-80px, 60px) scale(0.7); }
-  75%      { transform: translate(60px, 120px) scale(1.2); }
-}
-@keyframes orb2 {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  25%      { transform: translate(-140px, 80px) scale(1.5); }
-  50%      { transform: translate(100px, -120px) scale(0.6); }
-  75%      { transform: translate(-60px, -60px) scale(1.3); }
-}
-@keyframes orb3 {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33%      { transform: translate(100px, 100px) scale(1.6); }
-  66%      { transform: translate(-100px, -80px) scale(0.7); }
-}
-@keyframes orb4 {
-  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0; }
-  25%      { transform: translate(-80px, -100px) scale(1.3); opacity: 0.6; }
-  50%      { transform: translate(120px, 60px) scale(0.8); opacity: 0.3; }
-  75%      { transform: translate(-40px, 100px) scale(1.5); opacity: 0.6; }
 }
 
 
@@ -343,103 +219,10 @@ body {
   transition: transform 500ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ── No Scrollbar ──────────────────────────────────────── */
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-/* ── Auth page wave shaders ──────────────────────────── */
-.wave-bg-1 {
-  background: linear-gradient(180deg, transparent 0%, rgba(232,57,42,0.03) 50%, transparent 100%);
-  background-size: 200% 200%;
-  animation: waveSlide 8s ease-in-out infinite;
-}
-.wave-bg-2 {
-  background: linear-gradient(180deg, transparent 0%, rgba(245,166,35,0.03) 50%, transparent 100%);
-  background-size: 200% 200%;
-  animation: waveSlide 11s ease-in-out infinite reverse;
-}
-.wave-bg-3 {
-  background: linear-gradient(180deg, transparent 0%, rgba(16,185,129,0.02) 50%, transparent 100%);
-  background-size: 200% 200%;
-  animation: waveSlide 14s ease-in-out infinite;
-}
-
-@keyframes waveSlide {
-  0% { background-position: 0% 0%; }
-  50% { background-position: 100% 100%; }
-  100% { background-position: 0% 0%; }
-}
-@keyframes waveShift {
-  0% { transform: translateX(-5%); }
-  50% { transform: translateX(5%); }
-  100% { transform: translateX(-5%); }
-}
-
-@keyframes orbPulse1 {
-  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.4; }
-  15%      { transform: translate(160px, -140px) scale(1.6); opacity: 0.8; }
-  30%      { transform: translate(-80px, 100px) scale(0.6); opacity: 0.3; }
-  45%      { transform: translate(120px, 160px) scale(1.3); opacity: 0.7; }
-  60%      { transform: translate(-160px, -80px) scale(0.8); opacity: 0.5; }
-  75%      { transform: translate(60px, -120px) scale(1.5); opacity: 0.9; }
-}
-@keyframes orbPulse2 {
-  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.3; }
-  20%      { transform: translate(-180px, 120px) scale(1.7); opacity: 0.7; }
-  40%      { transform: translate(140px, -160px) scale(0.5); opacity: 0.2; }
-  60%      { transform: translate(-100px, -100px) scale(1.5); opacity: 0.6; }
-  80%      { transform: translate(120px, 80px) scale(0.7); opacity: 0.4; }
-}
-@keyframes orbPulse3 {
-  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.2; }
-  25%      { transform: translate(160px, 140px) scale(1.8); opacity: 0.6; }
-  50%      { transform: translate(-140px, -120px) scale(0.4); opacity: 0.15; }
-  75%      { transform: translate(80px, 160px) scale(1.6); opacity: 0.5; }
-}
-@keyframes orbPulse4 {
-  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0; }
-  15%      { transform: translate(-120px, -140px) scale(1.5); opacity: 0.5; }
-  30%      { transform: translate(160px, 100px) scale(0.6); opacity: 0.2; }
-  45%      { transform: translate(-80px, 160px) scale(1.7); opacity: 0.6; }
-  60%      { transform: translate(120px, -100px) scale(0.7); opacity: 0.3; }
-  75%      { transform: translate(-160px, -60px) scale(1.4); opacity: 0.5; }
-}
-@keyframes ringSpin {
-  0% { transform: translate(-50%, -50%) rotate(0deg); }
-  100% { transform: translate(-50%, -50%) rotate(360deg); }
-}
-@keyframes ringSpinReverse {
-  0% { transform: translate(-50%, -50%) rotate(360deg); }
-  100% { transform: translate(-50%, -50%) rotate(0deg); }
-}
-@keyframes particleDrift {
-  0%   { transform: translateY(0) translateX(0) scale(1); opacity: 0; }
-  15%  { opacity: 0.5; }
-  80%  { opacity: 0.3; }
-  100% { transform: translateY(-150px) translateX(var(--dx, 60px)) scale(0.2); opacity: 0; }
-}
-
 /* ── Reduced motion ────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
-}
-
-/* ── Custom MapPopup Overrides ─────────────────────────── */
-.maplibregl-popup-content {
-  background: transparent !important;
-  padding: 0 !important;
-  box-shadow: none !important;
-  border-radius: 0 !important;
-}
-
-.maplibregl-popup-tip {
-  display: none !important;
 }

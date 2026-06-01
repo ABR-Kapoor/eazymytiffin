@@ -2,8 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabase";
-import { MapPin, Phone, Clock, CheckCircle, Camera, Upload, Sun, Moon, Bike, PartyPopper } from "lucide-react";
-import { CustomSelect } from "@/components/CustomSelect";
+import { MapPin, Phone, Clock, CheckCircle, Camera, Upload } from "lucide-react";
 
 type Assignment = {
   id: string; order_id: string; status: string; eta: string | null; proof_image: string | null; created_at: string;
@@ -15,9 +14,9 @@ type Assignment = {
 };
 
 const STATUS_FLOW: Record<string, { next: string; label: string; color: string }> = {
-  assigned: { next: "on_the_way", label: "Start Delivery", color: "#0EA5E9" },
-  on_the_way: { next: "arriving", label: "Arriving Soon", color: "#F59E0B" },
-  arriving: { next: "delivered", label: "Mark Delivered", color: "#1B5E30" },
+  assigned: { next: "on_the_way", label: "Start Delivery 🛵", color: "#0EA5E9" },
+  on_the_way: { next: "arriving", label: "Arriving Soon 📍", color: "#F59E0B" },
+  arriving: { next: "delivered", label: "Mark Delivered ✅", color: "#1B5E30" },
 };
 
 const ETA_OPTIONS = ["5 mins", "10 mins", "15 mins", "20 mins", "30 mins", "Delayed"];
@@ -94,9 +93,9 @@ export default function DeliveryDashboard() {
         if (transition.next === "on_the_way") {
           await supabase.from("food_orders").update({ status: "out_for_delivery" }).eq("id", assignment.order_id);
         }
-        showToast("Status updated successfully!");
+        showToast("Status updated!");
         if (myUserId) fetchDeliveries(myUserId);
-      } else showToast("Update failed.", "error");
+      } else showToast("Update failed", "error");
     } finally { setActionLoading(null); }
   };
 
@@ -125,7 +124,7 @@ export default function DeliveryDashboard() {
         }]);
       }
 
-      showToast("Delivery marked as complete successfully!");
+      showToast("Delivery marked as complete!");
       setPendingProofId(null);
       if (myUserId) fetchDeliveries(myUserId);
     } catch (err: any) {
@@ -135,13 +134,13 @@ export default function DeliveryDashboard() {
 
   const handleEtaUpdate = async (assignmentId: string, eta: string) => {
     const { error } = await supabase.from("delivery_assignments").update({ eta }).eq("id", assignmentId);
-    if (!error) showToast("ETA updated successfully!");
-    else showToast("Update failed.", "error");
+    if (!error) showToast("ETA updated!");
+    else showToast("Update failed", "error");
   };
 
   return (
     <div style={{ padding: "20px", maxWidth: "600px", margin: "0 auto" }}>
-      {toast && <div style={{ position: "fixed", top: "72px", right: "16px", zIndex: 200, background: toast.type === "success" ? "#1B5E30" : "#E8392A", color: "white", borderRadius: "12px", padding: "12px 20px", fontSize: "13px", fontWeight: 600, boxShadow: "0 8px 24px rgba(0,0,0,0.2)" }}>{toast.msg}</div>}
+      {toast && <div style={{ position: "fixed", top: "72px", right: "16px", zIndex: 200, background: toast.type === "success" ? "#1B5E30" : "#E8392A", color: "white", borderRadius: "12px", padding: "12px 20px", fontSize: "13px", fontWeight: 600, boxShadow: "0 8px 24px rgba(0,0,0,0.2)" }}>{toast.type === "success" ? "✅ " : "❌ "}{toast.msg}</div>}
 
       <input type="file" ref={proofRef} accept="image/*" capture="environment" style={{ display: "none" }}
         onChange={(e) => e.target.files?.[0] && handleProofUpload(e.target.files[0])} />
@@ -161,7 +160,7 @@ export default function DeliveryDashboard() {
         </div>
       ) : active.length === 0 ? (
         <div style={{ textAlign: "center", padding: "60px 0" }}>
-          <div style={{ marginBottom: "12px", color: "rgba(14,165,233,0.6)", display: "flex", justifyContent: "center" }}><Bike size={48} /></div>
+          <div style={{ fontSize: "48px", marginBottom: "12px" }}>🛵</div>
           <p style={{ fontWeight: 700, color: "#1A1A1A" }}>No active deliveries</p>
           <p style={{ color: "#9CA3AF", fontSize: "13px" }}>You're all caught up! New assignments will appear here.</p>
         </div>
@@ -178,8 +177,8 @@ export default function DeliveryDashboard() {
                 <div style={{ background: "linear-gradient(135deg, #0F172A, #1E293B)", padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <div>
                     <p style={{ color: "white", fontWeight: 800, fontSize: "14px", margin: 0 }}>{a.order?.user?.full_name || "—"}</p>
-                    <p style={{ color: "#94A3B8", fontSize: "11px", margin: "2px 0 0", display: "flex", alignItems: "center", gap: "4px" }}>
-                      {a.order?.time_slot === "lunch" ? <><Sun size={10} /> Lunch</> : <><Moon size={10} /> Dinner</>} · ₹{a.order?.total_amount}
+                    <p style={{ color: "#94A3B8", fontSize: "11px", margin: "2px 0 0" }}>
+                      {a.order?.time_slot === "lunch" ? "🌤️ Lunch" : "🌙 Dinner"} · ₹{a.order?.total_amount}
                     </p>
                   </div>
                   <span style={{ display: "inline-block", fontSize: "11px", fontWeight: 700, padding: "4px 12px", borderRadius: "999px", background: "rgba(14,165,233,0.2)", color: "#0EA5E9", textTransform: "capitalize" }}>
@@ -222,15 +221,11 @@ export default function DeliveryDashboard() {
                   {/* ETA */}
                   <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
                     <Clock size={15} style={{ color: "#9CA3AF", flexShrink: 0, marginTop: "7px" }} />
-                    <CustomSelect 
-                      value={a.eta || ""} 
-                      onChange={(val) => handleEtaUpdate(a.id, val)}
-                      options={[
-                        { value: "", label: "Set ETA" },
-                        ...ETA_OPTIONS.map(o => ({ value: o, label: o }))
-                      ]}
-                      style={{ flex: 1 }}
-                    />
+                    <select defaultValue={a.eta || ""} onChange={(e) => handleEtaUpdate(a.id, e.target.value)}
+                      style={{ flex: 1, padding: "8px 12px", borderRadius: "9px", border: "1px solid rgba(212,184,150,0.3)", fontSize: "13px", fontWeight: 700, color: "#1A1A1A", outline: "none", cursor: "pointer" }}>
+                      <option value="">Set ETA</option>
+                      {ETA_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
+                    </select>
                   </div>
 
                   {/* Action button */}
@@ -244,7 +239,7 @@ export default function DeliveryDashboard() {
                         display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
                         opacity: (isActionLoading || isUploading) ? 0.6 : 1,
                       }}>
-                      {isUploading ? <><Upload size={14} /> Uploading proof…</> : isActionLoading ? <><span style={{ display: "inline-block", width: "12px", height: "12px", border: "2px solid rgba(255,255,255,0.4)", borderTopColor: "white", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} /> Updating…</> : transition.label}
+                      {isUploading ? "📤 Uploading proof…" : isActionLoading ? "⏳ Updating…" : transition.label}
                     </button>
                   )}
                 </div>
@@ -257,14 +252,14 @@ export default function DeliveryDashboard() {
       {/* Completed today */}
       {completed.length > 0 && (
         <div>
-          <h2 style={{ fontWeight: 800, fontSize: "16px", color: "#1A1A1A", marginBottom: "12px" }}>Completed Today ({completed.length})</h2>
+          <h2 style={{ fontWeight: 800, fontSize: "16px", color: "#1A1A1A", marginBottom: "12px" }}>✅ Completed Today ({completed.length})</h2>
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
             {completed.map((a) => (
               <div key={a.id} style={{ background: "white", borderRadius: "14px", padding: "14px 16px", border: "1px solid rgba(27,94,48,0.15)", display: "flex", gap: "12px", alignItems: "center" }}>
                 <CheckCircle size={24} style={{ color: "#1B5E30", flexShrink: 0 }} />
                 <div style={{ flex: 1 }}>
                   <p style={{ fontWeight: 700, fontSize: "13px", color: "#1A1A1A", margin: 0 }}>{a.order?.user?.full_name || "—"}</p>
-                  <p style={{ fontSize: "11px", color: "#9CA3AF", margin: "2px 0 0", display: "flex", alignItems: "center", gap: "4px" }}>{a.order?.time_slot === "lunch" ? <><Sun size={10} /> Lunch</> : <><Moon size={10} /> Dinner</>} · ₹{a.order?.total_amount}</p>
+                  <p style={{ fontSize: "11px", color: "#9CA3AF", margin: "2px 0 0" }}>{a.order?.time_slot === "lunch" ? "🌤️ Lunch" : "🌙 Dinner"} · ₹{a.order?.total_amount}</p>
                 </div>
                 {a.proof_image && (
                   <a href={a.proof_image} target="_blank" rel="noreferrer">

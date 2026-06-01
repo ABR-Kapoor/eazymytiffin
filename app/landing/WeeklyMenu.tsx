@@ -11,7 +11,7 @@ const menuData = [
   { day: "Thursday", color: "#D35400", image: "/eazymytiffin-non-veg-meal-plan.png", lunch: { dish: "Baingan Aloo Masala", sides: "Dal + Rice + 4 Roti" }, dinner: { dish: "Aloo Bhujiya Curry", sides: "Rice + 4 Roti" } },
   { day: "Friday", color: "#1B5E30", image: "/eazymytiffin-veg-menu-preview.png", lunch: { dish: "Barbatti Aloo", sides: "Dal + Rice + 4 Roti" }, dinner: { dish: "Tamatar Ki Sabji", sides: "Rice + 4 Roti" } },
   { day: "Saturday", color: "#D35400", image: "/eazymytiffin-mix-menu-preview.png", lunch: { dish: "Kaddu Masala", sides: "Dal + Rice + 4 Roti" }, dinner: { dish: "Soyabean Curry", sides: "Rice + 4 Roti" } },
-  { day: "Sunday", color: "#F5A623", image: "/eazymytiffin-weekly-special-meal.png", special: true, lunch: { dish: "Paneer + Puri + Kheer", sides: "Special Sunday Meal" }, dinner: { dish: "Veg Pulao Special", sides: "Raita + Salad" } },
+  { day: "Sunday ⭐", color: "#F5A623", image: "/eazymytiffin-weekly-special-meal.png", special: true, lunch: { dish: "Paneer + Puri + Kheer", sides: "Special Sunday Meal" }, dinner: { dish: "Veg Pulao Special", sides: "Raita + Salad" } },
 ];
 
 const badges = [
@@ -87,7 +87,7 @@ export default function WeeklyMenu() {
         const bannerImage = lunchCycle?.menus?.image_url || fallbackImages[index];
 
         return {
-          day: dayName,
+          day: isSunday ? "Sunday ⭐" : dayName,
           color: colors[index],
           image: bannerImage,
           special: isSunday,

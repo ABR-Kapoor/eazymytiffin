@@ -51,7 +51,7 @@ const reasons = [
 const stats = [
   { icon: <Users size={20} />, value: "10K+", label: "Happy Families" },
   { icon: <Clock size={20} />, value: "26 Days", label: "Monthly Service" },
-  { icon: <Star size={20} />, value: "4.8", label: "Avg Rating" },
+  { icon: <Star size={20} />, value: "4.8★", label: "Avg Rating" },
   { icon: <Activity size={20} />, value: "99%", label: "On-Time Rate" },
 ];
 

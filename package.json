@@ -11,15 +11,12 @@
   "dependencies": {
     "@clerk/nextjs": "^6.0.0",
     "@supabase/supabase-js": "^2.43.0",
-    "clsx": "^2.1.1",
     "lottie-react": "^2.4.1",
     "lucide-react": "^0.468.0",
-    "maplibre-gl": "^5.24.0",
     "next": "16.2.6",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "svix": "^1.94.0",
-    "tailwind-merge": "^3.6.0",
     "zustand": "^5.0.13"
   },
   "devDependencies": {
