@@ -137,7 +137,7 @@ export default function SignUpPage() {
 
           <div className="max-w-[380px] mx-auto">
           <div className="mb-8 text-center md:text-left">
-            <h1 className="text-2xl text-[#1A1A1A] tracking-tight font-bold leading-tight">Get Started with <br />EazyMy<span className="text-[#E8392A]">Tiffin</span></h1>
+            <h1 className="text-3xl text-[#1A1A1A] tracking-tight font-bold leading-tight">Get Started with <br />EazyMy<span className="text-[#E8392A]">Tiffin</span></h1>
             <p className="text-gray-600 text-sm mt-1">Create your account</p>
           </div>
           <form onSubmit={handleSubmit} className="space-y-3.5">

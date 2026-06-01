@@ -128,11 +128,12 @@ export default function HomePage() {
             {sub ? (
           <div className="animate-fade-up stagger-child card-lift relative overflow-hidden rounded-[32px] p-8 mb-8 text-white shadow-lg" style={{
             background: isPaused
-              ? "linear-gradient(135deg, #B45309, #D97706)"
-              : "linear-gradient(135deg, #E8392A, #B91C1C)",
-            boxShadow: isPaused ? "0 12px 40px rgba(217,119,6,0.3)" : "0 12px 40px rgba(232,57,42,0.3)",
+              ? "linear-gradient(135deg, rgba(180,83,9,0.96), rgba(217,119,6,0.86))"
+              : "linear-gradient(135deg, rgba(232,57,42,0.96), rgba(185,28,28,0.86))",
+            border: isPaused ? "1px solid rgba(245,158,11,0.28)" : "1px solid rgba(248,113,113,0.25)",
+            boxShadow: isPaused ? "0 12px 40px rgba(217,119,6,0.22)" : "0 12px 40px rgba(232,57,42,0.22)",
           }}>
-            <div className="absolute -right-5 -top-5 w-[160px] h-[160px] rounded-full bg-white/10 pointer-events-none mix-blend-overlay blur-md" />
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white/65 to-transparent opacity-50 pointer-events-none rounded-bl-full" />
             <div className="relative z-10">
               <div className="inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-md rounded-full px-3 py-1 mb-4 border border-white/20">
                 <div className={`w-1.5 h-1.5 rounded-full ${isPaused ? "bg-[#FCD34D]" : "bg-[#86EFAC] shadow-[0_0_8px_#86EFAC]"}`} />
@@ -277,7 +278,6 @@ export default function HomePage() {
               { href: "/food", icon: <UtensilsCrossed size={20} />, label: "Order Food", sub: "Browse today's menu", color: "#E8392A", bg: "rgba(232,57,42,0.08)", border: "rgba(232,57,42,0.2)" },
               { href: "/orders", icon: <Truck size={20} />, label: "Track Order", sub: pendingCount > 0 ? `${pendingCount} active` : "View history", color: "#1B5E30", bg: "rgba(27,94,48,0.08)", border: "rgba(27,94,48,0.2)" },
               { href: "/subscription", icon: <Calendar size={20} />, label: "Tiffin Plans", sub: "Manage subscription", color: "#F5A623", bg: "rgba(245,166,35,0.08)", border: "rgba(245,166,35,0.2)" },
-              { href: "https://wa.me/919770144899", icon: <MessageCircle size={20} />, label: "WhatsApp Us", sub: "Quick support", color: "#25D366", bg: "rgba(37,211,102,0.08)", border: "rgba(37,211,102,0.2)" },
             ].map((action) => (
               <a key={action.label} href={action.href} className="card-lift flex items-center p-4 rounded-2xl no-underline shadow-sm relative overflow-hidden group" style={{ background: `linear-gradient(135deg, ${action.color}12, ${action.color}03)`, border: `1px solid ${action.color}25` }}>
                 <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-white to-transparent opacity-50 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform duration-500" />
