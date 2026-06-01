@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, forwardRef, useImperativeHandle } from "react";
 import { Bell, Check, CheckCheck } from "lucide-react";
 import { useNotificationStore } from "@/store/notificationStore";
 
@@ -18,10 +18,12 @@ const typeIcons: Record<string, string> = {
   system: "🔔",
 };
 
-export function NotificationBell({ compact }: { compact?: boolean }) {
+export const NotificationBell = forwardRef<{ toggle: () => void }, { compact?: boolean }>(({ compact }, ref) => {
   const [open, setOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
   const { notifications, unreadCount, markRead, markAllRead } = useNotificationStore();
+
+  useImperativeHandle(ref, () => ({ toggle: handleOpen }));
 
   // Close on outside click
   useEffect(() => {
@@ -255,4 +257,4 @@ export function NotificationBell({ compact }: { compact?: boolean }) {
       )}
     </div>
   );
-}
+});
