@@ -189,13 +189,15 @@ export default function SubscriptionPage() {
             )}
           </div>
           <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-4">
-            {(displayPlans as any[]).map((plan) => {
+            {(displayPlans as any[]).map((plan, idx) => {
+              const isFirst = idx === 0;
+              const cat = isFirst ? "featured" : plan.category;
               const isCurrentPlan = sub?.plan_id === plan.id;
               const isProcessing = processingPlanId === plan.id;
               return (
-                <div key={plan.id} className={`card-lift rounded-[20px] overflow-hidden relative shadow-sm transition-all group ${isCurrentPlan ? "border-2 shadow-[0_8px_32px_rgba(232,57,42,0.15)]" : "border"}`} style={{ background: plan.category === "veg" ? "linear-gradient(135deg, #1B5E3012, #1B5E3003)" : "linear-gradient(135deg, #E8392A12, #E8392A03)", borderColor: isCurrentPlan ? (plan.category === "veg" ? "#1B5E30" : "#E8392A") : (plan.category === "veg" ? "#1B5E3025" : "#E8392A25") }}>
+                <div key={plan.id} className={`card-lift rounded-[20px] overflow-hidden relative shadow-sm transition-all group ${isCurrentPlan ? "border-2 shadow-[0_8px_32px_rgba(232,57,42,0.15)]" : "border"}`} style={{ background: cat === "veg" ? "linear-gradient(135deg, #1B5E3012, #1B5E3003)" : cat === "featured" ? "linear-gradient(135deg, #6366F115, #6366F105)" : "linear-gradient(135deg, #E8392A12, #E8392A03)", borderColor: isCurrentPlan ? (cat === "veg" ? "#1B5E30" : cat === "featured" ? "#6366F1" : "#E8392A") : (cat === "veg" ? "#1B5E3025" : cat === "featured" ? "#6366F125" : "#E8392A25") }}>
                   <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white to-transparent opacity-50 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform duration-500 z-0" />
-                  <div className={`absolute top-0 left-0 text-[10px] font-extrabold px-3 py-1.5 rounded-br-xl uppercase tracking-[1px] flex items-center gap-1 z-10 ${plan.category === "veg" ? "bg-[#1B5E30]/10 text-[#1B5E30]" : "bg-[#E8392A]/10 text-[#E8392A]"}`}>
+                  <div className={`absolute top-0 left-0 text-[10px] font-extrabold px-3 py-1.5 rounded-br-xl uppercase tracking-[1px] flex items-center gap-1 z-10 ${cat === "veg" ? "bg-[#1B5E30]/10 text-[#1B5E30]" : cat === "featured" ? "bg-[#6366F1]/10 text-[#6366F1]" : "bg-[#E8392A]/10 text-[#E8392A]"}`}>
                     {plan.category === "veg" ? <Leaf size={12} /> : <Drumstick size={12} />}
                     {plan.category === "veg" ? "Veg Plan" : "Non-Veg Plan"}
                   </div>

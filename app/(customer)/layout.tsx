@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { MessageCircle } from "lucide-react";
 import { useUserStore } from "@/store/userStore";
@@ -11,6 +11,7 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
   const user = useUserStore((s) => s.user);
   const isAdmin = useUserStore((s) => s.isAdmin)();
   const [mounted, setMounted] = useState(false);
+  const notifRef = useRef<{ toggle: () => void }>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -52,8 +53,8 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
             <MessageCircle size={14} />
             WhatsApp
           </a>
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold transition-all hover:scale-105" style={{ background: "#F1F5F9", color: "#374151" }}>
-            <NotificationBell compact />
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold transition-all hover:scale-105 cursor-pointer" style={{ background: "#F1F5F9", color: "#374151" }} onClick={() => notifRef.current?.toggle()}>
+            <NotificationBell compact ref={notifRef} />
             <span>Notifications</span>
           </div>
           <Link href="/profile" className="no-underline">
