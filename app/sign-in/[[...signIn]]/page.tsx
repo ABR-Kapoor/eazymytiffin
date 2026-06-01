@@ -105,8 +105,8 @@ export default function SignInPage() {
     try {
       await signIn.authenticateWithRedirect({
         strategy: "oauth_google",
-        forceRedirectUrl: "/sso-callback",
-        fallbackRedirectUrl: "/home",
+        redirectUrl: "/sso-callback",
+        redirectUrlComplete: "/home",
       });
     } catch (err: any) {
       setError(err.errors?.[0]?.message || "Google sign-in failed");
