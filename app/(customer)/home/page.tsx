@@ -126,7 +126,7 @@ export default function HomePage() {
           <div className="flex-1 min-w-0">
             {/* Active Subscription Card */}
             {sub ? (
-          <div className="animate-fade-up stagger-child card-lift relative overflow-hidden rounded-[32px] p-8 mb-8 text-white shadow-lg" style={{
+          <div className="animate-fade-up stagger-child card-lift relative overflow-hidden rounded-[32px] p-6 md:p-8 mb-8 text-white shadow-lg" style={{
             background: isPaused
               ? "linear-gradient(135deg, rgba(180,83,9,0.96), rgba(217,119,6,0.86))"
               : "linear-gradient(135deg, rgba(232,57,42,0.96), rgba(185,28,28,0.86))",
@@ -172,7 +172,7 @@ export default function HomePage() {
             </div>
           </div>
         ) : (
-          <div className="animate-fade-up stagger-child bg-white rounded-[32px] p-10 mb-8 text-center border border-[rgba(212,184,150,0.3)] shadow-sm relative overflow-hidden group/card">
+          <div className="animate-fade-up stagger-child bg-white rounded-[32px] p-6 md:p-10 mb-8 text-center border border-[rgba(212,184,150,0.3)] shadow-sm relative overflow-hidden group/card">
             <div className="absolute inset-0 bg-gradient-to-br from-[#E8392A]/5 to-transparent pointer-events-none" />
             <div className="mb-4 text-[#E8392A]/60 flex justify-center group-hover/card:scale-110 transition-transform duration-500">
               <div className="w-20 h-20 bg-[#E8392A]/10 rounded-full flex items-center justify-center">
@@ -193,7 +193,7 @@ export default function HomePage() {
         {activeOrder && (
           <div className="animate-fade-up stagger-child card-lift rounded-[24px] p-5 mb-8 text-white relative overflow-hidden shadow-lg" style={{ background: "linear-gradient(135deg, #1B5E30, #2D7A3A)" }}>
             <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-bl-full pointer-events-none blur-sm" />
-            <div className="flex items-center gap-4 relative z-10">
+            <div className="flex flex-col sm:flex-row sm:items-center items-start gap-4 relative z-10">
               <div className="w-12 h-12 rounded-[16px] bg-white/20 flex items-center justify-center shrink-0 border border-white/10 shadow-[0_0_15px_rgba(255,255,255,0.2)]">
                 <Truck size={24} className="text-white drop-shadow-md animate-pulse" />
               </div>
@@ -201,7 +201,7 @@ export default function HomePage() {
                 <p className="font-extrabold text-[15px] m-0 flex items-center gap-1.5"><Bike size={16} className="text-[#86EFAC]" /> Order On the Way!</p>
                 <p className="opacity-90 text-[12px] font-medium mt-0.5 m-0">Status: <span className="capitalize font-bold text-[#86EFAC]">{activeOrder.status.replace(/_/g, " ")}</span></p>
               </div>
-              <Link href="/orders" className="bg-white text-[#1B5E30] rounded-xl px-4 py-2 text-[13px] font-extrabold no-underline shadow-md hover:bg-[#F0FDF4] hover:scale-105 transition-all flex items-center gap-1.5 border border-transparent">
+              <Link href="/orders" className="bg-white text-[#1B5E30] rounded-xl px-4 py-2 text-[13px] font-extrabold no-underline shadow-md hover:bg-[#F0FDF4] hover:scale-105 transition-all flex items-center justify-center gap-1.5 border border-transparent w-full sm:w-auto">
                 Track <ArrowRight size={14} />
               </Link>
             </div>
@@ -209,17 +209,17 @@ export default function HomePage() {
         )}
 
         {/* Stats */}
-        <div className="animate-fade-up stagger-child grid grid-cols-3 gap-3 mb-8">
+        <div className="animate-fade-up stagger-child grid grid-cols-3 gap-2 md:gap-3 mb-8">
           {[
             { label: "Days Left", value: sub?.remaining_days ?? "—", icon: <Calendar size={18} />, color: "#E8392A", bg: "rgba(232,57,42,0.08)" },
             { label: "Total Orders", value: orders.length, icon: <ShoppingBag size={18} />, color: "#1B5E30", bg: "rgba(27,94,48,0.08)" },
             { label: "In Progress", value: pendingCount, icon: <Clock size={18} />, color: "#F5A623", bg: "rgba(245,166,35,0.08)" },
           ].map((s) => (
-            <div key={s.label} className="card-lift rounded-2xl p-4 text-center shadow-sm relative overflow-hidden group" style={{ background: `linear-gradient(135deg, ${s.color}12, ${s.color}03)`, border: `1px solid ${s.color}25` }}>
+            <div key={s.label} className="card-lift rounded-2xl p-3 sm:p-4 text-center shadow-sm relative overflow-hidden group" style={{ background: `linear-gradient(135deg, ${s.color}12, ${s.color}03)`, border: `1px solid ${s.color}25` }}>
               <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-white to-transparent opacity-50 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform duration-500" />
-              <div className="w-10 h-10 rounded-[10px] flex items-center justify-center mx-auto mb-3" style={{ background: s.bg, color: s.color }}>{s.icon}</div>
-              <p className="text-xl font-bold text-[#1A1A1A] leading-none m-0">{s.value}</p>
-              <p className="text-[11px] text-[#9CA3AF] font-bold mt-1.5 m-0 uppercase tracking-wide">{s.label}</p>
+              <div className="w-8 h-8 md:w-10 md:h-10 rounded-[10px] flex items-center justify-center mx-auto mb-2 md:mb-3" style={{ background: s.bg, color: s.color }}>{s.icon}</div>
+              <p className="text-lg md:text-xl font-bold text-[#1A1A1A] leading-none m-0">{s.value}</p>
+              <p className="text-[10px] md:text-[11px] text-[#9CA3AF] font-bold mt-1.5 m-0 uppercase tracking-wide">{s.label}</p>
             </div>
           ))}
         </div>
@@ -231,7 +231,7 @@ export default function HomePage() {
               <h2 className="font-extrabold text-[18px] text-[#1A1A1A] tracking-tight flex items-center gap-1.5 m-0"><Utensils size={18} className="text-[#1A1A1A]" /> Today's Menu</h2>
               <Link href="/food" className="text-[#E8392A] text-[13px] font-bold no-underline flex items-center gap-1 hover:text-[#B91C1C] transition-colors">Order Food <ArrowRight size={13} /></Link>
             </div>
-            <div className={`grid gap-4 ${todayMenu.lunch && todayMenu.dinner ? "grid-cols-2" : "grid-cols-1"}`}>
+            <div className={`grid gap-4 ${todayMenu.lunch && todayMenu.dinner ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1"}`}>
               {todayMenu.lunch && (
                 <div className="rounded-2xl overflow-hidden shadow-sm relative group" style={{ background: `linear-gradient(135deg, #F5A62312, #F5A62303)`, border: `1px solid #F5A62325` }}>
                   <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-white to-transparent opacity-50 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform duration-500 z-10" />

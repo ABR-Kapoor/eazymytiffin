@@ -151,10 +151,10 @@ export default function Footer() {
 
         {/* Bottom Bar */}
         <div className="pt-12 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-6">
-          <p className="text-[13px] text-slate-500 font-medium">
+          <p className="text-[13px] text-slate-500 font-medium text-center md:text-left">
             © 2025 EazyMyTiffin. Premium Tiffin Service.
           </p>
-          <div className="flex items-center gap-8 text-[13px] text-slate-500 font-medium">
+          <div className="flex flex-wrap justify-center items-center gap-x-8 gap-y-4 text-[13px] text-slate-500 font-medium">
             <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
             <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
             <span className="flex items-center gap-2">

@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
-import { MessageCircle } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { MessageCircle, Shield } from "lucide-react";
 import { useUserStore } from "@/store/userStore";
 import { NotificationBell } from "@/components/NotificationBell";
 import { BottomNav } from "@/components/BottomNav";
@@ -12,6 +13,7 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
   const isAdmin = useUserStore((s) => s.isAdmin)();
   const [mounted, setMounted] = useState(false);
   const notifRef = useRef<{ toggle: () => void }>(null);
+  const pathname = usePathname();
 
   useEffect(() => {
     setMounted(true);
@@ -36,33 +38,34 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
             India&apos;s Premium Tiffin Brand
           </span>
         </Link>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 md:gap-3">
           {isAdmin && (
-            <Link href="/admin" className="text-[11px] font-bold px-3 py-1.5 rounded-full no-underline transition-all hover:scale-105" style={{ background: "#FEF3C7", color: "#92400E" }}>
-              Admin
+            <Link href="/admin" title="Admin" className="flex items-center justify-center gap-1.5 no-underline p-2.5 md:px-4 md:py-2 rounded-full transition-all hover:scale-105 shrink-0 text-[12px] font-bold" style={{ background: "#FEF3C7", color: "#92400E" }}>
+              <Shield size={16} /> <span className="hidden md:block">Admin</span>
             </Link>
           )}
           <a
             href="https://wa.me/919770144899"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 no-underline px-3 py-1.5 rounded-full text-[11px] font-bold transition-all hover:scale-105"
+            title="WhatsApp Us"
+            className="flex items-center justify-center gap-1.5 no-underline p-2.5 md:px-4 md:py-2 rounded-full text-[12px] font-bold transition-all hover:scale-105 shrink-0"
             style={{ background: "#DCFCE7", color: "#166534" }}
             aria-label="WhatsApp us"
           >
-            <MessageCircle size={14} />
-            WhatsApp
+            <MessageCircle size={16} />
+            <span className="hidden md:block">WhatsApp</span>
           </a>
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold transition-all hover:scale-105 cursor-pointer" style={{ background: "#F1F5F9", color: "#374151" }} onClick={() => notifRef.current?.toggle()}>
+          <div title="Notifications" className="flex items-center justify-center gap-1.5 p-2.5 md:px-4 md:py-2 rounded-full text-[12px] font-bold transition-all hover:scale-105 cursor-pointer shrink-0" style={{ background: "#F1F5F9", color: "#374151" }} onClick={() => notifRef.current?.toggle()}>
             <NotificationBell compact ref={notifRef} />
-            <span>Notifications</span>
+            <span className="hidden md:block">Notifications</span>
           </div>
-          <Link href="/profile" className="no-underline">
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold transition-all hover:scale-105" style={{ background: "#FEF2F2", color: "#374151" }}>
-              <div className="w-[20px] h-[20px] rounded-full bg-gradient-to-br from-[#E8392A] to-[#B91C1C] flex items-center justify-center text-white font-extrabold text-[10px]">
+          <Link href="/profile" title="Profile" className="no-underline shrink-0 hidden lg:block">
+            <div className="flex items-center justify-center gap-2 p-1.5 md:px-4 md:py-1.5 rounded-full text-[12px] font-bold transition-all hover:scale-105" style={{ background: "#FEF2F2", color: "#374151" }}>
+              <div className="w-6 h-6 min-w-[24px] min-h-[24px] rounded-full bg-gradient-to-br from-[#E8392A] to-[#B91C1C] flex items-center justify-center text-white font-extrabold text-[12px] shrink-0">
                 {user?.full_name?.charAt(0)?.toUpperCase() || "U"}
               </div>
-              <span>Profile</span>
+              <span className="hidden md:block">Profile</span>
             </div>
           </Link>
         </div>

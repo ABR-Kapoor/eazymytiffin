@@ -22,9 +22,10 @@ export function BottomNav() {
       {/* Spacer so content doesn't hide behind the nav */}
       <div className="h-20" />
 
-      <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pointer-events-none px-2 pb-2 md:px-4 md:pb-4">
+      <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pointer-events-none md:px-4">
         <nav
-          className="w-full max-w-[960px] flex justify-around items-center pointer-events-auto bg-white/90 backdrop-blur-xl border border-[#D4B896]/30 shadow-[0_8px_32px_rgba(61,31,10,0.12)] pb-[max(16px,env(safe-area-inset-bottom))] pt-4 px-2 rounded-2xl"
+          className="w-full max-w-[960px] flex justify-around items-center pointer-events-auto bg-white border-t md:border border-[#D4B896]/20 shadow-[0_-4px_24px_rgba(61,31,10,0.04)] md:shadow-[0_8px_32px_rgba(61,31,10,0.12)] pb-[max(16px,env(safe-area-inset-bottom))] pt-4 md:pt-4 px-2 overflow-hidden"
+          style={{ borderTopLeftRadius: '24px', borderTopRightRadius: '24px' }}
         >
           {navItems.map(({ href, label, icon: Icon }) => {
             const isActive = pathname === href || pathname.startsWith(href + "/");

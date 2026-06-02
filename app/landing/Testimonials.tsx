@@ -116,7 +116,7 @@ export default function Testimonials() {
           {visibleItems.map((t, i) => (
             <div
               key={`${t.author}-${i}`}
-              className="btn-glare group relative flex flex-col p-8 rounded-[32px] border-2 bg-white transition-all duration-500 cursor-default h-full"
+              className={`btn-glare group relative flex-col p-8 rounded-[32px] border-2 bg-white transition-all duration-500 cursor-default h-full ${i > 0 ? "hidden md:flex" : "flex"}`}
               style={{ 
                 borderColor: "#E8392A",
               }}
@@ -142,7 +142,7 @@ export default function Testimonials() {
               </p>
 
               <div className="pt-6 border-t border-slate-100 flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-[14px] font-bold text-white shadow-lg"
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-[14px] font-bold text-white shadow-lg shrink-0"
                   style={{ background: `linear-gradient(135deg, ${t.color}, ${t.color}cc)` }}>
                   {t.initials}
                 </div>
