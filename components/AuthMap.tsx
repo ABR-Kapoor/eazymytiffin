@@ -51,7 +51,7 @@ export default function AuthMap({ testimonials }: { testimonials: Testimonial[] 
   }, [testimonials.length]);
 
   return (
-    <div className="hidden md:flex md:w-[65%] relative overflow-hidden bg-black" style={{ minHeight: "100vh" }}>
+    <div className="w-full h-full relative overflow-hidden bg-black flex flex-1" style={{ minHeight: "100vh" }}>
       <Map
         ref={mapRef}
         className="absolute inset-0"

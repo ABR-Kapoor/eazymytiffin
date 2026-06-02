@@ -50,15 +50,7 @@ export default function RootLayout({
           spacingUnit: "8px",
           borderRadius: "8px",
         },
-        elements: {
-          formButtonPrimary: "bg-[#E8392A] hover:bg-red-700 text-white",
-          card: "bg-white border border-[#D4B896]/20",
-          headerTitle: "text-[#1A1A1A] font-800",
-          headerSubtitle: "text-gray-600",
-          socialButtonsBlockButton: "border-[#D4B896]/20 hover:bg-[#F8FAFC]",
-          dividerLine: "bg-[#D4B896]/20",
-          footerActionLink: "text-[#E8392A] hover:text-red-700",
-        },
+
       }}
     >
       <html lang="en" className={`${montserrat.variable} h-full`} suppressHydrationWarning>
