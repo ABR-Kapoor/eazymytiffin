@@ -196,15 +196,15 @@ export default function OrdersPage() {
         {/* Tabs */}
         <div className="animate-fade-up stagger-child flex gap-1 bg-white rounded-2xl p-1 mb-5 border border-[#D4B896]/15 shadow-sm">
           {[
-            { key: "orders", label: "Food Orders", icon: <Utensils size={14} /> },
-            { key: "subs", label: "Subscription History", icon: <ClipboardList size={14} /> },
+            { key: "orders", label: "Food Orders", icon: <Utensils size={14} className="shrink-0" /> },
+            { key: "subs", label: "Subscriptions", icon: <ClipboardList size={14} className="shrink-0" /> },
           ].map((t) => (
             <button
               key={t.key}
               onClick={() => setTab(t.key as any)}
-              className={`flex-1 py-2.5 px-3 rounded-xl border-none font-bold text-[13px] cursor-pointer transition-all flex items-center justify-center gap-1.5 ${tab === t.key ? "bg-[#E8392A]/10 text-[#E8392A]" : "bg-transparent text-[#6B7280] hover:bg-gray-50"}`}
+              className={`flex-1 py-2.5 px-2 rounded-xl border-none font-bold text-[12px] sm:text-[13px] cursor-pointer transition-all flex items-center justify-center gap-1.5 whitespace-nowrap overflow-hidden ${tab === t.key ? "bg-[#E8392A]/10 text-[#E8392A]" : "bg-transparent text-[#6B7280] hover:bg-gray-50"}`}
             >
-              {t.icon} {t.label}
+              {t.icon} <span className="truncate">{t.label}</span>
             </button>
           ))}
         </div>

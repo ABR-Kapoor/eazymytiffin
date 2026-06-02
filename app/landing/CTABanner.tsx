@@ -37,14 +37,14 @@ export default function CTABanner() {
             </p>
 
             {/* Action Buttons */}
-            <div className="flex flex-wrap gap-4 mb-8">
+            <div className="flex flex-wrap gap-3 md:gap-4 mb-8">
               <a
                 href="tel:9770144899"
                 onMouseEnter={() => setHovered("phone")}
                 onMouseLeave={() => setHovered(null)}
-                className="btn-glare flex items-center gap-2.5 px-5 py-2.5 bg-[#E8392A] text-white rounded-[16px] font-bold uppercase tracking-[1.5px] text-[12px] shadow-lg shadow-red-500/20 hover:scale-105 transition-all"
+                className="btn-glare flex items-center gap-2 px-5 py-2.5 md:px-6 md:py-2 bg-[#E8392A] text-white rounded-full font-bold uppercase tracking-[1.2px] text-[12px] md:text-[13px] shadow-lg shadow-red-500/20 transition-all duration-200 hover:-translate-y-0.5"
               >
-                <Phone size={16} className={hovered === "phone" ? "animate-bounce" : ""} />
+                <Phone size={14} className={`md:w-4 md:h-4 ${hovered === "phone" ? "animate-bounce" : ""}`} />
                 Call 9770144899
               </a>
               
@@ -52,10 +52,10 @@ export default function CTABanner() {
                 href="https://wa.me/919770144899"
                 onMouseEnter={() => setHovered("wa")}
                 onMouseLeave={() => setHovered(null)}
-                className="btn-glare flex items-center gap-3 px-5 py-2.5 bg-white border-2 border-[#25D366] text-[#25D366] rounded-[16px] font-bold uppercase tracking-[1.5px] text-[12px] hover:bg-[#25D366]/5 transition-all"
+                className="btn-glare flex items-center gap-2 px-5 py-2.5 md:px-6 md:py-2 bg-white border-[1.5px] border-[#25D366] text-[#25D366] hover:bg-[#25D366] hover:text-white rounded-full font-bold uppercase tracking-[1.2px] text-[12px] md:text-[13px] transition-all duration-200 hover:-translate-y-0.5 group"
               >
-                <div className="w-6 h-6 rounded-full bg-[#25D366] flex items-center justify-center shadow-md">
-                  <svg viewBox="0 0 24 24" fill="white" className="w-3.5 h-3.5">
+                <div className="w-4 h-4 md:w-5 md:h-5 rounded-full bg-[#25D366] flex items-center justify-center shadow-md group-hover:bg-white transition-colors shrink-0">
+                  <svg viewBox="0 0 24 24" className="w-2.5 h-2.5 md:w-3 md:h-3 fill-white group-hover:fill-[#25D366] transition-colors">
                     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347zM12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.978-1.306A9.953 9.953 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2z" />
                   </svg>
                 </div>

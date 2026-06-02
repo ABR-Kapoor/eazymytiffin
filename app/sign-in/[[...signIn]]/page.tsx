@@ -116,7 +116,7 @@ export default function SignInPage() {
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
 
-      <div className="w-full md:w-[35%] flex items-center justify-center bg-white p-6">
+      <div className="flex-1 w-full md:flex-none md:w-[35%] flex items-center justify-center bg-white p-6">
         <div className="w-full max-w-md">
           <div className="max-w-[380px] mx-auto">
           <div className="mb-8 text-center md:text-left">
