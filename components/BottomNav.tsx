@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Calendar, UtensilsCrossed, Package } from "lucide-react";
+import { Home, Calendar, UtensilsCrossed, Package, Bike } from "lucide-react";
 import { useNotificationStore } from "@/store/notificationStore";
 import { useThemeStore } from "@/store/themeStore";
+import { useUserStore } from "@/store/userStore";
 
-const navItems = [
+const baseNavItems = [
   { href: "/home", label: "Home", icon: Home },
   { href: "/subscription", label: "Tiffin", icon: Calendar },
   { href: "/food", label: "Food", icon: UtensilsCrossed },
@@ -17,8 +18,14 @@ export function BottomNav() {
   const pathname = usePathname();
   const unreadCount = useNotificationStore((s) => s.unreadCount());
   const isVegTheme = useThemeStore((s) => s.isVegTheme);
+  const isDeliveryBoy = useUserStore((s) => s.isDeliveryBoy)();
+
+  const navItems = isDeliveryBoy
+    ? [...baseNavItems, { href: "/home/delivery", label: "Delivery", icon: Bike }]
+    : baseNavItems;
 
   const pageColor = (() => {
+    if (pathname.startsWith("/home/delivery")) return { bg: "bg-[#22C55E]", shadow: "shadow-[0_-4px_24px_rgba(34,197,94,0.35)]", ring: "ring-[#22C55E]", text: "text-[#22C55E]" };
     if (pathname.startsWith("/food")) return { bg: "bg-[#FC8019]", shadow: "shadow-[0_-4px_24px_rgba(252,128,25,0.3)]", ring: "ring-[#FC8019]", text: "text-[#FC8019]" };
     if (pathname.startsWith("/orders")) return { bg: "bg-[#2563EB]", shadow: "shadow-[0_-4px_24px_rgba(37,99,235,0.3)]", ring: "ring-[#2563EB]", text: "text-[#2563EB]" };
     if (pathname.startsWith("/subscription")) return { bg: "bg-[#7C3AED]", shadow: "shadow-[0_-4px_24px_rgba(124,58,237,0.3)]", ring: "ring-[#7C3AED]", text: "text-[#7C3AED]" };

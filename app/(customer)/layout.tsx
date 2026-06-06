@@ -58,9 +58,10 @@ export default function CustomerLayout({
   if (!mounted) return null;
 
   const isHome = pathname === "/home";
-  const hasFullHero = ["/food", "/orders", "/subscription", "/profile"].some(p => pathname.startsWith(p));
+  const hasFullHero = ["/food", "/orders", "/subscription", "/profile", "/home/delivery"].some(p => pathname.startsWith(p));
 
   const themeBgColor = (() => {
+    if (pathname.startsWith("/home/delivery")) return "bg-[#22C55E]";
     if (pathname.startsWith("/food")) return "bg-[#FC8019]";
     if (pathname.startsWith("/orders")) return "bg-[#2563EB]";
     if (pathname.startsWith("/subscription")) return "bg-[#7C3AED]";

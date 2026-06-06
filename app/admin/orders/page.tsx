@@ -85,9 +85,17 @@ export default function AdminOrdersPage() {
   };
 
   const handleAssignDelivery = async (orderId: string, boyId: string) => {
-    const { error } = await supabase.from("food_orders").update({ assigned_delivery_boy: boyId }).eq("id", orderId);
-    if (!error) showToast("Delivery boy assigned successfully!");
-    else showToast("Failed", "error");
+    const { error } = await supabase.from("food_orders").update({ assigned_delivery_boy: boyId || null, status: boyId ? "assigned" : "preparing" }).eq("id", orderId);
+    if (!error) {
+      if (boyId) {
+        // Always ensure a delivery_assignments row exists so the delivery boy sees this order
+        await supabase.from("delivery_assignments").upsert(
+          [{ order_id: orderId, delivery_boy_id: boyId, status: "assigned" }],
+          { onConflict: "order_id" }
+        );
+      }
+      showToast(boyId ? "Delivery boy assigned successfully!" : "Assignment cleared");
+    } else showToast("Failed", "error");
   };
 
   const handleVerifyCOD = async (orderId: string) => {
@@ -212,7 +220,7 @@ export default function AdminOrdersPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="inline-flex flex-col gap-0.5">
-                          <span className="text-[10px] font-extrabold uppercase tracking-wider rounded-md px-2 py-0.5 w-fit" style={{ background: pc.bg, color: pc.text }}>
+                          <span className="text-[10px] font-extrabold capitalize tracking-wide rounded-md px-2 py-0.5 w-fit" style={{ background: pc.bg, color: pc.text }}>
                             {order.payment_method === "cod" ? "COD" : "PhonePe"}
                           </span>
                           <span className="text-[11px] font-semibold text-[#6B7280] ml-0.5">{order.payment_status}</span>
