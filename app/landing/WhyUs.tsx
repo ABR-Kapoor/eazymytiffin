@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { CheckCircle2, ShieldCheck, Clock, Utensils, Home, Settings2, Users, Star, PieChart, Activity } from "lucide-react";
 
 const reasons = [
@@ -80,7 +81,7 @@ export default function WhyUs() {
             <div className="flex -space-x-3">
               {[1, 2, 3, 4].map((i) => (
                 <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-slate-200 overflow-hidden shadow-sm">
-                  <img src={`https://i.pravatar.cc/100?u=${i}`} alt="User" />
+                  <Image src={`https://i.pravatar.cc/100?u=${i}`} alt="User" width={40} height={40} />
                 </div>
               ))}
             </div>
@@ -126,10 +127,11 @@ export default function WhyUs() {
               >
                 {/* Visual Banner */}
                 <div className="relative h-[160px] overflow-hidden">
-                  <img 
+                  <Image 
                     src={r.image} 
                     alt={r.title} 
-                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                    fill
+                    className="object-cover transition-transform duration-1000 group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                   
@@ -168,10 +170,11 @@ export default function WhyUs() {
               >
                 {/* Visual Banner */}
                 <div className="relative h-[180px] overflow-hidden">
-                  <img 
+                  <Image 
                     src={r.image} 
                     alt={r.title} 
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                   

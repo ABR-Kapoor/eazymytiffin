@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { ArrowUpRight } from "lucide-react";
 
 export default function Hero() {
@@ -9,10 +10,12 @@ export default function Hero() {
     >
       {/* Hero Banner Background - Full Width with Internal Padding in Image */}
       <div className="absolute inset-0 z-0 overflow-hidden w-full h-full pointer-events-none">
-        <img
+        <Image
           src="/eazymytiffin-hero-premium-tiffin.png"
           alt="Premium Tiffin Banner"
-          className="w-full h-full object-cover object-center"
+          fill
+          priority
+          className="object-cover object-center"
         />
         {/* Cinematic side-gradient for maximum text readability */}
         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/20 to-transparent" />

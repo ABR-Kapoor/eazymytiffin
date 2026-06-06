@@ -1,7 +1,8 @@
 "use client";
 
 import { SignUp } from "@clerk/nextjs";
-import AuthMap from "@/components/AuthMap";
+import dynamic from "next/dynamic";
+const AuthMap = dynamic(() => import("@/components/AuthMap"), { ssr: false });
 
 const TESTIMONIALS = [
   {
@@ -77,7 +78,6 @@ export default function SignUpPage() {
               routing="path" 
               signInUrl="/sign-in" 
               appearance={{
-                theme: 'simple',
                 variables: {
                   colorBackground: 'white',
                 }

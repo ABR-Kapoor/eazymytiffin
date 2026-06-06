@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { Phone, MessageSquare, CheckCircle2 } from "lucide-react";
 
 export default function CTABanner() {
@@ -11,10 +12,11 @@ export default function CTABanner() {
       <section id="contact" className="mx-auto -mt-32 py-10 bg-white relative overflow-hidden rounded-[48px] border border-slate-200 shadow-2xl shadow-slate-900/10 z-20" style={{ maxWidth: "var(--max-width)", width: "calc(100% - 48px)" }}>
         {/* Cinematic Background Element */}
         <div className="absolute top-0 right-0 w-full md:w-1/2 h-full pointer-events-none hidden lg:block">
-          <img 
+          <Image 
             src="/eazymytiffin-veg-meal-plan.png" 
             alt="Premium Food" 
-            className="w-full h-full object-contain object-right"
+            fill
+            className="object-contain object-right"
           />
           <div className="absolute inset-0 bg-gradient-to-l from-transparent via-white/20 via-white/80 to-white" />
         </div>

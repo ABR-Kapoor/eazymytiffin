@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { ArrowUpRight, Menu, X } from "lucide-react";
 import { useAuth, useUser } from "@clerk/nextjs";
+import Link from "next/link";
 
 const navLinks = [
   { label: "Home", href: "#home" },
@@ -179,34 +180,34 @@ export default function Navbar() {
               Book Now <ArrowUpRight size={16} strokeWidth={3} />
             </a>
             {!isSignedIn && (
-              <a
+              <Link
                 href="/sign-in"
                 className="w-full md:hidden flex items-center justify-center py-2.5 border-[1.5px] border-[#E8392A] text-[#E8392A] rounded-full text-[13px] font-bold uppercase tracking-[1.2px]"
                 onClick={() => setMenuOpen(false)}
               >
                 Login
-              </a>
+              </Link>
             )}
             {isSignedIn && (
-              <a
+              <Link
                 href="/home"
                 className="w-full md:hidden flex items-center justify-center py-2.5 border-[1.5px] border-[#5A4A3A] text-[#5A4A3A] rounded-full text-[13px] font-bold uppercase tracking-[1.2px]"
                 onClick={() => setMenuOpen(false)}
               >
                 Dashboard
-              </a>
+              </Link>
             )}
           </div>
           {/* Admin panel link kept in drawer for mobile if signed in as admin */}
           {isSignedIn && isAdmin && (
             <div className="mt-2 flex flex-col gap-3">
-              <a
+              <Link
                 href="/admin"
                 className="w-full flex items-center justify-center py-2.5 bg-[#E8392A] text-white rounded-full text-[13px] font-bold uppercase tracking-[1.2px]"
                 onClick={() => setMenuOpen(false)}
               >
                 Admin Panel
-              </a>
+              </Link>
             </div>
           )}
         </div>

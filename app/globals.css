@@ -24,6 +24,16 @@
   --shadow-sm: 0 2px 4px rgba(0,0,0,0.02), 0 4px 12px rgba(0,0,0,0.04);
   --shadow-md: 0 4px 8px rgba(0,0,0,0.04), 0 12px 32px rgba(0,0,0,0.08);
   --shadow-lg: 0 8px 16px rgba(0,0,0,0.06), 0 24px 64px rgba(0,0,0,0.12);
+  --shadow-card: 0 2px 8px rgba(0,0,0,0.08);
+  --shadow-sticky: 0 2px 12px rgba(0,0,0,0.12);
+  --shadow-modal: 0 8px 32px rgba(0,0,0,0.2);
+  --color-primary: #FC8019;
+  --color-primary-dark: #E06A10;
+  --color-primary-light: #FFF3E8;
+  --color-secondary: #1BA672;
+  --color-danger: #E23744;
+  --color-surface: #F2F2F2;
+  --color-surface-2: #FAFAFA;
   --max-width: 1280px;
 }
 
@@ -60,6 +70,11 @@
   }
 }
 
+html {
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
 body {
   font-family: var(--font);
   background: var(--emt-cream);
@@ -67,6 +82,9 @@ body {
   line-height: 1.6;
   letter-spacing: -0.01em;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  width: 100%;
+  position: relative;
 }
 
 /* ── Keyframes ─────────────────────────────────────────── */

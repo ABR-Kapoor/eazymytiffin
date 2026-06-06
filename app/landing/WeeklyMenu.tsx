@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ArrowUpRight, CheckCircle2, Clock, Leaf, ShieldCheck, Truck } from "lucide-react";
+import Image from "next/image";
+import { ArrowUpRight, CheckCircle2, Clock, Leaf, ShieldCheck, Truck, Star } from "lucide-react";
 
 const menuData = [
   { day: "Monday", color: "#1B5E30", image: "/eazymytiffin-veg-meal-plan.png", lunch: { dish: "Aloo Gobhi Masala", sides: "Dal + Rice + 4 Roti" }, dinner: { dish: "Bhindi Fry Special", sides: "Dal + Rice + 4 Roti" } },
@@ -10,7 +11,7 @@ const menuData = [
   { day: "Thursday", color: "#D35400", image: "/eazymytiffin-non-veg-meal-plan.png", lunch: { dish: "Baingan Aloo Masala", sides: "Dal + Rice + 4 Roti" }, dinner: { dish: "Aloo Bhujiya Curry", sides: "Rice + 4 Roti" } },
   { day: "Friday", color: "#1B5E30", image: "/eazymytiffin-veg-menu-preview.png", lunch: { dish: "Barbatti Aloo", sides: "Dal + Rice + 4 Roti" }, dinner: { dish: "Tamatar Ki Sabji", sides: "Rice + 4 Roti" } },
   { day: "Saturday", color: "#D35400", image: "/eazymytiffin-mix-menu-preview.png", lunch: { dish: "Kaddu Masala", sides: "Dal + Rice + 4 Roti" }, dinner: { dish: "Soyabean Curry", sides: "Rice + 4 Roti" } },
-  { day: "Sunday ⭐", color: "#F5A623", image: "/eazymytiffin-weekly-special-meal.png", special: true, lunch: { dish: "Paneer + Puri + Kheer", sides: "Special Sunday Meal" }, dinner: { dish: "Veg Pulao Special", sides: "Raita + Salad" } },
+  { day: "Sunday", color: "#F5A623", image: "/eazymytiffin-weekly-special-meal.png", special: true, lunch: { dish: "Paneer + Puri + Kheer", sides: "Special Sunday Meal" }, dinner: { dish: "Veg Pulao Special", sides: "Raita + Salad" } },
 ];
 
 const badges = [
@@ -77,7 +78,10 @@ export default function WeeklyMenu() {
               boxShadow: "0 4px 12px rgba(27, 94, 48, 0.05)"
             }}
           >
-            <span>{menuData[activeDay].day}</span>
+            <span className="flex items-center gap-1">
+              {menuData[activeDay].day}
+              {menuData[activeDay].special && <Star size={14} className="fill-current text-[#F5A623]" />}
+            </span>
             <div className={`transition-transform duration-300 text-[#1B5E30] ${isDropdownOpen ? "rotate-180" : ""}`}>
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
@@ -119,7 +123,10 @@ export default function WeeklyMenu() {
                           : "text-slate-800 hover:bg-[#FAF6F0]"
                       }`}
                     >
-                      <span>{row.day}</span>
+                      <span className="flex items-center gap-1">
+                        {row.day}
+                        {row.special && <Star size={14} className={`fill-current ${isSelected ? "text-white" : "text-[#F5A623]"}`} />}
+                      </span>
                       {isSelected && (
                         <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
@@ -155,17 +162,19 @@ export default function WeeklyMenu() {
               >
                 {/* Visual Banner */}
                 <div className="relative h-[120px] overflow-hidden">
-                  <img 
+                  <Image 
                     src={row.image} 
                     alt={row.day} 
-                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                    fill
+                    className="object-cover transition-transform duration-1000 group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                   
                   {/* Day Label Overlay */}
                   <div className="absolute bottom-4 left-6">
-                    <span className="text-white text-[14px] font-semibold uppercase tracking-[2px]">
+                    <span className="text-white text-[14px] font-semibold uppercase tracking-[2px] flex items-center gap-1.5">
                       {row.day}
+                      {row.special && <Star size={16} className="fill-current text-[#F5A623]" />}
                     </span>
                   </div>
                 </div>
@@ -247,17 +256,19 @@ export default function WeeklyMenu() {
                 >
                   {/* Visual Banner */}
                   <div className="relative h-[160px] overflow-hidden">
-                    <img 
+                    <Image 
                       src={row.image} 
                       alt={row.day} 
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                     
                     {/* Day Label Overlay */}
                     <div className="absolute bottom-4 left-6">
-                      <span className="text-white text-[16px] font-bold uppercase tracking-[2px]">
+                      <span className="text-white text-[16px] font-bold uppercase tracking-[2px] flex items-center gap-1.5">
                         {row.day}
+                        {row.special && <Star size={18} className="fill-current text-[#F5A623]" />}
                       </span>
                     </div>
                   </div>

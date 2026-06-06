@@ -1,298 +1,546 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useUserStore } from "@/store/userStore";
-import { useSubscriptionStore } from "@/store/subscriptionStore";
 import { useOrderStore } from "@/store/orderStore";
-import { useNotificationStore } from "@/store/notificationStore";
+import { useCartStore } from "@/store/cartStore";
+import { useThemeStore } from "@/store/themeStore";
 import { supabase } from "@/lib/supabase";
-import { NotificationBell } from "@/components/NotificationBell";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
-  Pause, Play, ChevronRight, Truck,
-  Clock, Leaf, ArrowRight, MapPin, Drumstick, PartyPopper, Bike, Sun, Moon, Utensils, MessageCircle, Calendar, ShoppingBag, UtensilsCrossed
+  Search,
+  ChevronRight,
+  ChevronDown,
+  Truck,
+  X,
+  MapPin,
+  User,
+  UtensilsCrossed,
+  Mic,
+  Navigation,
+  Zap,
+  SlidersHorizontal
 } from "lucide-react";
+import { FoodCard } from "@/components/ui/FoodCard";
+import { FilterChips } from "@/components/ui/FilterChips";
+import TiffinPlansSection from "@/components/ui/TiffinPlansSection";
 
-interface TodayMenu {
-  lunch: { title: string; badge: string | null; image_url: string | null } | null;
-  dinner: { title: string; badge: string | null; image_url: string | null } | null;
-}
+type Menu = {
+  id: string;
+  title: string;
+  description: string | null;
+  image_url: string | null;
+  badge: string | null;
+  category: "veg" | "non_veg";
+  meal_type: "lunch" | "dinner" | "both";
+  is_active: boolean;
+};
 
 export default function HomePage() {
+  const router = useRouter();
   const user = useUserStore((s) => s.user);
-  const isAdmin = useUserStore((s) => s.isAdmin)();
   const isLoading = useUserStore((s) => s.isLoading);
-  const sub = useSubscriptionStore((s) => s.activeSubscription);
-  const isActive = useSubscriptionStore((s) => s.isActive)();
-  const isPaused = useSubscriptionStore((s) => s.isPaused)();
-  const getRemainingProgress = useSubscriptionStore((s) => s.getRemainingProgress);
-  const { orders, getPendingOrders, getActiveOrder } = useOrderStore();
-  const [todayMenu, setTodayMenu] = useState<TodayMenu>({ lunch: null, dinner: null });
-  const [managingSub, setManagingSub] = useState(false);
-  const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
-
+  const { getActiveOrder } = useOrderStore();
   const activeOrder = getActiveOrder();
-  const pendingCount = getPendingOrders().length;
-  const progress = getRemainingProgress();
+  const { items, addItem, updateQty, itemCount, total } = useCartStore();
 
-  const greeting = (() => {
-    const h = new Date().getHours();
-    if (h < 12) return "Good morning";
-    if (h < 17) return "Good afternoon";
-    return "Good evening";
-  })();
+  const [menus, setMenus] = useState<Menu[]>([]);
+  const [filteredMenus, setFilteredMenus] = useState<Menu[]>([]);
+  const [menusLoading, setMenusLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const { isVegTheme: isVegOnly, setVegTheme: setIsVegOnly } = useThemeStore();
+  const [activeFilter, setActiveFilter] = useState("all");
+  const [serviceMode, setServiceMode] = useState<"food" | "tiffin">("food");
+
+  const carouselRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const fetchMenu = async () => {
-      const weekday = new Date().getDay();
+    const fetchMenus = async () => {
       const { data } = await supabase
-        .from("weekly_menu_cycles")
-        .select("weekday, menu:menus(title, description, badge, image_url, meal_type, category, is_active)")
-        .eq("weekday", weekday);
-      if (data) {
-        const menuData: any[] = data;
-        const lunch = menuData.find((m) => m.menu?.meal_type === "lunch" && m.menu?.is_active)?.menu || null;
-        const dinner = menuData.find((m) => m.menu?.meal_type === "dinner" && m.menu?.is_active)?.menu || null;
-        setTodayMenu({ lunch, dinner });
-      }
+        .from("menus")
+        .select("*")
+        .eq("is_active", true)
+        .order("created_at", { ascending: false });
+      setMenus(data || []);
+      setFilteredMenus(data || []);
+      setMenusLoading(false);
     };
-    fetchMenu();
+    fetchMenus();
   }, []);
 
-  const showToast = (msg: string, type: "success" | "error" = "success") => {
-    setToast({ msg, type });
-    setTimeout(() => setToast(null), 3500);
-  };
-
-  const handlePauseResume = async (action: "pause" | "resume") => {
-    if (!sub) return;
-    setManagingSub(true);
-    try {
-      const res = await fetch(`/api/subscriptions/${action}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ subscriptionId: sub.id }),
-      });
-      const result = await res.json();
-      if (result.success) showToast(`Subscription ${action}d successfully!`);
-      else showToast(result.error || "Something went wrong.", "error");
-    } catch {
-      showToast("Network error. Please try again.", "error");
-    } finally {
-      setManagingSub(false);
+  useEffect(() => {
+    let r = [...menus];
+    if (search)
+      r = r.filter((m) => m.title.toLowerCase().includes(search.toLowerCase()));
+      
+    // Helper logic to generate deterministic attributes based on content
+    const getRating = (m: Menu) => 3.8 + (m.title.length % 12) / 10; // generates ratings from 3.8 to 4.9
+    const hasOffer = (m: Menu) => 
+      m.title.length % 3 === 0 || 
+      (m.badge && m.badge.toLowerCase().includes('offer')) || 
+      (m.description && m.description.toLowerCase().includes('discount'));
+      
+    // Apply filters based on content
+    if (activeFilter === "veg") {
+      r = r.filter((m) => m.category === "veg");
     }
-  };
+    if (activeFilter === "rating") {
+      r = r.filter((m) => getRating(m) >= 4.0);
+    }
+    if (activeFilter === "offers") {
+      r = r.filter((m) => hasOffer(m));
+    }
+    if (activeFilter === "filter") {
+      // Dummy complex filter: only show items that have a description or a badge
+      r = r.filter((m) => m.description || m.badge);
+    }
+    
+    // Apply sorting based on content
+    if (activeFilter === "sort") {
+      r.sort((a, b) => a.title.localeCompare(b.title));
+    }
+    
+    setFilteredMenus(r);
+  }, [search, activeFilter, menus]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (carouselRef.current) {
+        const { scrollLeft, scrollWidth, clientWidth } = carouselRef.current;
+        if (scrollLeft + clientWidth >= scrollWidth - 10) {
+          carouselRef.current.scrollTo({ left: 0, behavior: "smooth" });
+        } else {
+          carouselRef.current.scrollBy({
+            left: clientWidth,
+            behavior: "smooth",
+          });
+        }
+      }
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const qty = (id: string) =>
+    items.find((i) => i.menu_id === id)?.quantity || 0;
+
+  const hour = new Date().getHours();
+  let greeting = "Good Evening";
+  if (hour >= 5 && hour < 12) greeting = "Good Morning";
+  else if (hour >= 12 && hour < 17) greeting = "Good Afternoon";
+  else if (hour >= 17 && hour < 21) greeting = "Good Evening";
+  else greeting = "Good Night";
+
+  const firstName = user?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || "Guest";
 
   if (isLoading) {
     return (
-      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--emt-cream)" }}>
-        <div style={{ textAlign: "center" }}>
-          <div style={{ width: "48px", height: "48px", borderRadius: "50%", border: "3px solid rgba(232,57,42,0.2)", borderTopColor: "var(--emt-red)", animation: "spin 0.8s linear infinite", margin: "0 auto 16px" }} />
-          <p style={{ color: "#9CA3AF", fontWeight: 500, fontSize: "14px" }}>Loading your dashboard…</p>
-        </div>
+      <div
+        style={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "var(--color-bg)",
+        }}
+      >
+        <div className="w-12 h-12 rounded-full border-4 border-[#FC8019]/20 border-t-[#FC8019] animate-spin" />
       </div>
     );
   }
 
+  const themeBg = isVegOnly ? "bg-[#0d5c3d]" : "bg-[#A30000]";
+
   return (
-    <>
-      {/* Toast */}
-      {toast && (
-        <div style={{
-          position: "fixed", top: "72px", right: "16px", zIndex: 200,
-          background: toast.type === "success" ? "#1B5E30" : "#E8392A",
-          color: "white", borderRadius: "12px", padding: "12px 20px",
-          fontSize: "13px", fontWeight: 600, boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
-          animation: "slideLeft 0.3s ease",
-        }}>
-          {toast.msg}
-        </div>
-      )}
-        {/* Greeting */}
-        <div className="animate-fade-up mb-8">
-          <p className="text-[#9CA3AF] text-[13px] font-semibold mb-1">
-            {greeting}
-          </p>
-          <h1 className="text-[clamp(24px,5vw,32px)] font-bold text-[#1A1A1A] tracking-tight leading-[1.15] m-0">
-            {user?.full_name?.split(" ")[0] || "there"}!
-          </h1>
-          <p className="text-[#6B7280] text-[13px] mt-1.5 flex items-center gap-1 font-medium">
-            <MapPin size={14} className="text-[#E8392A]" /> {user?.city || "Bilaspur"}
+    <div className="bg-[#f8f9fa] min-h-screen pb-4">
+      {/* 1. Header Area with Background */}
+      <div className={`relative ${themeBg} pt-6 pb-10 px-4 rounded-b-[32px] shadow-sm transition-all duration-500 overflow-hidden -mx-4 lg:mx-0`}>
+        {/* Food Pattern Overlay */}
+        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/food.png')] opacity-60 invert pointer-events-none" />
+        
+        {/* Greeting Section */}
+        <div className="relative z-10 mb-5 mt-2">
+          <h2 className="text-white text-[26px] font-black drop-shadow-sm leading-tight tracking-tight">
+            {greeting}, {firstName}!
+          </h2>
+          <p className="text-white/95 text-[14px] font-bold mt-1 tracking-wide">
+            What are you craving today?
           </p>
         </div>
 
-        <div className="flex flex-col md:flex-row gap-6 lg:gap-8">
-          {/* Left Column */}
-          <div className="flex-1 min-w-0">
-            {/* Active Subscription Card */}
-            {sub ? (
-          <div className="animate-fade-up stagger-child card-lift relative overflow-hidden rounded-[32px] p-6 md:p-8 mb-8 text-white shadow-lg" style={{
-            background: isPaused
-              ? "linear-gradient(135deg, rgba(180,83,9,0.96), rgba(217,119,6,0.86))"
-              : "linear-gradient(135deg, rgba(232,57,42,0.96), rgba(185,28,28,0.86))",
-            border: isPaused ? "1px solid rgba(245,158,11,0.28)" : "1px solid rgba(248,113,113,0.25)",
-            boxShadow: isPaused ? "0 12px 40px rgba(217,119,6,0.22)" : "0 12px 40px rgba(232,57,42,0.22)",
-          }}>
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white/65 to-transparent opacity-50 pointer-events-none rounded-bl-full" />
-            <div className="relative z-10">
-              <div className="inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-md rounded-full px-3 py-1 mb-4 border border-white/20">
-                <div className={`w-1.5 h-1.5 rounded-full ${isPaused ? "bg-[#FCD34D]" : "bg-[#86EFAC] shadow-[0_0_8px_#86EFAC]"}`} />
-                <span className="text-[10px] font-extrabold uppercase tracking-widest text-white">
-                  {isPaused ? "Paused" : "Active Subscription"}
-                </span>
-              </div>
-              <h2 className="font-black text-2xl mb-2 flex flex-wrap items-center gap-2">
-                {sub.category === "veg" ? (
-                  <span className="inline-flex items-center gap-1 bg-white/20 rounded-lg px-2 py-0.5 text-xs uppercase tracking-wide border border-white/10 text-white"><Leaf size={14} className="text-[#4ade80]" /> Pure Veg</span>
-                ) : (
-                  <span className="inline-flex items-center gap-1 bg-white/20 rounded-lg px-2 py-0.5 text-xs uppercase tracking-wide border border-white/10 text-white"><Drumstick size={14} className="text-[#fca5a5]" /> Non-Veg</span>
-                )}
-                <span className="opacity-80 text-[18px]">— {sub.meal_type === "both" ? "Lunch & Dinner" : sub.meal_type === "lunch" ? "Lunch" : "Dinner"}</span>
-              </h2>
-              <p className="opacity-90 text-[14px] font-medium mb-6">
-                <strong className="text-3xl font-bold">{sub.remaining_days}</strong> meals remaining of {sub.total_days}
-              </p>
-              <div className="h-2 rounded-full bg-white/20 mb-6 overflow-hidden">
-                <div className="h-full rounded-full bg-white transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(255,255,255,0.5)]" style={{ width: `${progress}%` }} />
-              </div>
-              <div className="flex flex-wrap gap-3">
-                {isActive ? (
-                  <button disabled={managingSub} onClick={() => handlePauseResume("pause")} className="btn-glare flex items-center gap-1.5 bg-white/20 hover:bg-white/30 text-white border border-white/30 rounded-xl px-5 py-2.5 text-xs font-bold transition-all disabled:opacity-60">
-                    <Pause size={14} /> {managingSub ? "Processing…" : "Pause"}
-                  </button>
-                ) : (
-                  <button disabled={managingSub} onClick={() => handlePauseResume("resume")} className="btn-glare flex items-center gap-1.5 bg-white text-[#E8392A] border-none rounded-xl px-5 py-2.5 text-xs font-bold transition-all disabled:opacity-60 hover:scale-105 shadow-md">
-                    <Play size={14} /> {managingSub ? "Processing…" : "Resume"}
-                  </button>
-                )}
-                <Link href="/subscription" className="flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-xl px-5 py-2.5 text-xs font-bold no-underline transition-all hover:scale-105">
-                  <Calendar size={14} /> Manage
-                </Link>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="animate-fade-up stagger-child bg-white rounded-[32px] p-6 md:p-10 mb-8 text-center border border-[rgba(212,184,150,0.3)] shadow-sm relative overflow-hidden group/card">
-            <div className="absolute inset-0 bg-gradient-to-br from-[#E8392A]/5 to-transparent pointer-events-none" />
-            <div className="mb-4 text-[#E8392A]/60 flex justify-center group-hover/card:scale-110 transition-transform duration-500">
-              <div className="w-20 h-20 bg-[#E8392A]/10 rounded-full flex items-center justify-center">
-                <UtensilsCrossed size={40} className="text-[#E8392A]" />
-              </div>
-            </div>
-            <h2 className="font-bold text-2xl text-[#1A1A1A] mb-2 tracking-tight relative z-10">No Active Tiffin Plan</h2>
-            <p className="text-[#6B7280] text-[15px] font-medium mb-8 max-w-xs mx-auto relative z-10">
-              {!user?.has_used_trial ? "Try your first home-style tiffin meal completely free!" : "Subscribe today for fresh, home-style meals delivered daily."}
-            </p>
-            <Link href="/subscription" className="btn-glare inline-flex items-center gap-1.5 bg-[#E8392A] hover:bg-[#B91C1C] text-white rounded-xl px-5 py-2.5 font-bold text-[13px] no-underline shadow-md shadow-[#E8392A]/30 hover:shadow-[#E8392A]/50 hover:-translate-y-0.5 transition-all relative z-10">
-              {!user?.has_used_trial ? <><PartyPopper size={16} /> Try Free Trial</> : "Browse Plans"} <ArrowRight size={16} />
-            </Link>
-          </div>
-        )}
-
-        {/* Active Delivery Alert */}
-        {activeOrder && (
-          <div className="animate-fade-up stagger-child card-lift rounded-[24px] p-5 mb-8 text-white relative overflow-hidden shadow-lg" style={{ background: "linear-gradient(135deg, #1B5E30, #2D7A3A)" }}>
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-bl-full pointer-events-none blur-sm" />
-            <div className="flex flex-col sm:flex-row sm:items-center items-start gap-4 relative z-10">
-              <div className="w-12 h-12 rounded-[16px] bg-white/20 flex items-center justify-center shrink-0 border border-white/10 shadow-[0_0_15px_rgba(255,255,255,0.2)]">
-                <Truck size={24} className="text-white drop-shadow-md animate-pulse" />
-              </div>
-              <div className="flex-1">
-                <p className="font-extrabold text-[15px] m-0 flex items-center gap-1.5"><Bike size={16} className="text-[#86EFAC]" /> Order On the Way!</p>
-                <p className="opacity-90 text-[12px] font-medium mt-0.5 m-0">Status: <span className="capitalize font-bold text-[#86EFAC]">{activeOrder.status.replace(/_/g, " ")}</span></p>
-              </div>
-              <Link href="/orders" className="bg-white text-[#1B5E30] rounded-xl px-4 py-2 text-[13px] font-extrabold no-underline shadow-md hover:bg-[#F0FDF4] hover:scale-105 transition-all flex items-center justify-center gap-1.5 border border-transparent w-full sm:w-auto">
-                Track <ArrowRight size={14} />
-              </Link>
-            </div>
-          </div>
-        )}
-
-        {/* Stats */}
-        <div className="animate-fade-up stagger-child grid grid-cols-3 gap-2 md:gap-3 mb-8">
-          {[
-            { label: "Days Left", value: sub?.remaining_days ?? "—", icon: <Calendar size={18} />, color: "#E8392A", bg: "rgba(232,57,42,0.08)" },
-            { label: "Total Orders", value: orders.length, icon: <ShoppingBag size={18} />, color: "#1B5E30", bg: "rgba(27,94,48,0.08)" },
-            { label: "In Progress", value: pendingCount, icon: <Clock size={18} />, color: "#F5A623", bg: "rgba(245,166,35,0.08)" },
-          ].map((s) => (
-            <div key={s.label} className="card-lift rounded-2xl p-3 sm:p-4 text-center shadow-sm relative overflow-hidden group" style={{ background: `linear-gradient(135deg, ${s.color}12, ${s.color}03)`, border: `1px solid ${s.color}25` }}>
-              <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-white to-transparent opacity-50 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform duration-500" />
-              <div className="w-8 h-8 md:w-10 md:h-10 rounded-[10px] flex items-center justify-center mx-auto mb-2 md:mb-3" style={{ background: s.bg, color: s.color }}>{s.icon}</div>
-              <p className="text-lg md:text-xl font-bold text-[#1A1A1A] leading-none m-0">{s.value}</p>
-              <p className="text-[10px] md:text-[11px] text-[#9CA3AF] font-bold mt-1.5 m-0 uppercase tracking-wide">{s.label}</p>
-            </div>
-          ))}
+        {/* 2. Search Bar Overlaid */}
+        <div className="relative z-10 flex items-center bg-white rounded-[16px] px-4 py-3 shadow-[0_6px_20px_rgba(0,0,0,0.1)]">
+          <input
+            type="text"
+            placeholder="Search for restaurants, dishes..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="flex-1 bg-transparent outline-none text-[14px] text-[#1C1C1C] placeholder-[#93959F] font-medium"
+          />
+          {search && (
+            <button
+              onClick={() => setSearch("")}
+              className="mr-3 text-[#93959F]"
+            >
+              <X size={16} />
+            </button>
+          )}
+          <div className="w-[1px] h-5 bg-slate-200 mx-2" />
+          <Search size={20} className="text-[#FC8019] ml-2 mr-1 shrink-0" />
         </div>
 
-        {/* Today's Menu */}
-        {(todayMenu.lunch || todayMenu.dinner) && (
-          <div className="animate-fade-up stagger-child mb-8">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-extrabold text-[18px] text-[#1A1A1A] tracking-tight flex items-center gap-1.5 m-0"><Utensils size={18} className="text-[#1A1A1A]" /> Today's Menu</h2>
-              <Link href="/food" className="text-[#E8392A] text-[13px] font-bold no-underline flex items-center gap-1 hover:text-[#B91C1C] transition-colors">Order Food <ArrowRight size={13} /></Link>
-            </div>
-            <div className={`grid gap-4 ${todayMenu.lunch && todayMenu.dinner ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1"}`}>
-              {todayMenu.lunch && (
-                <div className="rounded-2xl overflow-hidden shadow-sm relative group" style={{ background: `linear-gradient(135deg, #F5A62312, #F5A62303)`, border: `1px solid #F5A62325` }}>
-                  <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-white to-transparent opacity-50 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform duration-500 z-10" />
-                  {todayMenu.lunch.image_url ? (
-                    <div className="overflow-hidden h-[100px]">
-                      <img src={todayMenu.lunch.image_url} alt={todayMenu.lunch.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                    </div>
-                  ) : (
-                    <div className="h-[90px] bg-[#F5A623]/10 flex items-center justify-center group-hover:bg-[#F5A623]/20 transition-colors"><UtensilsCrossed size={36} className="text-[#F5A623]" /></div>
-                  )}
-                  <div className="p-3.5">
-                    <span className="text-[10px] font-extrabold text-[#D97706] uppercase tracking-widest flex items-center gap-1 mb-1"><Sun size={12} /> Lunch · 12–2 PM</span>
-                    <p className="font-extrabold text-[13px] text-[#1A1A1A] m-0 line-clamp-2 leading-tight">{todayMenu.lunch.title}</p>
-                  </div>
-                </div>
-              )}
-              {todayMenu.dinner && (
-                <div className="rounded-2xl overflow-hidden shadow-sm relative group" style={{ background: `linear-gradient(135deg, #E8392A12, #E8392A03)`, border: `1px solid #E8392A25` }}>
-                  <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-white to-transparent opacity-50 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform duration-500 z-10" />
-                  {todayMenu.dinner.image_url ? (
-                    <div className="overflow-hidden h-[100px]">
-                      <img src={todayMenu.dinner.image_url} alt={todayMenu.dinner.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                    </div>
-                  ) : (
-                    <div className="h-[90px] bg-[#E8392A]/10 flex items-center justify-center group-hover:bg-[#E8392A]/20 transition-colors"><UtensilsCrossed size={36} className="text-[#E8392A]" /></div>
-                  )}
-                  <div className="p-3.5">
-                    <span className="text-[10px] font-extrabold text-[#E8392A] uppercase tracking-widest flex items-center gap-1 mb-1"><Moon size={12} /> Dinner · 7–9 PM</span>
-                    <p className="font-extrabold text-[13px] text-[#1A1A1A] m-0 line-clamp-2 leading-tight">{todayMenu.dinner.title}</p>
-                  </div>
-                </div>
-              )}
-            </div>
+        {/* Veg/Non-Veg Toggle */}
+        <div className="relative z-10 flex justify-center mt-5">
+          <div className="bg-white/20 backdrop-blur-md rounded-full p-1 flex items-center gap-1 shadow-sm border border-white/10">
+            <button
+              onClick={() => setIsVegOnly(true)}
+              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[13px] tracking-wide transition-all ${
+                isVegOnly ? "bg-white text-slate-800 shadow-md font-bold" : "text-white font-semibold"
+              }`}
+            >
+              <div className="w-3.5 h-3.5 border-[1.5px] border-green-600 flex items-center justify-center rounded-[3px] bg-white">
+                <div className="w-1.5 h-1.5 bg-green-600 rounded-full" />
+              </div>
+              Veg Only
+            </button>
+            <button
+              onClick={() => setIsVegOnly(false)}
+              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[13px] tracking-wide transition-all ${
+                !isVegOnly ? "bg-white text-slate-800 shadow-md font-bold" : "text-white font-semibold"
+              }`}
+            >
+              <div className="w-3.5 h-3.5 border-[1.5px] border-red-600 flex items-center justify-center rounded-[3px] bg-white">
+                <div className="w-1.5 h-1.5 bg-red-600 rounded-full" />
+              </div>
+              Non-Veg
+            </button>
           </div>
-        )}
+        </div>
       </div>
 
-      {/* Right Column: Quick Actions */}
-      <div className="md:w-[320px] shrink-0 animate-fade-up stagger-child">
-        <div className="sticky top-[84px]">
-          <h2 className="font-bold text-[18px] text-[#1A1A1A] mb-4 tracking-tight">Quick Actions</h2>
-          <div className="flex flex-col gap-3">
+      <div className="mt-6 relative z-20">
+        {/* Active Order Alert */}
+        {activeOrder && (
+          <div className="mb-4 bg-white border border-[#FC8019]/20 rounded-2xl p-4 shadow-[0_4px_16px_rgba(0,0,0,0.06)] relative overflow-hidden flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-orange-50 flex items-center justify-center shrink-0">
+              <Truck size={24} className="text-[#FC8019] animate-pulse" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-extrabold text-[15px] text-[#1C1C1C] m-0">
+                Order Arriving in 15 mins
+              </p>
+              <p className="text-[13px] text-[#FC8019] font-bold m-0 mt-0.5 capitalize">
+                {activeOrder.status.replace(/_/g, " ")} • Track Order
+              </p>
+            </div>
+            <Link
+              href="/orders"
+              className="absolute inset-0 z-10"
+            />
+          </div>
+        )}
+
+        {/* 4. Feature Banners Carousel */}
+        <div className="mb-6">
+          <div ref={carouselRef} className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4 no-scrollbar scroll-smooth">
             {[
-              { href: "/food", icon: <UtensilsCrossed size={20} />, label: "Order Food", sub: "Browse today's menu", color: "#E8392A", bg: "rgba(232,57,42,0.08)", border: "rgba(232,57,42,0.2)" },
-              { href: "/orders", icon: <Truck size={20} />, label: "Track Order", sub: pendingCount > 0 ? `${pendingCount} active` : "View history", color: "#1B5E30", bg: "rgba(27,94,48,0.08)", border: "rgba(27,94,48,0.2)" },
-              { href: "/subscription", icon: <Calendar size={20} />, label: "Tiffin Plans", sub: "Manage subscription", color: "#F5A623", bg: "rgba(245,166,35,0.08)", border: "rgba(245,166,35,0.2)" },
-            ].map((action) => (
-              <a key={action.label} href={action.href} className="card-lift flex items-center p-4 rounded-2xl no-underline shadow-sm relative overflow-hidden group" style={{ background: `linear-gradient(135deg, ${action.color}12, ${action.color}03)`, border: `1px solid ${action.color}25` }}>
-                <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-white to-transparent opacity-50 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform duration-500" />
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110 mr-4 relative z-10" style={{ background: action.bg, color: action.color }}>{action.icon}</div>
-                <div className="flex-1 relative z-10">
-                  <p className="font-bold text-[15px] text-[#1A1A1A] m-0 leading-tight">{action.label}</p>
-                  <p className="text-[12px] text-[#9CA3AF] font-bold mt-0.5 m-0">{action.sub}</p>
+              {
+                id: "subscription",
+                title: "Monthly Subs",
+                subtitle: "Save up to 20%",
+                tag: "Popular",
+                href: "/subscription",
+                color: "bg-gradient-to-br from-[#E8392A] to-[#C02619]",
+                img: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?q=80&w=250&auto=format&fit=crop",
+              },
+              {
+                id: 2,
+                title: "Veg Tiffin",
+                subtitle: "Homestyle food",
+                tag: "From ₹99/meal",
+                href: "/food?category=veg",
+                color: "bg-gradient-to-br from-[#1BA672] to-[#10704B]",
+                img: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?q=80&w=250&auto=format&fit=crop",
+              },
+              {
+                id: 3,
+                title: "Non-Veg Tiffin",
+                subtitle: "Premium quality",
+                tag: "Fresh chicken",
+                href: "/food?category=non-veg",
+                color: "bg-gradient-to-br from-[#2563EB] to-[#1E3A8A]",
+                img: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?q=80&w=250&auto=format&fit=crop",
+              },
+              {
+                id: "trial",
+                title: "Trial Meal",
+                subtitle: "Try before buy",
+                tag: "Flat ₹50 Off",
+                href: "/food/checkout",
+                color: "bg-gradient-to-br from-[#9333EA] to-[#6B21A8]",
+                img: "https://images.unsplash.com/photo-1498837167922-ddd27525d352?q=80&w=250&auto=format&fit=crop",
+              },
+            ].map((banner) => (
+              <Link
+                key={banner.id}
+                href={banner.href}
+                className={`${banner.color} rounded-[28px] p-5 flex relative overflow-hidden shadow-[0_8px_20px_rgba(0,0,0,0.12)] shrink-0 w-[calc(100dvw-32px)] sm:w-[340px] h-[160px] snap-center group`}
+              >
+                <div className="relative z-10 w-[65%] sm:w-[60%] flex flex-col justify-center">
+                  <h3 className="font-black text-[20px] sm:text-[22px] text-white leading-tight mb-1 drop-shadow-md">
+                    {banner.title}
+                  </h3>
+                  <p className="text-[11px] sm:text-[12px] font-extrabold text-white/90 tracking-widest mb-3">
+                    {banner.subtitle}
+                  </p>
+                  <div className="inline-flex items-center bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-white/30 self-start">
+                    <span className="text-white font-bold text-[11px]">{banner.tag}</span>
+                  </div>
                 </div>
-                <ChevronRight size={18} className="text-[#9CA3AF] opacity-50 group-hover:opacity-100 group-hover:translate-x-1 transition-all relative z-10" />
-              </a>
+                <div className="absolute right-0 bottom-0 top-0 w-[45%] sm:w-[150px] z-0 rounded-l-[40px] overflow-hidden shadow-2xl">
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent to-black/20 z-10 mix-blend-multiply" />
+                  <img
+                    src={banner.img}
+                    alt={banner.title}
+                    className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
+                  />
+                </div>
+              </Link>
             ))}
           </div>
         </div>
       </div>
+
+        {/* 4.5 Dietary Preferences Grid */}
+      <div className="px-0 sm:px-4 mb-6">
+        <div className="grid grid-cols-2 gap-3" style={{ gridTemplateRows: "auto auto" }}>
+          <Link href="/food?filter=veg" className="relative bg-green-50 rounded-[24px] p-4 flex flex-col justify-between overflow-hidden shadow-sm border border-green-100 group row-span-2 min-h-[200px] hover:shadow-md transition-shadow">
+            <div className="z-10">
+              <h3 className="font-black text-[20px] text-[#282c3f] leading-tight tracking-tight">Pure Veg</h3>
+              <p className="text-[12px] font-medium text-gray-500 leading-snug mt-1.5 pr-8">100% Vegetarian</p>
+              <div className="mt-3 inline-flex justify-center w-[80px] items-center gap-1.5 bg-white/60 backdrop-blur-sm py-1 rounded-md border border-[#1BA672]/20">
+                <div className="w-[12px] h-[12px] border border-[#1BA672] flex items-center justify-center rounded-[2px] shrink-0 bg-white">
+                  <div className="w-[5px] h-[5px] rounded-full bg-[#1BA672]" />
+                </div>
+                <span className="text-[10px] font-extrabold text-[#1BA672] tracking-wide uppercase">Veg</span>
+              </div>
+            </div>
+            {/* Circular Image floating in bottom right */}
+            <div className="absolute -right-8 -bottom-8 w-32 h-32 sm:w-40 sm:h-40">
+              <img 
+                src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=300&auto=format&fit=crop" 
+                alt="Pure Veg Bowl"
+                className="w-full h-full object-cover rounded-full shadow-[0_8px_16px_rgba(0,0,0,0.15)] group-hover:scale-105 transition-transform duration-300" 
+              />
+            </div>
+          </Link>
+
+          <Link href="/food?filter=mix" className="relative bg-orange-50 rounded-[20px] p-3 pl-4 flex flex-col justify-center overflow-hidden shadow-sm border border-orange-100 group min-h-[95px] hover:shadow-md transition-shadow">
+            <div className="z-10 relative">
+              <div className="flex items-center gap-1.5">
+                <h3 className="font-black text-[17px] text-[#282c3f] leading-tight tracking-tight">Mix Veg</h3>
+                <div className="w-[14px] h-[14px] border border-[#1BA672] flex items-center justify-center rounded-[3px] shrink-0 bg-white">
+                  <div className="w-[6px] h-[6px] rounded-full bg-[#1BA672]" />
+                </div>
+              </div>
+              <p className="text-[11px] font-medium text-gray-500 mt-1 whitespace-nowrap overflow-visible relative z-20">Best of both</p>
+            </div>
+            {/* Image overlapping right side */}
+            <div className="absolute -right-4 top-1/2 -translate-y-1/2 w-[60px] h-[60px] sm:w-[72px] sm:h-[72px] z-0">
+              <img 
+                src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=300&auto=format&fit=crop" 
+                alt="Mix Veg"
+                className="w-full h-full object-cover rounded-full shadow-md group-hover:scale-105 transition-transform duration-300" 
+              />
+            </div>
+          </Link>
+
+          <Link href="/food?filter=nonveg" className="relative bg-red-50 rounded-[20px] p-3 pl-4 flex flex-col justify-center overflow-hidden shadow-sm border border-red-100 group min-h-[95px] hover:shadow-md transition-shadow">
+            <div className="z-10 relative">
+              <div className="flex items-center gap-1.5 mb-0.5">
+                <h3 className="font-black text-[17px] text-[#282c3f] leading-tight tracking-tight">Non Veg</h3>
+                <div className="w-[14px] h-[14px] border border-[#E23744] flex items-center justify-center rounded-[3px] shrink-0 bg-white">
+                  <div className="w-[6px] h-[6px] rounded-full bg-[#E23744]" />
+                </div>
+              </div>
+              <p className="text-[11px] font-medium text-gray-500 whitespace-nowrap overflow-visible relative z-20">Meat lovers</p>
+            </div>
+            {/* Image overlapping right side */}
+            <div className="absolute -right-4 top-1/2 -translate-y-1/2 w-[60px] h-[60px] sm:w-[72px] sm:h-[72px]">
+              <img 
+                src="https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?q=80&w=300&auto=format&fit=crop" 
+                alt="Non Veg Chicken"
+                className="w-full h-full object-cover rounded-full shadow-md group-hover:scale-105 transition-transform duration-300" 
+              />
+            </div>
+          </Link>
+        </div>
+      </div>
+
+      {/* 5. Service Mode Toggle Banner */}
+      <div className="mt-2 mb-6">
+        <div className="relative bg-gradient-to-br from-[#0284C7] to-[#0369A1] pt-6 pb-8 px-5 rounded-[32px] shadow-md overflow-hidden">
+          {/* Native CSS Diagonal Stripes Pattern */}
+          <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,rgba(255,255,255,0.05),rgba(255,255,255,0.05)_2px,transparent_2px,transparent_12px)] pointer-events-none" />
+
+          {/* Dynamic Corner Images */}
+          {/* Top Left */}
+          <img 
+            src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=300&auto=format&fit=crop" 
+            alt="Burger"
+            className={`absolute -top-10 -left-10 sm:-top-16 sm:-left-16 w-28 h-28 sm:w-52 sm:h-52 rounded-full shadow-2xl object-cover border-[6px] border-white/10 transition-all duration-700 ease-in-out ${serviceMode === "food" ? "opacity-100 scale-100 rotate-[12deg]" : "opacity-0 scale-50 -rotate-12"}`} 
+          />
+          <img 
+            src="https://images.unsplash.com/photo-1546833999-b9f581a1996d?q=80&w=300&auto=format&fit=crop" 
+            alt="Thali"
+            className={`absolute -top-10 -left-10 sm:-top-16 sm:-left-16 w-28 h-28 sm:w-52 sm:h-52 rounded-full shadow-2xl object-cover border-[6px] border-white/10 transition-all duration-700 ease-in-out ${serviceMode === "tiffin" ? "opacity-100 scale-100 -rotate-[12deg]" : "opacity-0 scale-50 rotate-12"}`} 
+          />
+          
+          {/* Bottom Right */}
+          <img 
+            src="https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=300&auto=format&fit=crop" 
+            alt="Pizza"
+            className={`absolute -bottom-12 -right-12 sm:-bottom-24 sm:-right-24 w-36 h-36 sm:w-64 sm:h-64 rounded-full shadow-2xl object-cover border-[6px] border-white/10 transition-all duration-700 ease-in-out ${serviceMode === "food" ? "opacity-100 scale-100 -rotate-[15deg]" : "opacity-0 scale-50 rotate-12"}`} 
+          />
+          <img 
+            src="https://images.unsplash.com/photo-1585937421612-70a008356fbe?q=80&w=300&auto=format&fit=crop" 
+            alt="Curry"
+            className={`absolute -bottom-12 -right-12 sm:-bottom-24 sm:-right-24 w-36 h-36 sm:w-64 sm:h-64 rounded-full shadow-2xl object-cover border-[6px] border-white/10 transition-all duration-700 ease-in-out ${serviceMode === "tiffin" ? "opacity-100 scale-100 rotate-[15deg]" : "opacity-0 scale-50 -rotate-12"}`} 
+          />
+          
+          <div className="relative z-10 flex flex-col items-center text-center">
+            <h3 className="font-black text-[20px] sm:text-[22px] text-white tracking-tight mb-1 drop-shadow-sm">
+              Choose Your Experience
+            </h3>
+            <p className="text-[12px] sm:text-[13px] text-white/95 font-semibold mb-5 leading-snug max-w-[260px] sm:max-w-[300px]">
+              Order instantly or subscribe to daily homestyle meals.
+            </p>
+
+            {/* Small Responsive Toggle Switch */}
+            <div className="bg-white/20 backdrop-blur-md p-1 rounded-full flex items-center shadow-inner relative w-[200px] sm:w-[240px] border border-white/20">
+              {/* Sliding Background */}
+              <div 
+                className="absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-full shadow-sm transition-all duration-300 ease-out"
+                style={{
+                  left: serviceMode === "food" ? "4px" : "calc(50%)",
+                }}
+              />
+              
+              <button
+                onClick={() => setServiceMode("food")}
+                className={`flex-1 flex items-center justify-center py-1.5 sm:py-2 relative z-10 transition-colors duration-300 ${
+                  serviceMode === "food" ? "text-[#1C1C1C]" : "text-white drop-shadow-sm"
+                }`}
+              >
+                <span className="font-extrabold text-[12px] tracking-wide">Eazy Food</span>
+              </button>
+
+              <button
+                onClick={() => setServiceMode("tiffin")}
+                className={`flex-1 flex items-center justify-center py-1.5 sm:py-2 relative z-10 transition-colors duration-300 ${
+                  serviceMode === "tiffin" ? "text-[#1C1C1C]" : "text-white drop-shadow-sm"
+                }`}
+              >
+                <span className="font-extrabold text-[12px] tracking-wide">Eazy Tiffin</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 6. Dynamic Content Based on Service Mode */}
+      {serviceMode === "food" ? (
+        <div className="pt-4 pb-6">
+          <h3 className="font-black text-[22px] text-[#1C1C1C] mb-5 tracking-tight">
+            Dishes to explore
+          </h3>
+          
+          <div className="mb-6 sticky top-[56px] bg-[#f8f9fa] py-2 z-30 -mx-4 px-4">
+            <FilterChips
+              options={[
+                { value: "filter", label: <span className="flex items-center gap-1">Filter <SlidersHorizontal size={14} className="ml-1 text-slate-700" /></span> },
+                { value: "sort", label: <span className="flex items-center gap-1">Sort By <ChevronDown size={14} className="ml-0.5 text-slate-700" /></span> },
+                { value: "rating", label: "Rating 4.0+" },
+                { value: "veg", label: "Pure Veg" },
+                { value: "offers", label: "Offers" },
+              ]}
+              activeValue={activeFilter === "all" ? "all" : activeFilter}
+              onChange={(val) => setActiveFilter(val as any)}
+            />
+          </div>
+
+          {menusLoading ? (
+            <div className="flex flex-col gap-6">
+              <div className="w-full h-[180px] bg-slate-200 rounded-[20px] animate-pulse" />
+              <div className="w-full h-[180px] bg-slate-200 rounded-[20px] animate-pulse" />
+            </div>
+          ) : filteredMenus.length === 0 ? (
+            <div className="text-center py-16 bg-white rounded-[24px] shadow-sm border border-slate-100">
+              <UtensilsCrossed
+                size={48}
+                className="text-[#93959F] mx-auto mb-4"
+              />
+              <p className="text-[16px] font-bold text-[#1C1C1C]">
+                No dishes found
+              </p>
+              <p className="text-[14px] text-[#686B78] mt-1">Try changing your filters or search term</p>
+            </div>
+          ) : (
+            <div className="flex flex-col">
+              {filteredMenus.map((menu) => (
+                <FoodCard
+                  key={menu.id}
+                  menu={menu}
+                  quantity={qty(menu.id)}
+                  price={120} // placeholder since actual schema might not have price directly
+                  onAdd={() =>
+                    addItem({
+                      menu_id: menu.id,
+                      title: menu.title,
+                      price: 120,
+                      category: menu.category,
+                      image_url: menu.image_url,
+                      badge: menu.badge,
+                    })
+                  }
+                  onUpdateQty={(val) => updateQty(menu.id, val)}
+                  layout="horizontal"
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="-mt-6 pb-6">
+          {/* Render the full Tiffin Subscription UI instead of a placeholder */}
+          <TiffinPlansSection />
+        </div>
+      )}
+
+      {/* Floating Cart */}
+      {itemCount() > 0 && (
+        <div className="fixed bottom-[72px] left-0 right-0 px-4 z-[100] pointer-events-none transition-transform translate-y-0">
+          <div className="max-w-[960px] mx-auto pointer-events-auto">
+            <button
+              onClick={() => router.push("/food/checkout")}
+              className="w-full flex items-center justify-between bg-[#1BA672] text-white rounded-2xl px-4 sm:px-5 py-3 sm:py-4 cursor-pointer shadow-[0_8px_24px_rgba(27,166,114,0.4)] border-none hover:bg-[#14835A] transition-colors"
+            >
+              <div className="flex flex-col gap-0.5 min-w-0">
+                <p className="font-black text-[13px] sm:text-[15px] text-left m-0 tracking-wide uppercase truncate">
+                  {itemCount()} item{itemCount() > 1 ? "s" : ""} added
+                </p>
+                <p className="text-[11px] sm:text-[12px] text-white/90 font-bold m-0 text-left truncate">
+                  ₹{total()} • Extra charges may apply
+                </p>
+              </div>
+              <div className="flex items-center gap-1.5 sm:gap-2 font-black text-[13px] sm:text-[15px] uppercase tracking-wide shrink-0">
+                View Cart <ChevronRight size={18} className="sm:mt-[-1px]" />
+              </div>
+            </button>
+          </div>
+        </div>
+      )}
     </div>
-    </>
   );
 }
+
