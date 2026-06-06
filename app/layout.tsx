@@ -50,6 +50,7 @@ export default function RootLayout({
           spacingUnit: "8px",
           borderRadius: "8px",
         },
+
       }}
     >
       <html lang="en" className={`${montserrat.variable} h-full`} suppressHydrationWarning>

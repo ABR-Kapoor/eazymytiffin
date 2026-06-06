@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^6.0.0",
+    "@clerk/ui": "^1.14.0",
     "@supabase/supabase-js": "^2.43.0",
     "clsx": "^2.1.1",
     "lottie-react": "^2.4.1",

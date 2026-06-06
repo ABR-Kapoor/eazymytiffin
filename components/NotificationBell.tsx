@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, forwardRef, useImperativeHandle } from "react";
-import { Bell, Check, CheckCheck } from "lucide-react";
+import { Bell, Check, CheckCheck, CreditCard, Truck, ClipboardList } from "lucide-react";
 import { useNotificationStore } from "@/store/notificationStore";
 
 const typeColors: Record<string, string> = {
@@ -11,14 +11,14 @@ const typeColors: Record<string, string> = {
   system: "#6366F1",
 };
 
-const typeIcons: Record<string, string> = {
-  payment: "💳",
-  delivery: "🛵",
-  subscription: "📋",
-  system: "🔔",
+const typeIcons: Record<string, any> = {
+  payment: <CreditCard size={18} style={{ color: typeColors.payment }} />,
+  delivery: <Truck size={18} style={{ color: typeColors.delivery }} />,
+  subscription: <ClipboardList size={18} style={{ color: typeColors.subscription }} />,
+  system: <Bell size={18} style={{ color: typeColors.system }} />,
 };
 
-export const NotificationBell = forwardRef<{ toggle: () => void }, { compact?: boolean }>(({ compact }, ref) => {
+export const NotificationBell = forwardRef<{ toggle: () => void }, { compact?: boolean; iconColor?: string }>(({ compact, iconColor }, ref) => {
   const [open, setOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
   const { notifications, unreadCount, markRead, markAllRead } = useNotificationStore();
@@ -36,7 +36,11 @@ export const NotificationBell = forwardRef<{ toggle: () => void }, { compact?: b
     return () => document.removeEventListener("mousedown", handler);
   }, [open]);
 
-  const handleOpen = async () => {
+  const handleOpen = async (e?: any) => {
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
     setOpen((v) => !v);
   };
 
@@ -67,10 +71,11 @@ export const NotificationBell = forwardRef<{ toggle: () => void }, { compact?: b
       <button
         id="notification-bell"
         onClick={handleOpen}
-        className={`relative rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer ${open ? "text-emt-red" : ""} ${compact ? "w-[20px] h-[20px] text-[#374151]" : "w-[34px] h-[34px] shadow-sm hover:scale-105 bg-white border border-[#D4B896]/30 text-[#1A1A1A]"} ${!compact && (open ? "bg-emt-red/15 border border-emt-red/20" : "")}`}
+        className={`relative rounded-[12px] flex items-center justify-center transition-all duration-200 cursor-pointer ${open ? "text-emt-red" : ""} ${compact ? "w-full h-full" : "w-[34px] h-[34px] shadow-sm hover:scale-105 bg-white border border-[#D4B896]/30 text-[#1A1A1A]"} ${!compact && (open ? "bg-emt-red/15 border border-emt-red/20" : "")}`}
+        style={{ color: iconColor || (compact ? "inherit" : undefined) }}
         aria-label="Notifications"
       >
-        <Bell size={compact ? 14 : 20} strokeWidth={1.8} />
+        <Bell size={compact ? 20 : 20} strokeWidth={1.8} />
         {count > 0 && (
           <span
             style={{
@@ -100,18 +105,18 @@ export const NotificationBell = forwardRef<{ toggle: () => void }, { compact?: b
 
       {open && (
         <div
+          className="w-[280px] sm:w-[340px]"
           style={{
             position: "absolute",
-            top: "calc(100% + 8px)",
-            right: 0,
-            width: "340px",
+            top: "calc(100% + 16px)",
+            right: "-46px",
             maxHeight: "480px",
             background: "white",
             borderRadius: "20px",
             boxShadow: "0 20px 64px rgba(61,31,10,0.18)",
             border: "1px solid rgba(212,184,150,0.2)",
             overflow: "hidden",
-            zIndex: 100,
+            zIndex: 9999,
             animation: "fadeUp 0.22s ease both",
           }}
         >
@@ -168,7 +173,7 @@ export const NotificationBell = forwardRef<{ toggle: () => void }, { compact?: b
                   color: "#9CA3AF",
                 }}
               >
-                <div style={{ fontSize: "32px", marginBottom: "8px" }}>🔔</div>
+                <div style={{ marginBottom: "8px", display: "flex", justifyContent: "center" }}><Bell size={32} /></div>
                 <p style={{ fontSize: "14px", fontWeight: 500 }}>No notifications yet</p>
               </div>
             ) : (

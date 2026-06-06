@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowRight, Phone, MapPin, Clock, MessageSquare, Instagram, Youtube } from "lucide-react";
+import Image from "next/image";
+import { ArrowRight, Phone, MapPin, Clock, MessageSquare, Instagram, Youtube, Heart } from "lucide-react";
 
 const quickLinks = [
   { label: "Home",    href: "#home" },
@@ -151,14 +152,14 @@ export default function Footer() {
 
         {/* Bottom Bar */}
         <div className="pt-12 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-6">
-          <p className="text-[13px] text-slate-500 font-medium">
+          <p className="text-[13px] text-slate-500 font-medium text-center md:text-left">
             © 2025 EazyMyTiffin. Premium Tiffin Service.
           </p>
-          <div className="flex items-center gap-8 text-[13px] text-slate-500 font-medium">
+          <div className="flex flex-wrap justify-center items-center gap-x-8 gap-y-4 text-[13px] text-slate-500 font-medium">
             <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
             <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
             <span className="flex items-center gap-2">
-              Built with <span className="text-[#E8392A]">❤️</span> by{" "}
+              Built with <span className="text-[#E8392A] mx-1"><Heart size={14} className="fill-current" /></span> by{" "}
               <a 
                 href="https://www.frequnsync.online/" 
                 target="_blank" 
@@ -168,9 +169,11 @@ export default function Footer() {
                 FrequnSync
               </a>
               {" "}· Made in India 
-              <img 
+              <Image 
                 src="https://flagcdn.com/w40/in.png" 
                 alt="India Flag" 
+                width={20}
+                height={15}
                 className="w-5 h-auto"
               />
             </span>

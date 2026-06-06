@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth, currentUser } from "@clerk/nextjs/server";
-import { supabase, supabaseAdmin } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabase";
 
 export async function GET(req: NextRequest) {
   try {
@@ -13,26 +13,69 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Supabase admin client not initialized" }, { status: 500 });
     }
 
-    // 1. Check if user already exists (using supabaseAdmin to bypass RLS)
-    const { data: existingUser } = await supabaseAdmin
+    const { data: existingUser, error: existingError } = await supabaseAdmin
       .from("users")
       .select("*")
       .eq("clerk_user_id", userId)
       .maybeSingle();
 
+    if (existingError) {
+      console.error("User sync lookup error:", existingError);
+      return NextResponse.json({ error: "Failed to lookup existing user" }, { status: 500 });
+    }
+
     if (existingUser) {
       return NextResponse.json({ success: true, user: existingUser });
     }
 
-    // 2. If not, auto-create using clerk info and supabaseAdmin
     const clerkUser = await currentUser();
     if (!clerkUser) {
       return NextResponse.json({ error: "Clerk user data not found" }, { status: 404 });
     }
 
-    const email = clerkUser.emailAddresses[0]?.emailAddress || "";
-    const fullName = `${clerkUser.firstName || ""} ${clerkUser.lastName || ""}`.trim();
-    const phone = clerkUser.phoneNumbers[0]?.phoneNumber || email.split("@")[0] || "";
+    const email =
+      clerkUser.emailAddresses[0]?.emailAddress ||
+      clerkUser.phoneNumbers[0]?.phoneNumber ||
+      `${userId}@clerk.local`;
+
+    const fullName =
+      [clerkUser.firstName, clerkUser.lastName]
+        .filter(Boolean)
+        .join(" ") ||
+      clerkUser.username ||
+      "Customer";
+
+    const phone =
+      clerkUser.phoneNumbers[0]?.phoneNumber ||
+      email.split("@")[0] ||
+      userId;
+
+    const { data: existingByEmailOrPhone, error: conflictLookupError } = await supabaseAdmin
+      .from("users")
+      .select("*")
+      .or(`email.eq.${email},phone.eq.${phone}`)
+      .maybeSingle();
+
+    if (conflictLookupError) {
+      console.error("User sync conflict lookup error:", conflictLookupError);
+      return NextResponse.json({ error: "Failed to lookup user conflict" }, { status: 500 });
+    }
+
+    if (existingByEmailOrPhone) {
+      const { data: updatedUser, error: updateError } = await supabaseAdmin
+        .from("users")
+        .update({ clerk_user_id: userId })
+        .eq("id", existingByEmailOrPhone.id)
+        .select()
+        .single();
+
+      if (updateError) {
+        console.error("User sync update error:", updateError);
+        return NextResponse.json({ error: "Failed to update existing user record" }, { status: 500 });
+      }
+
+      return NextResponse.json({ success: true, user: updatedUser });
+    }
 
     const { data: newUser, error: insertError } = await supabaseAdmin
       .from("users")
@@ -52,13 +95,13 @@ export async function GET(req: NextRequest) {
 
     if (insertError) {
       console.error("User auto-sync insert error:", insertError);
-      return NextResponse.json({ error: "Failed to create user record" }, { status: 500 });
+      return NextResponse.json({ error: insertError.message || "Failed to create user record" }, { status: 500 });
     }
 
     console.log(`Successfully synced and created user record: ${newUser.id}`);
     return NextResponse.json({ success: true, user: newUser });
   } catch (error: any) {
     console.error("User sync error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: error?.message || "Internal server error" }, { status: 500 });
   }
 }

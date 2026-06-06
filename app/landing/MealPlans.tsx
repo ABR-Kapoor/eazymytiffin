@@ -1,5 +1,5 @@
 "use client";
-
+import Image from "next/image";
 import { useState } from "react";
 import { ArrowUpRight } from "lucide-react";
 
@@ -149,10 +149,11 @@ export default function MealPlans() {
           
           {/* Column 1: Vertical Plan Banner - Glare applied here */}
           <div className="relative rounded-[32px] overflow-hidden group min-h-[500px] btn-glare">
-            <img
+            <Image
               src={bannerMap[active]}
               alt={plan.name}
-              className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+              fill
+              className="object-cover transition-transform duration-1000 group-hover:scale-110"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10" />
             <div className="absolute inset-0 bg-gradient-to-r from-black/20 to-transparent" />
@@ -228,10 +229,10 @@ export default function MealPlans() {
 
               <a
                 href="tel:9770144899"
-                className="btn-glare mt-8 flex items-center justify-center gap-2 w-full py-4 rounded-2xl text-[14px] font-bold uppercase tracking-[1px] transition-all duration-300 text-white"
+                className="btn-glare mt-8 flex items-center justify-center gap-2 w-full py-3 md:py-4 rounded-2xl text-[13px] font-bold uppercase tracking-[1px] transition-all duration-300 text-white"
                 style={{ background: "var(--emt-red)" }}
               >
-                Order Daily <ArrowUpRight size={18} strokeWidth={2.5} />
+                Order Daily <ArrowUpRight size={16} strokeWidth={2.5} className="md:w-[18px] md:h-[18px]" />
               </a>
             </div>
           </div>
