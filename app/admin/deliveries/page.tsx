@@ -64,12 +64,25 @@ export default function AdminDeliveriesPage() {
   }, [statusFilter]);
 
   const handleAssign = async (orderId: string, deliveryBoyId: string) => {
-    const { error } = await supabase.from("delivery_assignments").upsert([{
-      order_id: orderId, delivery_boy_id: deliveryBoyId, status: "assigned",
-    }], { onConflict: "order_id" });
-    await supabase.from("food_orders").update({ status: "assigned", assigned_delivery_boy: deliveryBoyId }).eq("id", orderId);
-    if (!error) showToast("Delivery boy assigned!");
-    else showToast("Assignment failed", "error");
+    // Check if an assignment already exists
+    const { data: existing } = await supabase.from("delivery_assignments").select("id").eq("order_id", orderId).single();
+    
+    let assignError;
+    if (existing) {
+      const { error } = await supabase.from("delivery_assignments").update({ delivery_boy_id: deliveryBoyId, status: "assigned" }).eq("id", existing.id);
+      assignError = error;
+    } else {
+      const { error } = await supabase.from("delivery_assignments").insert([{ order_id: orderId, delivery_boy_id: deliveryBoyId, status: "assigned" }]);
+      assignError = error;
+    }
+
+    const { error: orderError } = await supabase.from("food_orders").update({ status: "assigned", assigned_delivery_boy: deliveryBoyId }).eq("id", orderId);
+    
+    if (!assignError && !orderError) showToast("Delivery boy assigned!");
+    else {
+      console.error(assignError, orderError);
+      showToast("Assignment failed", "error");
+    }
   };
 
   const stats = {
@@ -168,7 +181,7 @@ export default function AdminDeliveriesPage() {
                     </p>
                     <p className="text-[11px] font-medium text-[#6B7280] m-0 mt-0.5 ml-5">{a.delivery_boy?.phone || "—"}</p>
                   </div>
-                  <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider border shadow-sm" style={{ background: sc.bg, color: sc.text, borderColor: sc.bg }}>
+                  <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full capitalize tracking-wide border shadow-sm" style={{ background: sc.bg, color: sc.text, borderColor: sc.bg }}>
                     {a.status.replace(/_/g, " ")}
                   </span>
                 </div>

@@ -2,9 +2,23 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { Search, RefreshCw, Shield, Bike, User, Users } from "lucide-react";
+import { Search, RefreshCw, Shield, Bike, User, Users, Pencil, Plus, Trash2, Home, Building, Briefcase, MapPin, X } from "lucide-react";
 import { CustomSelect } from "@/components/CustomSelect";
 import { useConfirm } from "@/components/ConfirmProvider";
+
+type Address = {
+  id: string; user_id: string; type: "home" | "hostel" | "office";
+  house_flat_no: string | null; landmark: string | null;
+  hostel_company_name: string | null; floor: string | null;
+  area: string; city: string; google_map_link: string | null;
+  is_default: boolean; created_at: string;
+};
+
+const ADDR_TYPE_CONFIG: Record<string, { label: string; icon: React.ReactNode; color: string; bg: string }> = {
+  home: { label: "Home", icon: <Home size={14} />, color: "#0D9488", bg: "bg-[#0D9488]/10" },
+  hostel: { label: "Hostel", icon: <Building size={14} />, color: "#6366F1", bg: "bg-[#6366F1]/10" },
+  office: { label: "Office", icon: <Briefcase size={14} />, color: "#1BA672", bg: "bg-[#1BA672]/10" },
+};
 
 type AppUser = {
   id: string; full_name: string; email: string; phone: string;
@@ -24,10 +38,116 @@ export default function AdminUsersPage() {
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const { confirm } = useConfirm();
+  const [addrUser, setAddrUser] = useState<AppUser | null>(null);
+  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [addrLoading, setAddrLoading] = useState(false);
+  const [addrForm, setAddrForm] = useState<Partial<Address>>({ type: "home", area: "", house_flat_no: "", landmark: "", city: "Bilaspur" });
+  const [editingAddrId, setEditingAddrId] = useState<string | null>(null);
+  const [savingAddr, setSavingAddr] = useState(false);
   const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
 
   const showToast = (msg: string, type: "success" | "error" = "success") => {
     setToast({ msg, type }); setTimeout(() => setToast(null), 3000);
+  };
+
+  const fetchAddresses = async (userId: string) => {
+    setAddrLoading(true);
+    const { data } = await supabase.from("addresses").select("*").eq("user_id", userId).order("is_default", { ascending: false });
+    setAddresses(data || []);
+    setAddrLoading(false);
+  };
+
+  const openAddrModal = (u: AppUser) => {
+    setAddrUser(u);
+    setEditingAddrId(null);
+    setAddrForm({ type: "home", area: "", house_flat_no: "", landmark: "", city: "Bilaspur" });
+    fetchAddresses(u.id);
+  };
+
+  const closeAddrModal = () => {
+    setAddrUser(null);
+    setAddresses([]);
+    setEditingAddrId(null);
+    setAddrForm({ type: "home", area: "", house_flat_no: "", landmark: "", city: "Bilaspur" });
+  };
+
+  const startEditAddr = (addr: Address) => {
+    setEditingAddrId(addr.id);
+    setAddrForm({
+      type: addr.type, area: addr.area,
+      house_flat_no: addr.house_flat_no || "",
+      landmark: addr.landmark || "",
+      hostel_company_name: addr.hostel_company_name || "",
+      floor: addr.floor || "",
+      google_map_link: addr.google_map_link || "",
+      city: addr.city,
+    });
+  };
+
+  const cancelAddrEdit = () => {
+    setEditingAddrId(null);
+    setAddrForm({ type: "home", area: "", house_flat_no: "", landmark: "", city: "Bilaspur" });
+  };
+
+  const handleSaveAddr = async () => {
+    if (!addrUser) return;
+    if (!addrForm.area?.trim()) { showToast("Area is required", "error"); return; }
+    setSavingAddr(true);
+
+    if (editingAddrId) {
+      const { error } = await supabase.from("addresses").update({
+        type: addrForm.type, area: addrForm.area,
+        house_flat_no: addrForm.house_flat_no || null,
+        landmark: addrForm.landmark || null,
+        hostel_company_name: addrForm.hostel_company_name || null,
+        floor: addrForm.floor || null,
+        google_map_link: addrForm.google_map_link || null,
+        city: addrForm.city,
+      }).eq("id", editingAddrId);
+      if (!error) {
+        setAddresses((prev) => prev.map((a) => a.id === editingAddrId ? { ...a, ...addrForm } as Address : a));
+        cancelAddrEdit();
+        showToast("Address updated");
+      } else showToast("Failed to update", "error");
+      setSavingAddr(false);
+      return;
+    }
+
+    if (addresses.length >= 3) { showToast("Max 3 addresses", "error"); setSavingAddr(false); return; }
+    const { data, error } = await supabase.from("addresses").insert([{
+      user_id: addrUser.id, type: addrForm.type, area: addrForm.area,
+      house_flat_no: addrForm.house_flat_no || null, landmark: addrForm.landmark || null,
+      hostel_company_name: addrForm.hostel_company_name || null, floor: addrForm.floor || null,
+      google_map_link: addrForm.google_map_link || null, city: addrForm.city || "Bilaspur",
+      is_default: addresses.length === 0,
+    }]).select().single();
+    if (!error && data) {
+      setAddresses((prev) => [...prev, data as any]);
+      setAddrForm({ type: "home", area: "", house_flat_no: "", landmark: "", city: "Bilaspur" });
+      showToast("Address added");
+    } else showToast("Failed to add", "error");
+    setSavingAddr(false);
+  };
+
+  const handleDeleteAddr = async (id: string) => {
+    confirm({
+      title: "Remove Address",
+      message: "Are you sure you want to remove this address?",
+      confirmText: "Remove",
+      onConfirm: async () => {
+        const { error } = await supabase.from("addresses").delete().eq("id", id);
+        if (!error) { setAddresses((prev) => prev.filter((a) => a.id !== id)); showToast("Address removed"); }
+        else showToast("Failed to remove", "error");
+      }
+    });
+  };
+
+  const handleSetDefaultAddr = async (id: string) => {
+    if (!addrUser) return;
+    await supabase.from("addresses").update({ is_default: false }).eq("user_id", addrUser.id);
+    await supabase.from("addresses").update({ is_default: true }).eq("id", id);
+    setAddresses((prev) => prev.map((a) => ({ ...a, is_default: a.id === id })));
+    showToast("Default address updated");
   };
 
   const fetchUsers = async () => {
@@ -189,10 +309,16 @@ export default function AdminUsersPage() {
                       {new Date(u.created_at).toLocaleDateString("en-IN", { day: '2-digit', month: 'short', year: 'numeric' })}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <button onClick={() => handleBlockToggle(u.id, u.status)}
-                        className={`px-4 py-1.5 rounded-lg text-[11px] font-bold transition-all shadow-sm ${u.status === "blocked" ? "bg-[#1B5E30]/10 text-[#1B5E30] hover:bg-[#1B5E30] hover:text-white" : "bg-[#EF4444]/10 text-[#EF4444] hover:bg-[#EF4444] hover:text-white"}`}>
-                        {u.status === "blocked" ? "Unblock" : "Block User"}
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button onClick={() => openAddrModal(u)}
+                          className="px-3 py-1.5 rounded-lg text-[11px] font-bold bg-[#0D9488]/10 text-[#0D9488] hover:bg-[#0D9488] hover:text-white transition-all shadow-sm">
+                          Addresses
+                        </button>
+                        <button onClick={() => handleBlockToggle(u.id, u.status)}
+                          className={`px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all shadow-sm ${u.status === "blocked" ? "bg-[#1B5E30]/10 text-[#1B5E30] hover:bg-[#1B5E30] hover:text-white" : "bg-[#EF4444]/10 text-[#EF4444] hover:bg-[#EF4444] hover:text-white"}`}>
+                          {u.status === "blocked" ? "Unblock" : "Block"}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );
@@ -201,6 +327,121 @@ export default function AdminUsersPage() {
           </table>
         </div>
       </div>
+      {/* Address Management Modal */}
+      {addrUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in" onClick={closeAddrModal}>
+          <div className="bg-white rounded-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto shadow-2xl animate-scale-in" onClick={(e) => e.stopPropagation()}>
+            <div className="sticky top-0 bg-white z-10 flex items-center justify-between p-5 border-b border-gray-100 rounded-t-2xl">
+              <div>
+                <h3 className="font-extrabold text-[16px] text-[#1A1A1A] m-0">Manage Addresses</h3>
+                <p className="text-[12px] text-[#9CA3AF] font-medium m-0 mt-0.5">{addrUser.full_name}</p>
+              </div>
+              <button onClick={closeAddrModal} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center border-none cursor-pointer hover:bg-gray-200 transition-colors">
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="p-5">
+              {/* Address Form */}
+              <div className="bg-[#F8F9FA] rounded-xl p-4 mb-4 border border-[#E8E8E8]">
+                <div className="flex gap-2 mb-4">
+                  {["home", "hostel", "office"].map((t) => {
+                    const cfg = ADDR_TYPE_CONFIG[t];
+                    return (
+                      <button key={t} onClick={() => setAddrForm({ ...addrForm, type: t as "home" | "hostel" | "office" })}
+                        className={`flex-1 py-2 rounded-xl text-[11px] font-bold cursor-pointer border transition-all ${
+                          addrForm.type === t
+                            ? "text-white border-none shadow-sm"
+                            : "bg-white text-[#686B78] border-[#E8E8E8] hover:bg-[#F8F9FA]"
+                        }`}
+                        style={addrForm.type === t ? { background: cfg.color } : {}}>
+                        <span className="flex items-center justify-center gap-1.5">{cfg.icon} {cfg.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="space-y-3">
+                  {[
+                    { key: "area", label: "Area / Street *", placeholder: "e.g. Sakri Road" },
+                    { key: "house_flat_no", label: "House / Flat No.", placeholder: "e.g. B-42" },
+                    { key: "landmark", label: "Landmark", placeholder: "Near bus stand" },
+                    { key: "google_map_link", label: "Google Maps Link", placeholder: "https://maps.app.goo.gl/..." },
+                  ].map((field) => (
+                    <div key={field.key}>
+                      <input type="text" placeholder={field.placeholder}
+                        value={(addrForm as any)[field.key] || ""}
+                        onChange={(e) => setAddrForm({ ...addrForm, [field.key]: e.target.value })}
+                        className="w-full bg-white rounded-xl border border-[#E8E8E8] px-4 py-2.5 text-[13px] text-[#1C1C1C] outline-none transition-colors focus:border-[#0D9488] placeholder-[#93959F] font-medium" />
+                    </div>
+                  ))}
+                </div>
+                <div className="flex gap-3 mt-4">
+                  {editingAddrId ? (
+                    <>
+                      <button onClick={cancelAddrEdit} className="flex-1 py-2.5 rounded-xl border border-[#E8E8E8] bg-white font-bold text-[13px] text-[#686B78] cursor-pointer hover:bg-[#F8F9FA] transition-colors">Cancel</button>
+                      <button onClick={handleSaveAddr} disabled={savingAddr} className="flex-1 py-2.5 rounded-xl bg-[#0D9488] text-white border-none font-bold text-[13px] cursor-pointer hover:bg-[#0F766E] transition-colors shadow-sm disabled:opacity-60">
+                        {savingAddr ? "Saving..." : "Update"}
+                      </button>
+                    </>
+                  ) : (
+                    <button onClick={handleSaveAddr} disabled={savingAddr || addresses.length >= 3}
+                      className="w-full py-2.5 rounded-xl bg-[#0D9488] text-white border-none font-bold text-[13px] cursor-pointer hover:bg-[#0F766E] transition-colors shadow-sm flex items-center justify-center gap-2 disabled:opacity-60">
+                      <Plus size={14} /> Add Address
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Addresses List */}
+              {addrLoading ? (
+                <div className="text-center py-8">
+                  <div className="w-8 h-8 rounded-full border-3 border-[#0D9488]/20 border-t-[#0D9488] animate-spin mx-auto mb-3" />
+                  <p className="text-[13px] text-[#93959F] font-medium">Loading addresses...</p>
+                </div>
+              ) : addresses.length === 0 ? (
+                <div className="text-center py-8">
+                  <div className="w-12 h-12 rounded-full bg-[#F8F9FA] flex items-center justify-center mx-auto mb-3">
+                    <MapPin size={20} className="text-[#D4D4D8]" />
+                  </div>
+                  <p className="text-[14px] text-[#686B78] m-0 font-medium">No addresses</p>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-2">
+                  {addresses.map((addr) => {
+                    const cfg = ADDR_TYPE_CONFIG[addr.type];
+                    return (
+                      <div key={addr.id} className="flex items-center gap-3 p-3.5 bg-[#F8F9FA] rounded-xl border border-[#E8E8E8]">
+                        <div className={`w-9 h-9 rounded-full ${cfg.bg} flex items-center justify-center shrink-0`} style={{ color: cfg.color }}>{cfg.icon}</div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-0.5">
+                            <p className="font-bold text-[13px] text-[#1C1C1C] m-0 capitalize">{cfg.label}</p>
+                            {addr.is_default && <span className="text-[8px] font-extrabold uppercase bg-[#0D9488]/10 text-[#0D9488] rounded-full px-2 py-0.5">Default</span>}
+                          </div>
+                          <p className="text-[11px] text-[#686B78] m-0 truncate">{[addr.house_flat_no, addr.landmark, addr.area, addr.city].filter(Boolean).join(", ")}</p>
+                        </div>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          {!addr.is_default && (
+                            <button onClick={() => handleSetDefaultAddr(addr.id)}
+                              className="text-[9px] font-bold text-[#1BA672] bg-[#1BA672]/10 rounded-full px-2 py-1 border-none cursor-pointer hover:bg-[#1BA672]/20 transition-colors uppercase tracking-wide">
+                              Default
+                            </button>
+                          )}
+                          <button onClick={() => startEditAddr(addr)} title="Edit" className="w-7 h-7 rounded-full bg-white border border-[#E8E8E8] flex items-center justify-center cursor-pointer hover:border-[#0D9488]/30 hover:bg-[#F0FDFA] transition-all">
+                            <Pencil size={12} className="text-[#93959F]" />
+                          </button>
+                          <button onClick={() => handleDeleteAddr(addr.id)} title="Remove" className="w-7 h-7 rounded-full bg-white border border-[#E8E8E8] flex items-center justify-center cursor-pointer hover:border-red-200 hover:bg-red-50 transition-all">
+                            <Trash2 size={12} className="text-[#93959F]" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

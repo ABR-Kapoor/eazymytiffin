@@ -48,6 +48,7 @@ export default function ProfilePage() {
   const [addingAddr, setAddingAddr] = useState(false);
   const [newAddr, setNewAddr] = useState({ type: "home", area: "", house_flat_no: "", landmark: "", hostel_company_name: "", floor: "", google_map_link: "", city: "Bilaspur" });
   const { confirm } = useConfirm();
+  const [editingAddrId, setEditingAddrId] = useState<string | null>(null);
   const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
 
   const showToast = (msg: string, type: "success" | "error" = "success") => {
@@ -92,9 +93,55 @@ export default function ProfilePage() {
     setSaving(false);
   };
 
-  const handleAddAddress = async () => {
+  const handleEditAddress = (addr: Address) => {
+    setEditingAddrId(addr.id);
+    setNewAddr({
+      type: addr.type,
+      area: addr.area,
+      house_flat_no: addr.house_flat_no || "",
+      landmark: addr.landmark || "",
+      hostel_company_name: addr.hostel_company_name || "",
+      floor: addr.floor || "",
+      google_map_link: addr.google_map_link || "",
+      city: addr.city,
+    });
+    setAddingAddr(true);
+  };
+
+  const handleCancelAddr = () => {
+    setAddingAddr(false);
+    setEditingAddrId(null);
+    setNewAddr({ type: "home", area: "", house_flat_no: "", landmark: "", hostel_company_name: "", floor: "", google_map_link: "", city: "Bilaspur" });
+  };
+
+  const handleSaveAddress = async () => {
     if (!user) return;
     if (!newAddr.area.trim()) { showToast("Area is required", "error"); return; }
+
+    if (editingAddrId) {
+      const { error } = await supabase
+        .from("addresses")
+        .update({
+          type: newAddr.type,
+          area: newAddr.area,
+          house_flat_no: newAddr.house_flat_no || null,
+          landmark: newAddr.landmark || null,
+          hostel_company_name: newAddr.hostel_company_name || null,
+          floor: newAddr.floor || null,
+          google_map_link: newAddr.google_map_link || null,
+          city: newAddr.city,
+        })
+        .eq("id", editingAddrId);
+      if (!error) {
+        setAddresses((prev) => prev.map((a) => a.id === editingAddrId ? { ...a, ...newAddr, house_flat_no: newAddr.house_flat_no || null, landmark: newAddr.landmark || null, hostel_company_name: newAddr.hostel_company_name || null, floor: newAddr.floor || null, google_map_link: newAddr.google_map_link || null } as Address : a));
+        handleCancelAddr();
+        showToast("Address updated successfully!");
+      } else {
+        showToast("Failed to update address.", "error");
+      }
+      return;
+    }
+
     if (addresses.length >= 3) { showToast("Maximum 3 addresses allowed", "error"); return; }
     const { data, error } = await supabase
       .from("addresses")
@@ -113,8 +160,7 @@ export default function ProfilePage() {
       .select().single();
     if (!error && data) {
       setAddresses((prev) => [...prev, data as any]);
-      setAddingAddr(false);
-      setNewAddr({ type: "home", area: "", house_flat_no: "", landmark: "", hostel_company_name: "", floor: "", google_map_link: "", city: "Bilaspur" });
+      handleCancelAddr();
       showToast("Address added successfully!");
     }
   };
@@ -295,8 +341,8 @@ export default function ProfilePage() {
                 ))}
               </div>
               <div className="flex gap-3 mt-4">
-                <button onClick={() => setAddingAddr(false)} className="flex-1 py-2.5 rounded-xl border border-[#E8E8E8] bg-white font-bold text-[13px] text-[#686B78] cursor-pointer hover:bg-[#F8F9FA] transition-colors">Cancel</button>
-                <button onClick={handleAddAddress} className="flex-1 py-2.5 rounded-xl bg-[#0D9488] text-white border-none font-bold text-[13px] cursor-pointer hover:bg-[#0F766E] transition-colors shadow-sm">Save Address</button>
+                <button onClick={handleCancelAddr} className="flex-1 py-2.5 rounded-xl border border-[#E8E8E8] bg-white font-bold text-[13px] text-[#686B78] cursor-pointer hover:bg-[#F8F9FA] transition-colors">{editingAddrId ? "Cancel" : "Cancel"}</button>
+                <button onClick={handleSaveAddress} className="flex-1 py-2.5 rounded-xl bg-[#0D9488] text-white border-none font-bold text-[13px] cursor-pointer hover:bg-[#0F766E] transition-colors shadow-sm">{editingAddrId ? "Update Address" : "Save Address"}</button>
               </div>
             </div>
           )}
@@ -352,6 +398,9 @@ export default function ProfilePage() {
                           Default
                         </button>
                       )}
+                      <button onClick={() => handleEditAddress(addr)} title="Edit" className="w-8 h-8 rounded-full bg-white border border-[#E8E8E8] flex items-center justify-center cursor-pointer hover:border-[#0D9488]/30 hover:bg-[#F0FDFA] transition-all group">
+                        <Pencil size={14} className="text-[#93959F] group-hover:text-[#0D9488] transition-colors" />
+                      </button>
                       <button onClick={() => handleDeleteAddress(addr.id)} title="Remove" className="w-8 h-8 rounded-full bg-white border border-[#E8E8E8] flex items-center justify-center cursor-pointer hover:border-red-200 hover:bg-red-50 transition-all group">
                         <Trash2 size={14} className="text-[#93959F] group-hover:text-red-500 transition-colors" />
                       </button>

@@ -278,7 +278,7 @@ export default function OrdersPage() {
                             </p>
                           </div>
                         </div>
-                        <span className="shrink-0 text-[9px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded-sm whitespace-nowrap uppercase tracking-wider border" style={{ background: status.bg, color: status.text, borderColor: status.text + '30' }}>
+                        <span className="shrink-0 text-[9px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded-sm whitespace-nowrap capitalize tracking-wide border" style={{ background: status.bg, color: status.text, borderColor: status.text + '30' }}>
                           {status.label}
                         </span>
                       </div>

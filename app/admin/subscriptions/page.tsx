@@ -352,7 +352,7 @@ export default function AdminSubscriptionsPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="inline-flex items-center text-[11px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider" style={{ background: sc.bg, color: sc.text }}>
+                      <span className="inline-flex items-center text-[11px] font-bold px-2.5 py-1 rounded-full capitalize tracking-wide" style={{ background: sc.bg, color: sc.text }}>
                         {sub.status}
                       </span>
                     </td>
