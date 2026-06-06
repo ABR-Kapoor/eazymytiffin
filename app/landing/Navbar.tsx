@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Menu, X } from "lucide-react";
 import { useAuth, useUser } from "@clerk/nextjs";
+import Link from "next/link";
 
 const navLinks = [
   { label: "Home", href: "#home" },
@@ -56,6 +57,18 @@ export default function Navbar() {
       }}
       aria-label="Main navigation"
     >
+      <style>{`
+        @media (min-width: 1025px) {
+          .nav-links-custom { display: flex !important; }
+          .hamburger-custom { display: none !important; }
+          .drawer-custom { display: none !important; }
+        }
+        @media (max-width: 1024px) {
+          .nav-links-custom { display: none !important; }
+          .hamburger-custom { display: flex !important; }
+          .drawer-custom { display: flex !important; }
+        }
+      `}</style>
       <div
         className="mx-auto flex items-center justify-between px-6"
         style={{ maxWidth: "var(--max-width)", height: "72px" }}
@@ -75,7 +88,7 @@ export default function Navbar() {
         </a>
 
         {/* Desktop nav links */}
-        <ul className="hidden md:flex items-center gap-8" role="list">
+        <ul className="nav-links-custom hidden items-center gap-8" role="list">
           {navLinks.map((link) => (
             <li key={link.label}>
               <a
@@ -95,123 +108,106 @@ export default function Navbar() {
           ))}
         </ul>
 
-        {/* Desktop right */}
-        <div className="hidden md:flex items-center gap-4">
+        {/* Right side controls (visible on all devices) */}
+        <div className="flex items-center gap-1.5 md:gap-4">
           <a
             href="tel:9770144899"
-            className="btn-glare flex items-center gap-2 px-7 py-2.5 rounded-full text-[13px] font-bold uppercase tracking-[1px] text-white transition-all duration-200 hover:-translate-y-0.5"
-            style={{ background: "#E8392A" }}
+            className="btn-glare bg-[#E8392A] hover:bg-red-700 hidden md:flex items-center gap-2 px-5 py-2.5 md:px-8 md:py-3 rounded-full text-[12px] md:text-[13px] font-bold uppercase tracking-[1px] text-white transition-all duration-300 hover:scale-[1.03] whitespace-nowrap"
           >
-            Book Now <ArrowUpRight size={16} strokeWidth={3} />
+            Book Now <ArrowUpRight size={14} className="md:w-4 md:h-4" strokeWidth={3} />
           </a>
           {!isSignedIn && (
             <a
               href="/sign-in"
-              className="border-[1.5px] border-[#E8392A] text-[#E8392A] hover:bg-[#E8392A] hover:text-white flex items-center gap-2 px-6 py-2 rounded-full text-[13px] font-bold uppercase tracking-[1.2px] transition-all duration-200 hover:-translate-y-0.5"
+              className="border-[1.5px] border-[#E8392A] text-[#E8392A] hover:bg-[#E8392A] hover:text-white hidden md:flex items-center gap-2 px-5 py-2.5 md:px-8 md:py-3 rounded-full text-[12px] md:text-[13px] font-bold uppercase tracking-[1px] transition-all duration-300 hover:scale-[1.03] whitespace-nowrap"
             >
               Login
             </a>
           )}
           {isSignedIn && (
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1.5 md:gap-4">
               {isAdmin && (
                 <a
                   href="/admin"
-                  className="bg-[#E8392A] text-white hover:bg-red-700 flex items-center gap-2 px-6 py-2 rounded-full text-[13px] font-bold uppercase tracking-[1.2px] transition-all duration-200 hover:-translate-y-0.5"
+                  className="hidden md:flex bg-[#E8392A] text-white hover:bg-red-700 items-center gap-2 px-5 py-2.5 md:px-8 md:py-3 rounded-full text-[12px] md:text-[13px] font-bold uppercase tracking-[1px] transition-all duration-300 hover:scale-[1.03] whitespace-nowrap"
                 >
-                  Admin Panel
+                  Admin
                 </a>
               )}
               <a
                 href="/home"
-                className="border-[1.5px] border-[#5A4A3A] text-[#5A4A3A] hover:bg-[#5A4A3A] hover:text-white flex items-center gap-2 px-6 py-2 rounded-full text-[13px] font-bold uppercase tracking-[1.2px] transition-all duration-200 hover:-translate-y-0.5"
+                className="border-[1.5px] border-[#5A4A3A] text-[#5A4A3A] hover:bg-[#5A4A3A] hover:text-white hidden md:flex items-center gap-2 px-5 py-2.5 md:px-8 md:py-3 rounded-full text-[12px] md:text-[13px] font-bold uppercase tracking-[1px] transition-all duration-300 hover:scale-[1.03] whitespace-nowrap"
               >
                 Dashboard
               </a>
             </div>
           )}
-        </div>
 
-        {/* Mobile hamburger */}
-        <button
-          className="md:hidden flex flex-col gap-1.5 p-2"
-          onClick={() => setMenuOpen(!menuOpen)}
-          aria-expanded={menuOpen}
-          aria-label="Navigation menu"
-        >
-          <span
-            className="block w-6 h-0.5 transition-all duration-200"
-            style={{
-              background: "#1A1A1A",
-              transform: menuOpen ? "rotate(45deg) translate(4px, 4px)" : "none",
-            }}
-          />
-          <span
-            className="block w-6 h-0.5 transition-all duration-200"
-            style={{
-              background: "#1A1A1A",
-              opacity: menuOpen ? 0 : 1,
-            }}
-          />
-          <span
-            className="block w-6 h-0.5 transition-all duration-200"
-            style={{
-              background: "#1A1A1A",
-              transform: menuOpen ? "rotate(-45deg) translate(4px, -4px)" : "none",
-            }}
-          />
-        </button>
+          {/* Mobile hamburger */}
+          <button
+            className="hamburger-custom flex items-center justify-center p-1 ml-1 text-[#1A1A1A] transition-transform hover:scale-110 active:scale-95"
+            onClick={() => setMenuOpen(!menuOpen)}
+            aria-expanded={menuOpen}
+            aria-label="Navigation menu"
+          >
+            {menuOpen ? <X size={26} /> : <Menu size={26} />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile drawer */}
       {menuOpen && (
-        <div className="md:hidden bg-white border-t border-[#D4B896] px-6 py-4 flex flex-col gap-4">
+        <div className="drawer-custom bg-white border-t border-[#D4B896] px-6 py-6 flex flex-col gap-4 shadow-xl">
           {navLinks.map((link) => (
             <a
               key={link.label}
               href={link.href}
-              className="text-[15px] font-semibold py-2"
+              className="text-[16px] font-semibold py-2 text-center"
               style={{ color: "#5A4A3A" }}
               onClick={() => setMenuOpen(false)}
             >
               {link.label}
             </a>
           ))}
-          <a
-            href="tel:9770144899"
-            className="mt-2 w-full flex items-center justify-center gap-2 py-3 rounded-full text-[14px] font-bold uppercase tracking-[1px] text-white"
-            style={{ background: "#E8392A" }}
-            onClick={() => setMenuOpen(false)}
-          >
-            Book Now <ArrowUpRight size={18} strokeWidth={3} />
-          </a>
-          {!isSignedIn && (
+          {/* Buttons kept in drawer for small screens where they're hidden from top bar */}
+          <div className="mt-2 flex flex-col gap-3">
             <a
-              href="/sign-in"
-              className="w-full text-center border-[1.5px] border-[#E8392A] text-[#E8392A] py-2.5 rounded-full text-[14px] font-bold uppercase tracking-[1.2px] transition-all duration-200"
+              href="tel:9770144899"
+              className="w-full md:hidden flex items-center justify-center gap-2 py-2.5 rounded-full text-[13px] font-bold uppercase tracking-[1px] text-white"
+              style={{ background: "#E8392A" }}
               onClick={() => setMenuOpen(false)}
             >
-              Login
+              Book Now <ArrowUpRight size={16} strokeWidth={3} />
             </a>
-          )}
-          {isSignedIn && (
-            <div className="flex flex-col gap-3 w-full">
-              {isAdmin && (
-                <a
-                  href="/admin"
-                  className="w-full text-center bg-[#E8392A] text-white py-2.5 rounded-full text-[14px] font-bold uppercase tracking-[1.2px] transition-all duration-200"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  Admin Panel
-                </a>
-              )}
-              <a
+            {!isSignedIn && (
+              <Link
+                href="/sign-in"
+                className="w-full md:hidden flex items-center justify-center py-2.5 border-[1.5px] border-[#E8392A] text-[#E8392A] rounded-full text-[13px] font-bold uppercase tracking-[1.2px]"
+                onClick={() => setMenuOpen(false)}
+              >
+                Login
+              </Link>
+            )}
+            {isSignedIn && (
+              <Link
                 href="/home"
-                className="w-full text-center border-[1.5px] border-[#5A4A3A] text-[#5A4A3A] py-2.5 rounded-full text-[14px] font-bold uppercase tracking-[1.2px] transition-all duration-200"
+                className="w-full md:hidden flex items-center justify-center py-2.5 border-[1.5px] border-[#5A4A3A] text-[#5A4A3A] rounded-full text-[13px] font-bold uppercase tracking-[1.2px]"
                 onClick={() => setMenuOpen(false)}
               >
                 Dashboard
-              </a>
+              </Link>
+            )}
+          </div>
+          {/* Admin panel link kept in drawer for mobile if signed in as admin */}
+          {isSignedIn && isAdmin && (
+            <div className="mt-2 flex flex-col gap-3">
+              <Link
+                href="/admin"
+                className="w-full flex items-center justify-center py-2.5 bg-[#E8392A] text-white rounded-full text-[13px] font-bold uppercase tracking-[1.2px]"
+                onClick={() => setMenuOpen(false)}
+              >
+                Admin Panel
+              </Link>
             </div>
           )}
         </div>

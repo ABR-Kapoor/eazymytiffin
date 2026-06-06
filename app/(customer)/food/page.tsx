@@ -6,7 +6,14 @@ import { useCartStore } from "@/store/cartStore";
 import { useUserStore } from "@/store/userStore";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ShoppingCart, Plus, Minus, Leaf, Drumstick, Search, X, ChevronRight, Utensils, UtensilsCrossed, Sun, Moon } from "lucide-react";
+import {
+  Leaf, Drumstick, Search, X, ChevronRight,
+  UtensilsCrossed, Sun, Moon, Truck
+} from "lucide-react";
+import { FoodCard } from "@/components/ui/FoodCard";
+import { FilterChips } from "@/components/ui/FilterChips";
+import { useThemeStore } from "@/store/themeStore";
+import { useOrderStore } from "@/store/orderStore";
 
 type Menu = {
   id: string; title: string; description: string | null;
@@ -19,17 +26,17 @@ export default function FoodPage() {
   const user = useUserStore((s) => s.user);
   const isAdmin = useUserStore((s) => s.isAdmin)();
   const { items, addItem, updateQty, itemCount, total } = useCartStore();
+  const { isVegTheme: isVegOnly, setVegTheme: setIsVegOnly } = useThemeStore();
+  const { getActiveOrder } = useOrderStore();
+  const activeOrder = getActiveOrder();
   const [menus, setMenus] = useState<Menu[]>([]);
   const [filtered, setFiltered] = useState<Menu[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [catFilter, setCatFilter] = useState<"all" | "veg" | "non_veg">("all");
-  const [mealFilter, setMealFilter] = useState<"all" | "lunch" | "dinner">("all");
-
+  const [activeTab, setActiveTab] = useState<"all" | "veg" | "non_veg" | "lunch" | "dinner">("all");
   useEffect(() => {
     const fetch_ = async () => {
       const { data } = await supabase.from("menus").select("*").eq("is_active", true).order("created_at", { ascending: false });
-      console.log("[debug] fetched menus:", data);
       setMenus(data || []);
       setFiltered(data || []);
       setLoading(false);
@@ -40,106 +47,156 @@ export default function FoodPage() {
   useEffect(() => {
     let r = menus;
     if (search) r = r.filter((m) => m.title.toLowerCase().includes(search.toLowerCase()));
-    if (catFilter !== "all") r = r.filter((m) => m.category === catFilter);
-    if (mealFilter !== "all") r = r.filter((m) => m.meal_type === mealFilter || m.meal_type === "both");
+    if (activeTab === "veg" || activeTab === "non_veg") r = r.filter((m) => m.category === activeTab);
+    if (activeTab === "lunch" || activeTab === "dinner") r = r.filter((m) => m.meal_type === activeTab || m.meal_type === "both");
     setFiltered(r);
-  }, [search, catFilter, mealFilter, menus]);
+  }, [search, activeTab, menus]);
 
   const qty = (id: string) => items.find((i) => i.menu_id === id)?.quantity || 0;
 
   return (
-    <>
-      {/* Toast would go here if needed */}
-        <div className="animate-fade-up mb-5">
-          <h1 className="font-black text-[clamp(18px,4vw,22px)] text-[#1A1A1A] tracking-tight flex items-center gap-2"><Utensils size={28} className="text-[#1A1A1A]" /> Food Delivery</h1>
-          <p className="text-[#6B7280] text-[13px] mt-1">Order fresh meals — Lunch 12–2 PM · Dinner 7–9 PM</p>
+    <div className="bg-[#f8f9fa] min-h-screen pb-4">
+      {/* Hero Section */}
+      <div className="relative bg-[#FC8019] pt-6 pb-10 px-4 rounded-b-[32px] shadow-sm transition-all duration-500 overflow-hidden -mx-4 lg:mx-0">
+        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/food.png')] opacity-60 invert pointer-events-none" />
+
+        <div className="relative z-10 mb-5 mt-2">
+          <h2 className="text-white text-[26px] font-black drop-shadow-sm leading-tight tracking-tight">
+            Explore Our Menu
+          </h2>
+          <p className="text-white/95 text-[14px] font-bold mt-1 tracking-wide">
+            Fresh meals delivered to your doorstep
+          </p>
         </div>
 
-        {/* Search + Filters */}
-        <div className="animate-fade-up stagger-child mb-5">
-          <div className="relative mb-3">
-            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#9CA3AF]" />
-            <input type="text" placeholder="Search dishes…" value={search} onChange={(e) => setSearch(e.target.value)} className="w-full py-3 pr-3.5 pl-10 border border-[#D4B896]/30 rounded-xl bg-white text-[14px] text-[#1A1A1A] outline-none focus:ring-2 focus:ring-emt-red/20 focus:border-emt-red transition-all" />
-            {search && <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 bg-transparent border-none cursor-pointer text-[#9CA3AF] hover:text-[#4A3A2A]"><X size={16} /></button>}
-          </div>
-          <div className="flex gap-2 flex-wrap">
-            {([["all","All"],["veg",<span className="flex items-center gap-1"><Leaf size={12} /> Veg</span>],["non_veg",<span className="flex items-center gap-1"><Drumstick size={12} /> Non-Veg</span>]] as const).map(([v,l]) => (
-              <button key={v as string} onClick={() => setCatFilter(v as any)} className={`px-3.5 py-1.5 rounded-full text-[12px] font-bold border cursor-pointer transition-colors ${catFilter === v ? "bg-[#1A1A1A] text-white border-[#1A1A1A]" : "bg-white text-[#4A3A2A] border-[#D4B896]/30 hover:bg-gray-50"}`}>{l}</button>
-            ))}
-            {([["lunch",<span className="flex items-center gap-1"><Sun size={12} /> Lunch</span>],["dinner",<span className="flex items-center gap-1"><Moon size={12} /> Dinner</span>]] as const).map(([v,l]) => (
-              <button key={v as string} onClick={() => setMealFilter(mealFilter === v ? "all" : (v as any))} className={`px-3.5 py-1.5 rounded-full text-[12px] font-bold border cursor-pointer transition-colors ${mealFilter === v ? "bg-[#E8392A]/10 text-[#E8392A] border-[#E8392A]/20" : "bg-white text-[#4A3A2A] border-[#D4B896]/30 hover:bg-gray-50"}`}>{l}</button>
-            ))}
-          </div>
+        <div className="relative z-10 flex items-center bg-white rounded-[16px] px-4 py-3 shadow-[0_6px_20px_rgba(0,0,0,0.1)]">
+          <input
+            type="text"
+            placeholder="Search for dishes..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="flex-1 bg-transparent outline-none text-[14px] text-[#1C1C1C] placeholder-[#93959F] font-medium"
+          />
+          {search && (
+            <button onClick={() => setSearch("")} className="mr-3 text-[#93959F]">
+              <X size={16} />
+            </button>
+          )}
+          <div className="w-[1px] h-5 bg-slate-200 mx-2" />
+          <Search size={20} className="text-[#FC8019] ml-2 mr-1 shrink-0" />
         </div>
 
+        {/* Veg/Non-Veg Toggle */}
+        <div className="relative z-10 flex justify-center mt-5">
+          <div className="bg-white/20 backdrop-blur-md rounded-full p-1 flex items-center gap-1 shadow-sm border border-white/10">
+            <button
+              onClick={() => setIsVegOnly(true)}
+              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[13px] tracking-wide transition-all ${
+                isVegOnly ? "bg-white text-slate-800 shadow-md font-bold" : "text-white font-semibold"
+              }`}
+            >
+              <div className="w-3.5 h-3.5 border-[1.5px] border-green-600 flex items-center justify-center rounded-[3px] bg-white">
+                <div className="w-1.5 h-1.5 bg-green-600 rounded-full" />
+              </div>
+              Veg Only
+            </button>
+            <button
+              onClick={() => setIsVegOnly(false)}
+              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[13px] tracking-wide transition-all ${
+                !isVegOnly ? "bg-white text-slate-800 shadow-md font-bold" : "text-white font-semibold"
+              }`}
+            >
+              <div className="w-3.5 h-3.5 border-[1.5px] border-red-600 flex items-center justify-center rounded-[3px] bg-white">
+                <div className="w-1.5 h-1.5 bg-red-600 rounded-full" />
+              </div>
+              Non-Veg
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-6 relative z-20">
+        {/* Weekly Menu Alert */}
+        {activeOrder && (
+          <div className="mb-4 bg-white border border-[#FC8019]/20 rounded-2xl p-4 shadow-[0_4px_16px_rgba(0,0,0,0.06)] relative overflow-hidden flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-orange-50 flex items-center justify-center shrink-0">
+              <Truck size={24} className="text-[#FC8019] animate-pulse" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-extrabold text-[15px] text-[#1C1C1C] m-0">
+                Order Arriving in 15 mins
+              </p>
+              <p className="text-[13px] text-[#FC8019] font-bold m-0 mt-0.5 capitalize">
+                {activeOrder.status.replace(/_/g, " ")} • Track Order
+              </p>
+            </div>
+            <Link href="/orders" className="absolute inset-0 z-10" />
+          </div>
+        )}
+
+      </div>
+
+      {/* Sticky Filters Row */}
+      <div className="sticky top-[56px] z-20 py-3 mb-2 -mx-4 px-4 bg-[#f8f9fa] border-b border-slate-100 flex flex-col gap-3">
+        <FilterChips
+          options={[
+            { value: "all", label: "All" },
+            { value: "veg", label: <span className="flex items-center gap-1"><Leaf size={12} /> Veg</span> },
+            { value: "non_veg", label: <span className="flex items-center gap-1"><Drumstick size={12} /> Non-Veg</span> },
+            { value: "lunch", label: <span className="flex items-center gap-1"><Sun size={12} /> Lunch</span> },
+            { value: "dinner", label: <span className="flex items-center gap-1"><Moon size={12} /> Dinner</span> }
+          ]}
+          activeValue={activeTab}
+          onChange={(v) => setActiveTab(v as any)}
+        />
+      </div>
+
+      <div className="px-0 sm:px-4">
         {loading ? (
-          <div className="text-center py-16"><div className="w-10 h-10 rounded-full border-4 border-emt-red/20 border-t-emt-red animate-spin mx-auto mb-4" /><p className="text-[#9CA3AF]">Loading menu…</p></div>
+          <div className="text-center py-16"><div className="w-10 h-10 rounded-full border-4 border-[#FC8019]/20 border-t-[#FC8019] animate-spin mx-auto mb-4" /><p className="text-[#93959F]">Loading menu…</p></div>
         ) : filtered.length === 0 ? (
-          <div className="text-center py-16 bg-white rounded-[20px] border border-[#D4B896]/15">
-            <div className="flex justify-center mb-3 text-emt-red/60"><UtensilsCrossed size={48} /></div>
+          <div className="text-center py-16 bg-white rounded-[20px] border border-[#E8E8E8]">
+            <div className="flex justify-center mb-3 text-[#93959F]"><UtensilsCrossed size={48} /></div>
             <h3 className="font-extrabold text-[#1A1A1A] mb-2">No dishes found</h3>
             <p className="text-[#9CA3AF]">Try adjusting your filters or check back later</p>
           </div>
         ) : (
-          <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-4">
-            {filtered.map((menu) => {
-              const q = qty(menu.id);
-              return (
-                <div key={menu.id} className={`card-lift group animate-fade-up stagger-child bg-white rounded-[20px] overflow-hidden transition-all ${q > 0 ? "border border-emt-red/30 shadow-[0_8px_24px_rgba(232,57,42,0.12)]" : "border border-[#D4B896]/15 shadow-sm"}`}>
-                  {menu.image_url ? (
-                    <div className="relative overflow-hidden">
-                      <img src={menu.image_url} alt={menu.title} className="w-full h-[130px] object-cover transition-transform duration-500 group-hover:scale-105" />
-                      <div className={`absolute top-2.5 left-2.5 w-5.5 h-5.5 rounded bg-white flex items-center justify-center shadow-sm ${menu.category === "veg" ? "text-[#1B5E30]" : "text-[#E8392A]"}`}>
-                        {menu.category === "veg" ? <Leaf size={14} /> : <Drumstick size={14} />}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className={`h-[130px] flex items-center justify-center relative ${menu.category === "veg" ? "bg-[#1B5E30]/5 text-[#1B5E30]" : "bg-[#E8392A]/5 text-[#E8392A]"}`}>
-                      {menu.category === "veg" ? <Leaf size={44} /> : <Drumstick size={44} />}
-                      <div className={`absolute top-2.5 left-2.5 w-5.5 h-5.5 rounded bg-white flex items-center justify-center shadow-sm ${menu.category === "veg" ? "text-[#1B5E30]" : "text-[#E8392A]"}`}>
-                        {menu.category === "veg" ? <Leaf size={14} /> : <Drumstick size={14} />}
-                      </div>
-                    </div>
-                  )}
-                  <div className="p-3">
-                    <div className="flex justify-between items-start mb-1 gap-2">
-                      <h3 className="font-extrabold text-[13px] text-[#1A1A1A] m-0 leading-tight flex-1">{menu.title}</h3>
-                      {menu.badge && <span className="text-[9px] font-bold bg-[#F5A623]/15 text-[#D97706] rounded-full px-2 py-0.5 shrink-0">{menu.badge}</span>}
-                    </div>
-                    {menu.description && <p className="text-[11px] text-[#9CA3AF] m-0 mb-3 leading-snug">{menu.description}</p>}
-                    <div className="flex items-center justify-between mt-auto">
-                      <span className="text-[10px] text-[#9CA3AF] font-semibold flex items-center gap-1">
-                        {menu.meal_type === "lunch" ? <><Sun size={12} /> Lunch</> : menu.meal_type === "dinner" ? <><Moon size={12} /> Dinner</> : <><Sun size={12}/><Moon size={12}/></>}
-                      </span>
-                      {q === 0 ? (
-                        <button onClick={() => addItem({ menu_id: menu.id, title: menu.title, price: 120, category: menu.category, image_url: menu.image_url, badge: menu.badge })} className="btn-glare flex items-center gap-1.5 bg-emt-red text-white border-none rounded-[10px] px-3.5 py-2 text-[12px] font-bold cursor-pointer transition-colors hover:bg-[#B91C1C]">
-                          <Plus size={14} /> Add
-                        </button>
-                      ) : (
-                        <div className="flex items-center gap-0.5">
-                          <button onClick={() => updateQty(menu.id, q - 1)} className="w-7 h-7 rounded-lg bg-emt-red/10 text-emt-red border-none cursor-pointer flex items-center justify-center hover:bg-emt-red/20 transition-colors"><Minus size={14} /></button>
-                          <span className="font-extrabold text-[14px] min-w-[22px] text-center">{q}</span>
-                          <button onClick={() => addItem({ menu_id: menu.id, title: menu.title, price: 120, category: menu.category, image_url: menu.image_url, badge: menu.badge })} className="w-7 h-7 rounded-lg bg-emt-red text-white border-none cursor-pointer flex items-center justify-center hover:bg-[#B91C1C] transition-colors"><Plus size={14} /></button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+          <div className="flex flex-col">
+            {filtered.map((menu) => (
+              <FoodCard
+                key={menu.id}
+                menu={menu}
+                quantity={qty(menu.id)}
+                price={120}
+                onAdd={() => addItem({ menu_id: menu.id, title: menu.title, price: 120, category: menu.category, image_url: menu.image_url, badge: menu.badge })}
+                onUpdateQty={(val) => updateQty(menu.id, val)}
+                layout="horizontal"
+              />
+            ))}
           </div>
         )}
+      </div>
 
       {/* Floating Cart */}
       {itemCount() > 0 && (
-        <div className="fixed bottom-[80px] left-1/2 -translate-x-1/2 z-[100] animate-fade-up">
-          <button onClick={() => router.push("/food/checkout")} className="btn-glare flex items-center gap-3 bg-gradient-to-br from-[#E8392A] to-[#B91C1C] text-white border-none rounded-[20px] px-6 py-3.5 font-extrabold text-[14px] cursor-pointer shadow-[0_8px_32px_rgba(232,57,42,0.4)] whitespace-nowrap hover:scale-105 transition-transform">
-            <ShoppingCart size={18} />
-            {itemCount()} item{itemCount() > 1 ? "s" : ""} · ₹{total()}
-            <ChevronRight size={16} />
-          </button>
+        <div className="fixed bottom-[72px] left-0 right-0 px-4 z-[100] pointer-events-none transition-transform translate-y-0">
+          <div className="max-w-[960px] mx-auto pointer-events-auto">
+            <button onClick={() => router.push("/food/checkout")} className="w-full flex items-center justify-between bg-[#1BA672] text-white rounded-2xl px-4 sm:px-5 py-3 sm:py-4 cursor-pointer shadow-[0_8px_24px_rgba(27,166,114,0.4)] border-none hover:bg-[#14835A] transition-colors">
+              <div className="flex flex-col gap-0.5 min-w-0">
+                <p className="font-black text-[13px] sm:text-[15px] text-left m-0 tracking-wide uppercase truncate">
+                  {itemCount()} item{itemCount() > 1 ? "s" : ""} added
+                </p>
+                <p className="text-[11px] sm:text-[12px] text-white/90 font-bold m-0 text-left truncate">
+                  ₹{total()} • Extra charges may apply
+                </p>
+              </div>
+              <div className="flex items-center gap-1.5 sm:gap-2 font-black text-[13px] sm:text-[15px] uppercase tracking-wide shrink-0">
+                View Cart <ChevronRight size={18} className="sm:mt-[-1px]" />
+              </div>
+            </button>
+          </div>
         </div>
       )}
-    </>
+    </div>
   );
 }

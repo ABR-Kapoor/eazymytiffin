@@ -1,45 +1,84 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useSubscriptionStore } from "@/store/subscriptionStore";
 import { useUserStore } from "@/store/userStore";
+import { useOrderStore } from "@/store/orderStore";
+import { useThemeStore } from "@/store/themeStore";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  Check, ChevronRight, Pause, Play, X, Leaf, Drumstick, AlertTriangle, CalendarDays, PartyPopper, Sun, Moon
+  Pause, Play, CheckCircle2, ChevronRight, Star, Leaf, Drumstick,
+  Truck, Search, X
 } from "lucide-react";
-
-const MEAL_COLORS: Record<string, string> = {
-  upcoming: "#E8392A",
-  delivered: "#1B5E30",
-  paused: "#D97706",
-  cancelled: "#9CA3AF",
-};
+import TiffinPlansSection from "@/components/ui/TiffinPlansSection";
 
 const DEFAULT_PLANS = [
-  { id: "veg-weekly", title: "Veg Weekly", description: "Pure vegetarian", category: "veg", meal_type: "both", duration_days: 7, price: 560, is_trial: false },
-  { id: "nonveg-weekly", title: "Non-Veg Weekly", description: "Premium non-veg", category: "non_veg", meal_type: "both", duration_days: 7, price: 700, is_trial: false },
-  { id: "veg-monthly", title: "Veg Monthly", description: "Pure vegetarian", category: "veg", meal_type: "both", duration_days: 26, price: 2490, is_trial: false },
-  { id: "nonveg-monthly", title: "Non-Veg Monthly", description: "Premium non-veg", category: "non_veg", meal_type: "both", duration_days: 26, price: 3490, is_trial: false },
+  // VEG MEALS
+  { id: "veg-trial", title: "1 Meal Trial", description: "VEG MEALS", category: "veg", meal_type: "lunch", duration_days: 1, price: 99, is_trial: true },
+  { id: "veg-1-meal", title: "1 Meal", description: "VEG MEALS", category: "veg", meal_type: "lunch", duration_days: 1, price: 119, is_trial: false },
+  { id: "veg-1-day", title: "1 Day Meal", description: "VEG MEALS", category: "veg", meal_type: "both", duration_days: 1, price: 199, is_trial: false },
+  { id: "veg-1-month", title: "1 Month", description: "VEG MEALS", category: "veg", meal_type: "both", duration_days: 26, price: 3199, is_trial: false },
+
+  // MIX MEALS
+  { id: "mix-trial", title: "1 Meal Trial", description: "MIX MEALS", category: "non_veg", meal_type: "lunch", duration_days: 1, price: 109, is_trial: true },
+  { id: "mix-1-meal", title: "1 Meal", description: "MIX MEALS", category: "non_veg", meal_type: "lunch", duration_days: 1, price: 139, is_trial: false },
+  { id: "mix-1-day", title: "1 Day Meal", description: "MIX MEALS", category: "non_veg", meal_type: "both", duration_days: 1, price: 299, is_trial: false },
+  { id: "mix-1-month", title: "1 Month", description: "MIX MEALS", category: "non_veg", meal_type: "both", duration_days: 26, price: 3599, is_trial: false },
+
+  // NON-VEG MEALS
+  { id: "nonveg-trial", title: "1 Meal Trial", description: "NON-VEG MEALS", category: "non_veg", meal_type: "lunch", duration_days: 1, price: 129, is_trial: true },
+  { id: "nonveg-1-meal", title: "1 Meal", description: "NON-VEG MEALS", category: "non_veg", meal_type: "lunch", duration_days: 1, price: 159, is_trial: false },
+  { id: "nonveg-1-day", title: "1 Day Meal", description: "NON-VEG MEALS", category: "non_veg", meal_type: "both", duration_days: 1, price: 259, is_trial: false },
+  { id: "nonveg-1-month", title: "1 Month", description: "NON-VEG MEALS", category: "non_veg", meal_type: "both", duration_days: 26, price: 4299, is_trial: false },
 ];
+
+const categoryMeta: Record<string, any> = {
+  veg: { label: "Veg", color: "#1B5E30", image: "/eazymytiffin-veg-meal-plan.png", dotColor: "bg-[#1BA672]" },
+  mix: { label: "Mix Veg", color: "#D35400", image: "/eazymytiffin-mix-meal-plan.png", dotColor: "bg-[#D35400]" },
+  nonveg: { label: "Non-Veg", color: "#E8392A", image: "/eazymytiffin-non-veg-meal-plan.png", dotColor: "bg-[#E23744]" },
+};
+
+const DESCRIPTIONS: Record<string, string> = {
+  "1-meal-trial": "Try before you subscribe",
+  "1-meal": "Single meal, fresh & hot",
+  "1-day-meal": "Lunch + Dinner combo",
+  "1-month": "Whole month of fresh meals",
+};
 
 export default function SubscriptionPage() {
   const router = useRouter();
   const user = useUserStore((s) => s.user);
-  const isAdmin = useUserStore((s) => s.isAdmin)();
-  const canUseTrial = useUserStore((s) => s.canUseTrial)();
-  const { activeSubscription: sub, plans, subscriptionDays, isLoading, setActiveSubscription, canPauseLunch, canPauseDinner } = useSubscriptionStore();
+  const { activeSubscription: sub, plans, subscriptionDays, isLoading, setActiveSubscription } = useSubscriptionStore();
+  const { getActiveOrder } = useOrderStore();
+  const activeOrder = getActiveOrder();
+  const carouselRef = useRef<HTMLDivElement>(null);
 
-  const isActive = sub?.status === "active";
-  const isPaused = sub?.status === "paused";
+  const { isVegTheme: isVegOnly, setVegTheme: setIsVegOnly } = useThemeStore();
+  const activeDiet = isVegOnly ? "veg" : "non_veg";
+  const [activeSchedule, setActiveSchedule] = useState("all");
+  const [activeMealFilter, setActiveMealFilter] = useState("all");
+  const [search, setSearch] = useState("");
 
   const [processingPlanId, setProcessingPlanId] = useState<string | null>(null);
-  const [managingSub, setManagingSub] = useState(false);
   const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
-  const [showConfirmCancel, setShowConfirmCancel] = useState(false);
-  const [calendarMonth] = useState(new Date());
 
-  const progress = sub ? Math.round((sub.remaining_days / sub.total_days) * 100) : 0;
+  const displayPlans = plans.length > 0 ? plans : DEFAULT_PLANS;
+
+  const filteredPlans = displayPlans.filter(p => {
+    if (activeDiet === "veg" && p.category !== "veg") return false;
+    if (activeDiet === "non_veg" && p.category !== "non_veg") return false;
+    if (activeSchedule === "lunch" && p.meal_type !== "lunch" && p.meal_type !== "both") return false;
+    if (activeSchedule === "dinner" && p.meal_type !== "dinner" && p.meal_type !== "both") return false;
+    if (activeMealFilter !== "all") {
+      if (activeMealFilter === "1-meal-trial" && !p.is_trial) return false;
+      if (activeMealFilter === "1-meal" && (p.duration_days !== 1 || p.meal_type === "both" || p.is_trial)) return false;
+      if (activeMealFilter === "1-day-meal" && (p.duration_days !== 1 || p.meal_type !== "both" || p.is_trial)) return false;
+      if (activeMealFilter === "1-month" && p.duration_days < 26) return false;
+    }
+    if (search && !p.title.toLowerCase().includes(search.toLowerCase()) && !(p.description || "").toLowerCase().includes(search.toLowerCase())) return false;
+    return true;
+  });
 
   const showToast = (msg: string, type: "success" | "error" = "success") => {
     setToast({ msg, type });
@@ -60,173 +99,188 @@ export default function SubscriptionPage() {
     } catch { showToast("Network error.", "error"); setProcessingPlanId(null); }
   };
 
-  const handleManage = async (action: "pause" | "resume" | "cancel") => {
-    if (!sub) return;
-    if (action === "cancel") setShowConfirmCancel(false);
-    if (action === "pause") {
-      const mt = sub.meal_type;
-      if ((mt === "lunch" || mt === "both") && !canPauseLunch()) { showToast("Lunch pause cutoff is 11 AM. Too late for today.", "error"); return; }
-      if (mt === "dinner" && !canPauseDinner()) { showToast("Dinner pause cutoff is 6 PM. Too late for today.", "error"); return; }
-    }
-    setManagingSub(true);
-    try {
-      const res = await fetch(`/api/subscriptions/${action}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ subscriptionId: sub.id }) });
-      const result = await res.json();
-      if (result.success) { setActiveSubscription(result.subscription); showToast(action === "pause" ? "Plan paused successfully!" : action === "resume" ? "Plan resumed successfully!" : "Plan cancelled successfully!"); }
-      else showToast(result.error || "Operation failed.", "error");
-    } catch { showToast("Network error.", "error"); }
-    finally { setManagingSub(false); }
-  };
-
-  const calendarDays = (() => {
-    const y = calendarMonth.getFullYear(), m = calendarMonth.getMonth();
-    const firstDay = new Date(y, m, 1).getDay();
-    const daysInMonth = new Date(y, m + 1, 0).getDate();
-    const cells: { date: number | null; subDay: (typeof subscriptionDays)[0] | null }[] = [];
-    for (let i = 0; i < firstDay; i++) cells.push({ date: null, subDay: null });
-    for (let d = 1; d <= daysInMonth; d++) {
-      const dateStr = `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-      cells.push({ date: d, subDay: subscriptionDays.find((sd) => sd.meal_date === dateStr) || null });
-    }
-    return cells;
-  })();
-
-  const displayPlans = plans.length > 0 ? plans : DEFAULT_PLANS;
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (carouselRef.current) {
+        const { scrollLeft, scrollWidth, clientWidth } = carouselRef.current;
+        if (scrollLeft + clientWidth >= scrollWidth - 10) {
+          carouselRef.current.scrollTo({ left: 0, behavior: "smooth" });
+        } else {
+          carouselRef.current.scrollBy({ left: clientWidth, behavior: "smooth" });
+        }
+      }
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
-    <>
-      {toast && <div className={`fixed top-[72px] right-4 z-[200] text-white rounded-xl py-3 px-5 text-[13px] font-semibold shadow-lg animate-slide-left ${toast.type === "success" ? "bg-[#1B5E30]" : "bg-[#E8392A]"}`}>{toast.msg}</div>}
-
-      {showConfirmCancel && (
-        <div className="fixed inset-0 bg-black/50 z-[300] flex items-center justify-center p-6">
-          <div className="bg-white rounded-[20px] p-7 max-w-[360px] w-full text-center animate-fade-up">
-            <AlertTriangle size={40} className="text-[#E8392A] mx-auto mb-3" />
-            <h3 className="font-extrabold text-[18px] mb-2">Cancel Subscription?</h3>
-            <p className="text-[#6B7280] text-[14px] mb-5">You still have <strong>{sub?.remaining_days}</strong> meal days left.</p>
-            <div className="flex gap-3">
-              <button onClick={() => setShowConfirmCancel(false)} className="flex-1 py-3 rounded-xl border border-[#D4B896]/30 bg-white font-bold text-[13px] cursor-pointer hover:bg-gray-50 transition-colors">Keep Plan</button>
-              <button onClick={() => handleManage("cancel")} className="flex-1 py-3 rounded-xl bg-[#E8392A] text-white border-none font-bold text-[13px] cursor-pointer hover:bg-[#B91C1C] transition-colors shadow-sm">Yes, Cancel</button>
-            </div>
-          </div>
+    <div>
+      {/* Toast */}
+      {toast && (
+        <div className={`fixed top-[80px] right-4 z-[200] text-white rounded-xl py-3 px-5 text-[13px] font-semibold shadow-lg animate-slide-left ${toast.type === "success" ? "bg-[#1B5E30]" : "bg-[#E8392A]"}`}>
+          {toast.msg}
         </div>
       )}
 
-        {/* Active Subscription */}
-        {sub && (
-          <div className={`animate-fade-up stagger-child rounded-[24px] p-6 mb-7 text-white relative overflow-hidden shadow-[0_12px_40px_rgba(232,57,42,0.25)] ${isPaused ? "bg-gradient-to-br from-[#92400E] to-[#D97706]" : "bg-gradient-to-br from-[#E8392A] to-[#B91C1C]"}`}>
-            <div className="absolute -right-[30px] -top-[30px] w-[160px] h-[160px] rounded-full bg-white/5" />
-            <div className="relative">
-              <span className="inline-block bg-white/20 backdrop-blur-sm rounded-full px-3 py-1 text-[10px] font-extrabold uppercase tracking-[1px] mb-3">
-                {isPaused ? "Paused" : "Active"}
-              </span>
-              <h2 className="font-black text-[20px] mb-1 flex items-center gap-2">
-                {sub.category === "veg" ? <span className="inline-flex items-center gap-1.5 bg-white/20 rounded-lg px-2.5 py-1 text-[14px] uppercase tracking-[0.5px]"><Leaf size={16} className="text-[#4ade80]" /> Pure Veg</span> : <span className="inline-flex items-center gap-1.5 bg-white/20 rounded-lg px-2.5 py-1 text-[14px] uppercase tracking-[0.5px]"><Drumstick size={16} className="text-[#fca5a5]" /> Non-Veg</span>} <span className="opacity-80">Plan</span>
-              </h2>
-              <p className="opacity-85 text-[13px] mb-4">
-                {sub.meal_type === "both" ? "Lunch & Dinner" : sub.meal_type === "lunch" ? "Lunch Only" : "Dinner Only"} · <strong>{sub.remaining_days}</strong> of <strong>{sub.total_days}</strong> days remaining
-              </p>
-              <div className="h-1.5 rounded-full bg-white/20 mb-5 overflow-hidden">
-                <div className="h-full bg-white/85 rounded-full transition-all duration-1000 ease-out" style={{ width: `${progress}%` }} />
-              </div>
-              <div className="flex gap-2.5 flex-wrap">
-                {isActive ? (
-                  <button disabled={managingSub} onClick={() => handleManage("pause")} className={`btn-glare flex items-center gap-1.5 bg-white/20 text-white border border-white/30 rounded-xl px-4 py-2 text-[12px] font-bold cursor-pointer transition-all ${managingSub ? "opacity-60" : "hover:bg-white/30"}`}>
-                    <Pause size={14} /> {managingSub ? "Processing…" : "Pause Plan"}
-                  </button>
-                ) : (
-                  <button disabled={managingSub} onClick={() => handleManage("resume")} className={`btn-glare flex items-center gap-1.5 bg-white/90 text-emt-red border-none rounded-xl px-4 py-2 text-[12px] font-bold cursor-pointer transition-all ${managingSub ? "opacity-60" : "hover:bg-white"}`}>
-                    <Play size={14} /> {managingSub ? "Processing…" : "Resume Plan"}
-                  </button>
-                )}
-                <button onClick={() => setShowConfirmCancel(true)} className="flex items-center gap-1.5 bg-black/20 text-white border border-white/10 rounded-xl px-4 py-2 text-[12px] font-bold cursor-pointer transition-all hover:bg-black/30">
-                  <X size={14} /> Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+      {/* Hero Section */}
+      <div className="relative bg-[#7C3AED] pt-6 pb-10 px-4 rounded-b-[32px] shadow-sm transition-all duration-500 overflow-hidden -mx-4 lg:mx-0">
+        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/food.png')] opacity-60 invert pointer-events-none" />
 
-        {/* Meal Calendar */}
-        {sub && subscriptionDays.length > 0 && (
-          <div className="animate-fade-up stagger-child bg-white rounded-[20px] p-5 mb-7 border border-[#D4B896]/15 shadow-sm">
-            <h2 className="font-extrabold text-[16px] text-[#1A1A1A] mb-4 flex items-center gap-2">
-              <CalendarDays size={18} className="text-[#6366F1]" /> Meal Calendar — {calendarMonth.toLocaleString("en-IN", { month: "long", year: "numeric" })}
-            </h2>
-            <div className="flex gap-2.5 flex-wrap mb-3.5">
-              {[{ l: "Delivered", c: "bg-[#1B5E30]" }, { l: "Upcoming", c: "bg-[#E8392A]" }, { l: "Paused", c: "bg-[#D97706]" }, { l: "No meal", c: "bg-gray-200" }].map((x) => (
-                <div key={x.l} className="flex items-center gap-1.5">
-                  <div className={`w-2.5 h-2.5 rounded-sm ${x.c}`} />
-                  <span className="text-[11px] text-[#6B7280] font-medium">{x.l}</span>
-                </div>
-              ))}
-            </div>
-            <div className="grid grid-cols-7 gap-1">
-              {["S","M","T","W","T","F","S"].map((d, i) => (
-                <div key={i} className="text-center text-[10px] font-bold text-[#9CA3AF] py-1">{d}</div>
-              ))}
-              {calendarDays.map((cell, i) => {
-                const isToday = cell.date === new Date().getDate() && calendarMonth.getMonth() === new Date().getMonth();
-                const colorHex = cell.subDay ? MEAL_COLORS[cell.subDay.status] || "#E5E7EB" : "transparent";
-                return (
-                  <div key={i} className={`aspect-square rounded-lg flex items-center justify-center text-[11px] ${isToday ? 'font-extrabold text-emt-red' : 'font-medium'} transition-all ${isToday ? 'bg-emt-red/5 border-2 border-emt-red' : cell.subDay ? 'border-2' : cell.date ? 'border border-black/5 bg-black/5' : ''}`} style={cell.subDay ? { backgroundColor: `${colorHex}22`, borderColor: `${colorHex}44`, color: colorHex } : { color: isToday ? "var(--emt-red)" : "#6B7280" }}>
-                    {cell.date || ""}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
+        <div className="relative z-10 mb-5 mt-2">
+          <h2 className="text-white text-[26px] font-black drop-shadow-sm leading-tight tracking-tight">
+            Home-style Tiffin
+          </h2>
+          <p className="text-white/95 text-[14px] font-bold mt-1 tracking-wide">
+            Daily meals delivered fresh to your door
+          </p>
+        </div>
 
-        {/* Plans */}
-        <div className="animate-fade-up stagger-child">
-          <div className="mb-5">
-            <h1 className="font-black text-[clamp(20px,4vw,24px)] text-[#1A1A1A] tracking-tight">{sub ? "Renew or Upgrade" : "Choose a Plan"}</h1>
-            <p className="text-[#6B7280] text-[13px] mt-1 mb-4">Fresh home-style meals, delivered daily</p>
-            {canUseTrial && (
-              <div className="inline-flex items-center gap-1.5 bg-[#F5A623]/10 text-[#D97706] rounded-full px-3 py-1 mt-2 text-[12px] font-bold">
-                <PartyPopper size={14} /> You're eligible for a FREE trial meal!
+        <div className="relative z-10 flex items-center bg-white rounded-[16px] px-4 py-3 shadow-[0_6px_20px_rgba(0,0,0,0.1)]">
+          <input
+            type="text"
+            placeholder="Search tiffin plans..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="flex-1 bg-transparent outline-none text-[14px] text-[#1C1C1C] placeholder-[#93959F] font-medium"
+          />
+          {search && (
+            <button onClick={() => setSearch("")} className="mr-3 text-[#93959F]">
+              <X size={16} />
+            </button>
+          )}
+          <div className="w-[1px] h-5 bg-slate-200 mx-2" />
+          <Search size={20} className="text-[#7C3AED] ml-2 mr-1 shrink-0" />
+        </div>
+
+        {/* Veg/Non-Veg Toggle */}
+        <div className="relative z-10 flex justify-center mt-5">
+          <div className="bg-white/20 backdrop-blur-md rounded-full p-1 flex items-center gap-1 shadow-sm border border-white/10">
+            <button
+              onClick={() => setIsVegOnly(true)}
+              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[13px] tracking-wide transition-all ${
+                isVegOnly ? "bg-white text-slate-800 shadow-md font-bold" : "text-white font-semibold"
+              }`}
+            >
+              <div className="w-3.5 h-3.5 border-[1.5px] border-green-600 flex items-center justify-center rounded-[3px] bg-white">
+                <div className="w-1.5 h-1.5 bg-green-600 rounded-full" />
               </div>
-            )}
-          </div>
-          <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-4">
-            {(displayPlans as any[]).map((plan, idx) => {
-              const isFirst = idx === 0;
-              const cat = isFirst ? "featured" : plan.category;
-              const isCurrentPlan = sub?.plan_id === plan.id;
-              const isProcessing = processingPlanId === plan.id;
-              return (
-                <div key={plan.id} className={`card-lift rounded-[20px] overflow-hidden relative shadow-sm transition-all group ${isCurrentPlan ? "border-2 shadow-[0_8px_32px_rgba(232,57,42,0.15)]" : "border"}`} style={{ background: cat === "veg" ? "linear-gradient(135deg, #1B5E3012, #1B5E3003)" : cat === "featured" ? "linear-gradient(135deg, #6366F115, #6366F105)" : "linear-gradient(135deg, #E8392A12, #E8392A03)", borderColor: isCurrentPlan ? (cat === "veg" ? "#1B5E30" : cat === "featured" ? "#6366F1" : "#E8392A") : (cat === "veg" ? "#1B5E3025" : cat === "featured" ? "#6366F125" : "#E8392A25") }}>
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white to-transparent opacity-50 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform duration-500 z-0" />
-                  <div className={`absolute top-0 left-0 text-[10px] font-extrabold px-3 py-1.5 rounded-br-xl uppercase tracking-[1px] flex items-center gap-1 z-10 ${cat === "veg" ? "bg-[#1B5E30]/10 text-[#1B5E30]" : cat === "featured" ? "bg-[#6366F1]/10 text-[#6366F1]" : "bg-[#E8392A]/10 text-[#E8392A]"}`}>
-                    {plan.category === "veg" ? <Leaf size={12} /> : <Drumstick size={12} />}
-                    {plan.category === "veg" ? "Veg Plan" : "Non-Veg Plan"}
-                  </div>
-                  {plan.is_trial && <div className="absolute top-0 right-0 bg-gradient-to-br from-[#F5A623] to-[#E8392A] text-white text-[10px] font-extrabold px-3 py-1.5 rounded-bl-xl uppercase tracking-[1px] z-10">Trial</div>}
-                  <div className="pt-9 pb-5 px-5 relative z-10">
-                    <div className="mb-3">
-                      <h3 className="font-extrabold text-[16px] text-[#1A1A1A] mb-1">{plan.title}</h3>
-                      <p className="text-[12px] text-[#6B7280] font-medium">{plan.meal_type === "both" ? "Lunch + Dinner" : plan.meal_type === "lunch" ? "Lunch Only" : "Dinner Only"}</p>
-                    </div>
-                    <div className="flex items-baseline gap-1 mb-4">
-                      <span className="font-black text-[28px] text-[#1A1A1A]">₹{plan.price}</span>
-                      <span className="text-[12px] text-[#9CA3AF]">/ {plan.duration_days} days</span>
-                    </div>
-                    <ul className="list-none p-0 m-0 mb-4 flex flex-col gap-2">
-                      {["Daily fresh meals", plan.category === "veg" ? "100% Vegetarian" : "Chicken & specials", "Rotating weekly menu", "Pause anytime"].map((f) => (
-                        <li key={f} className="flex items-center gap-2 text-[12px] text-[#4A3A2A]">
-                          <Check size={14} className="text-[#1B5E30] shrink-0" /> {f}
-                        </li>
-                      ))}
-                    </ul>
-                    <button onClick={() => !isCurrentPlan && handleSelectPlan(plan.id)} disabled={processingPlanId !== null} className={`w-full py-3 rounded-xl border-none font-extrabold text-[13px] flex items-center justify-center gap-2 transition-all ${isCurrentPlan ? "bg-[#1B5E30]/10 text-[#1B5E30] cursor-default" : "bg-[#E8392A]/10 text-[#E8392A] cursor-pointer hover:bg-[#E8392A]/20"} ${processingPlanId && !isProcessing ? "opacity-50" : ""}`}>
-                      {isCurrentPlan ? <><Check size={16} /> Current Plan</> : isProcessing ? <><span className="inline-block w-3.5 h-3.5 border-2 border-[#E8392A] border-t-transparent rounded-full animate-spin" /> Processing…</> : <>Select Plan <ChevronRight size={16} /></>}
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
+              Veg Only
+            </button>
+            <button
+              onClick={() => setIsVegOnly(false)}
+              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[13px] tracking-wide transition-all ${
+                !isVegOnly ? "bg-white text-slate-800 shadow-md font-bold" : "text-white font-semibold"
+              }`}
+            >
+              <div className="w-3.5 h-3.5 border-[1.5px] border-red-600 flex items-center justify-center rounded-[3px] bg-white">
+                <div className="w-1.5 h-1.5 bg-red-600 rounded-full" />
+              </div>
+              Non-Veg
+            </button>
           </div>
         </div>
-    </>
+      </div>
+
+      <div className="mt-6 relative z-20 space-y-5">
+
+        {/* Active Order Alert */}
+        {activeOrder && (
+          <div className="bg-white border border-[#1BA672]/20 rounded-2xl p-4 shadow-[0_4px_16px_rgba(0,0,0,0.06)] relative overflow-hidden flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center shrink-0">
+              <Truck size={24} className="text-[#1BA672] animate-pulse" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-extrabold text-[15px] text-[#1C1C1C] m-0">
+                Order Arriving in 15 mins
+              </p>
+              <p className="text-[13px] text-[#1BA672] font-bold m-0 mt-0.5 capitalize">
+                {activeOrder.status.replace(/_/g, " ")} • Track Order
+              </p>
+            </div>
+            <Link href="/orders" className="absolute inset-0 z-10" />
+          </div>
+        )}
+
+        {/* Feature Banners */}
+        <div ref={carouselRef} className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4 no-scrollbar scroll-smooth">
+          {[
+            {
+              id: "veg-plan",
+              title: "Veg Plan",
+              subtitle: "Pure vegetarian",
+              tag: "From ₹560/week",
+              href: "#",
+              color: "bg-gradient-to-br from-[#1BA672] to-[#10704B]",
+              img: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=250&auto=format&fit=crop",
+            },
+            {
+              id: "nonveg-plan",
+              title: "Non-Veg Plan",
+              subtitle: "Premium quality",
+              tag: "From ₹700/week",
+              href: "#",
+              color: "bg-gradient-to-br from-[#E23744] to-[#B91C1C]",
+              img: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?q=80&w=250&auto=format&fit=crop",
+            },
+            {
+              id: "trial",
+              title: "Free Trial",
+              subtitle: "Try before you buy",
+              tag: "1 Day Free",
+              href: "#",
+              color: "bg-gradient-to-br from-[#9333EA] to-[#6B21A8]",
+              img: "https://images.unsplash.com/photo-1498837167922-ddd27525d352?q=80&w=250&auto=format&fit=crop",
+            },
+          ].map((banner) => (
+            <div
+              key={banner.id}
+              className={`${banner.color} rounded-[28px] p-5 flex relative overflow-hidden shadow-[0_8px_20px_rgba(0,0,0,0.12)] shrink-0 w-[calc(100dvw-32px)] sm:w-[340px] h-[160px] snap-center group cursor-pointer`}
+            >
+              <div className="relative z-10 w-[65%] sm:w-[60%] flex flex-col justify-center">
+                <h3 className="font-black text-[20px] sm:text-[22px] text-white leading-tight mb-1 drop-shadow-md">
+                  {banner.title}
+                </h3>
+                <p className="text-[11px] sm:text-[12px] font-extrabold text-white/90 tracking-widest mb-3">
+                  {banner.subtitle}
+                </p>
+                <div className="inline-flex items-center bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-white/30 self-start">
+                  <span className="text-white font-bold text-[11px]">{banner.tag}</span>
+                </div>
+              </div>
+              <div className="absolute right-0 bottom-0 top-0 w-[45%] sm:w-[150px] z-0 rounded-l-[40px] overflow-hidden shadow-2xl">
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent to-black/20 z-10 mix-blend-multiply" />
+                <img
+                  src={banner.img}
+                  alt={banner.title}
+                  className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Active Sub Alert */}
+        {sub && (
+          <div className="bg-white rounded-[16px] p-3 sm:p-4 shadow-[0_4px_16px_rgba(0,0,0,0.06)] border border-[#E8E8E8]">
+            <div className="flex justify-between items-center mb-3 gap-2">
+              <div className="min-w-0">
+                <h3 className="font-bold text-[13px] sm:text-[14px] text-[#1C1C1C] truncate">Active Subscription</h3>
+                <p className="text-[11px] sm:text-[12px] text-[#686B78] mt-0.5">{sub.remaining_days} days remaining</p>
+              </div>
+              <span className="shrink-0 bg-[#1BA672]/10 text-[#1BA672] text-[9px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-1 rounded-[4px] uppercase tracking-wider">
+                {sub.status}
+              </span>
+            </div>
+            <Link href="/profile" className="flex items-center justify-center gap-1.5 w-full py-2.5 rounded-[8px] bg-[#FC8019]/10 text-[#FC8019] font-bold text-[12px] sm:text-[13px] no-underline">
+              Manage Delivery <ChevronRight size={13} className="sm:hidden" /><ChevronRight size={14} className="hidden sm:block" />
+            </Link>
+          </div>
+        )}
+
+        {/* Subscribe & Save Plans Grid */}
+        <TiffinPlansSection />
+
+      </div>
+    </div>
   );
 }
