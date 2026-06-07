@@ -153,6 +153,7 @@ export default function MealPlans() {
               src={bannerMap[active]}
               alt={plan.name}
               fill
+              sizes="(max-width: 1023px) 100vw, 50vw"
               className="object-cover transition-transform duration-1000 group-hover:scale-110"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10" />

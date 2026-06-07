@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { AppProvider } from "./providers";
+import { PWAInstallProvider } from "@/components/PWAInstallProvider";
 import "./globals.css";
 
 const montserrat = Montserrat({
@@ -17,6 +18,12 @@ export const metadata: Metadata = {
     "Order fresh, hygienic tiffin delivered daily. Veg, Non-Veg & Mix plans from ₹99. 26 days/month. Daily menu change. Call 9770144899.",
   keywords:
     "tiffin service, home food delivery, tiffin plan, veg tiffin, non-veg tiffin, monthly tiffin, tiffin subscription, EazyMyTiffin",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "EazyMyTiffin",
+  },
   openGraph: {
     title: "EazyMyTiffin — India's Premium Tiffin Brand",
     description: "Fresh home-style tiffin delivered daily. Plans from ₹99.",
@@ -58,9 +65,11 @@ export default function RootLayout({
           <a href="#main" className="skip-link">
             Skip to main content
           </a>
-          <AppProvider>
-            {children}
-          </AppProvider>
+          <PWAInstallProvider>
+            <AppProvider>
+              {children}
+            </AppProvider>
+          </PWAInstallProvider>
         </body>
       </html>
     </ClerkProvider>

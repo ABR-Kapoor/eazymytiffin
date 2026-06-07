@@ -134,6 +134,7 @@ export default function TiffinPlansSection({ onSubscribe }: { onSubscribe?: (pla
                     src={item.meta.image}
                     alt={`${item.meta.label} ${item.label}`}
                     fill
+                    sizes="140px"
                     className="object-cover"
                   />
                 </div>

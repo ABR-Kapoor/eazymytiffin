@@ -57,7 +57,7 @@ export function TiffinPlanCard({ plan, isActive, onSelect, isLoading }: TiffinPl
 
       <div className="w-[100px] sm:w-[140px] shrink-0 relative flex flex-col items-center pb-2">
         <div className="w-[100px] sm:w-[140px] h-[100px] sm:h-[140px] rounded-[16px] relative overflow-hidden bg-[#F2F2F2] shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
-          <Image src={getFallbackImage()} alt={plan.title} fill className="object-cover" />
+          <Image src={getFallbackImage()} alt={plan.title} fill sizes="140px" className="object-cover" />
         </div>
 
         <div className="absolute bottom-[-2px] left-1/2 -translate-x-1/2 w-[84px] sm:w-[120px] h-[32px] sm:h-[40px] bg-white rounded-[8px] sm:rounded-[10px] shadow-[0_4px_14px_rgba(0,0,0,0.15)] overflow-hidden flex z-10">

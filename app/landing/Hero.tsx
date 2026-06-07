@@ -1,7 +1,22 @@
-import Image from "next/image";
+"use client";
 import { ArrowUpRight } from "lucide-react";
+import { usePWAInstall } from "@/components/PWAInstallProvider";
 
 export default function Hero() {
+  const { triggerInstall } = usePWAInstall();
+
+  const handleCTA = async (href: string, e: React.MouseEvent<HTMLAnchorElement>) => {
+    // Trigger PWA install prompt on first CTA click
+    await triggerInstall();
+    // If it's a hash link, handle smooth scroll
+    if (href.startsWith("#")) {
+      e.preventDefault();
+      const el = document.querySelector(href);
+      if (el) el.scrollIntoView({ behavior: "smooth" });
+    }
+    // tel: links continue naturally
+  };
+
   return (
     <section
       id="home"
@@ -10,12 +25,10 @@ export default function Hero() {
     >
       {/* Hero Banner Background - Full Width with Internal Padding in Image */}
       <div className="absolute inset-0 z-0 overflow-hidden w-full h-full pointer-events-none">
-        <Image
+        <img
           src="/eazymytiffin-hero-premium-tiffin.png"
           alt="Premium Tiffin Banner"
-          fill
-          priority
-          className="object-cover object-center"
+          className="w-full h-full object-cover object-center"
         />
         {/* Cinematic side-gradient for maximum text readability */}
         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/20 to-transparent" />
@@ -53,12 +66,14 @@ export default function Hero() {
               href="tel:9770144899"
               className="btn-glare flex items-center gap-2 px-5 py-2.5 md:px-8 md:py-3 rounded-full text-[12px] md:text-[13px] font-bold uppercase tracking-[1px] text-white transition-all duration-300 hover:scale-[1.03]"
               style={{ background: "var(--emt-red)" }}
+              onClick={(e) => handleCTA("tel:9770144899", e)}
             >
               Order Now <ArrowUpRight size={16} strokeWidth={2.5} className="md:w-[18px] md:h-[18px]" />
             </a>
             <a
               href="#meal-plans"
               className="btn-glare btn-glare-dark flex items-center gap-2 px-5 py-2.5 md:px-8 md:py-3 rounded-full text-[12px] md:text-[13px] font-bold uppercase tracking-[1px] bg-white text-black transition-all duration-300 hover:scale-[1.03]"
+              onClick={(e) => handleCTA("#meal-plans", e)}
             >
               View Plans <ArrowUpRight size={16} strokeWidth={2.5} className="md:w-[18px] md:h-[18px]" />
             </a>
