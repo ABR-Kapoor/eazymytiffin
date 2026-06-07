@@ -1,94 +1,75 @@
 "use client";
 
 import { SignUp } from "@clerk/nextjs";
-import dynamic from "next/dynamic";
-const AuthMap = dynamic(() => import("@/components/AuthMap"), { ssr: false });
+import { AuthLayout } from "@/components/AuthLayout";
 
-const TESTIMONIALS = [
-  {
-    quote: "It's fun, feels lightweight, and really quick to spin up user auth and a few tables. Almost too easy! Highly recommend.",
-    name: "Rohan M.",
-    initials: "RM",
-    gradient: "from-[#374151] to-[#111827]",
-    subtitle: "Developer",
+const clerkAppearance = {
+  cssLayerName: "clerk" as const,
+  layout: {
+    socialButtonsPlacement: "top" as const,
+    socialButtonsVariant: "blockButton" as const,
   },
-  {
-    quote: "Fresh, delicious, and incredibly punctual. EazyMyTiffin keeps me going through those long coding sessions.",
-    name: "Priya S.",
-    initials: "PS",
-    gradient: "from-[#F59E0B] to-[#D97706]",
-    subtitle: "Software Engineer",
+  variables: {
+    colorPrimary: "#E8392A",
+    colorText: "#1A1A1A",
+    colorTextSecondary: "#666666",
+    colorBackground: "rgba(255,255,255,0.4)",
+    colorInputBackground: "rgba(255,255,255,0.4)",
+    colorInputText: "#1A1A1A",
+    colorInputBorder: "#E5E5E5",
+    borderRadius: "8px",
+    spacingUnit: "8px",
   },
-  {
-    quote: "The flexible meal plans are a lifesaver. Switching between veg and non-veg is seamless and tastes like home.",
-    name: "Rahul K.",
-    initials: "RK",
-    gradient: "from-[#10B981] to-[#059669]",
-    subtitle: "Product Manager",
+  elements: {
+    rootBox: "w-full flex justify-center lg:justify-start mx-auto !max-w-full bg-transparent",
+    cardBox: "!shadow-none !border-none !border-0 p-0 bg-transparent w-full !max-w-full",
+    card: "!shadow-none !border-none !border-0 p-0 bg-transparent w-full !max-w-full",
+    main: "gap-4 w-full !p-0 !m-0 bg-transparent",
+    header: "!hidden",
+    headerTitle: "!hidden",
+    headerSubtitle: "!hidden",
+    formButtonPrimary:
+      "text-[15px] font-semibold px-4 py-2 rounded-lg shadow-none bg-[#E8392A] hover:bg-red-700 transition-all duration-200 h-11 flex items-center justify-center w-full",
+    socialButtons: "w-full flex !px-0 !mx-0",
+    socialButtonsBlockButton:
+      "flex items-center justify-center gap-2 rounded-lg border border-[#E5E5E5] bg-white/70 backdrop-blur-sm text-[#1A1A1A] text-[14px] font-medium transition-all duration-200 hover:bg-white/90 h-11 shadow-sm w-full !mx-0",
+    alternativeMethodsBlockButton:
+      "flex items-center justify-center gap-2 rounded-lg border border-[#E5E5E5] bg-white/70 backdrop-blur-sm text-[#1A1A1A] text-[14px] font-medium transition-all duration-200 hover:bg-white/90 h-11 shadow-sm w-full !mx-0",
+    socialButtonsProviderIcon: "w-6 h-6",
+    dividerRow: "my-4 !px-0 !mx-0 w-full",
+    dividerLine: "bg-[#E5E5E5]",
+    dividerText:
+      "text-[13px] font-normal text-[#666666] bg-transparent px-3 normal-case tracking-normal",
+    formFieldLabel:
+      "text-[14px] font-medium text-[#1A1A1A] mb-1 normal-case tracking-normal",
+    formFieldInput:
+      "rounded-lg border border-[#E5E5E5] bg-white/70 backdrop-blur-sm text-[14px] font-medium px-4 h-11 transition-all duration-200 focus:bg-white/90 focus:border-[#E8392A] focus:shadow-[0_0_0_3px_rgba(232,57,42,0.1)]",
+    footerActionText: "text-[14px] font-medium text-[#666666]",
+    footerActionLink: "text-[14px] font-semibold text-[#E8392A] hover:text-red-700 hover:underline",
+    identityPreviewText: "text-[14px]",
+    identityPreviewEditButton: "hover:underline text-[#E8392A]",
+    formResendCodeLink: "text-[14px] font-semibold text-[#E8392A] hover:underline",
+    alert: "rounded-lg p-3 bg-red-50 border border-red-100",
+    alertText: "text-[14px] font-medium text-red-800",
+    footer: "!bg-none !bg-transparent !border-none !shadow-none p-0",
+    formFieldRow: "mb-4",
+    otpCodeFieldInputs: "gap-2 sm:gap-4 flex justify-center",
+    otpCodeFieldInput: "!w-12 !h-12 sm:!w-14 sm:!h-14 text-xl sm:text-2xl font-bold bg-white/70 backdrop-blur-sm !border-[#E5E5E5] focus:bg-white/90 focus:!border-[#E8392A] focus:!shadow-[0_0_0_3px_rgba(232,57,42,0.1)] rounded-lg transition-all duration-200",
   },
-  {
-    quote: "Finally a tiffin service that actually listens to feedback. The portions are perfect and the UI is so slick!",
-    name: "Vikram J.",
-    initials: "VJ",
-    gradient: "from-[#3B82F6] to-[#2563EB]",
-    subtitle: "UI/UX Designer",
-  },
-  {
-    quote: "Healthy, homestyle food every single day. The delivery is seamless and always arrives exactly when I need it.",
-    name: "Anjali D.",
-    initials: "AD",
-    gradient: "from-[#EC4899] to-[#BE185D]",
-    subtitle: "Data Scientist",
-  },
-  {
-    quote: "Finally a service that feels premium but is affordable. Highly recommend for any busy professional.",
-    name: "Karan V.",
-    initials: "KV",
-    gradient: "from-[#8B5CF6] to-[#6D28D9]",
-    subtitle: "Cloud Architect",
-  },
-  {
-    quote: "The daily menu variety is incredible. I look forward to my lunch break every single day now!",
-    name: "Meera T.",
-    initials: "MT",
-    gradient: "from-[#14B8A6] to-[#0F766E]",
-    subtitle: "Frontend Dev",
-  },
-  {
-    quote: "Super convenient and zero hassle. Pausing and resuming my subscription through the app is incredibly easy.",
-    name: "Siddharth B.",
-    initials: "SB",
-    gradient: "from-[#F97316] to-[#C2410C]",
-    subtitle: "Backend Engineer",
-  },
-];
+};
 
 export default function SignUpPage() {
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row">
-      <div className="flex-1 w-full lg:flex-none lg:w-[35%] bg-white p-5 md:p-6 flex items-start pt-16 md:items-center md:pt-0 justify-center">
-        <div className="w-full max-w-md">
-          <div className="mb-6 lg:mb-8 text-center lg:text-left">
-            <h1 className="text-[26px] md:text-3xl text-[#1A1A1A] tracking-tight font-bold leading-tight">Get Started with<br />EazyMy<span className="text-[#E8392A]">Tiffin</span></h1>
-            <p className="text-gray-600 text-sm mt-2">Create your account</p>
-          </div>
-          <div className="w-full bg-white md:rounded-[32px] md:shadow-[0_20px_80px_-32px_rgba(0,0,0,0.2)] md:border border-[rgba(212,184,150,0.1)] md:p-5">
-            <SignUp 
-              path="/sign-up" 
-              routing="path" 
-              signInUrl="/sign-in" 
-              appearance={{
-                variables: {
-                  colorBackground: 'white',
-                }
-              }}
-            />
-          </div>
-        </div>
-      </div>
-      <div className="hidden lg:flex lg:flex-1 relative">
-        <AuthMap testimonials={TESTIMONIALS} />
-      </div>
-    </div>
+    <AuthLayout
+      heading="Welcome to"
+      subtitle="Sign in or create your account"
+    >
+      <SignUp
+        path="/sign-up"
+        routing="path"
+        signInUrl="/sign-in"
+        appearance={clerkAppearance}
+      />
+    </AuthLayout>
   );
 }
