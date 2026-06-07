@@ -31,7 +31,7 @@ export function BottomNav() {
     if (pathname.startsWith("/subscription")) return { bg: "bg-[#7C3AED]", shadow: "shadow-[0_-4px_24px_rgba(124,58,237,0.3)]", ring: "ring-[#7C3AED]", text: "text-[#7C3AED]" };
     if (pathname.startsWith("/profile")) return { bg: "bg-[#0D9488]", shadow: "shadow-[0_-4px_24px_rgba(13,148,136,0.3)]", ring: "ring-[#0D9488]", text: "text-[#0D9488]" };
     if (isVegTheme) return { bg: "bg-[#0d5c3d]", shadow: "shadow-[0_-4px_24px_rgba(13,92,61,0.3)]", ring: "ring-[#0d5c3d]", text: "text-[#0d5c3d]" };
-    return { bg: "bg-[#A30000]", shadow: "shadow-[0_-4px_24px_rgba(163,0,0,0.3)]", ring: "ring-[#A30000]", text: "text-[#A30000]" };
+    return { bg: "bg-[#E8392A]", shadow: "shadow-[0_-4px_24px_rgba(232,57,42,0.3)]", ring: "ring-[#E8392A]", text: "text-[#E8392A]" };
   })();
 
   return (

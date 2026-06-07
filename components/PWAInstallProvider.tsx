@@ -46,20 +46,8 @@ export function PWAInstallProvider({ children }: { children: ReactNode }) {
       deferredPrompt.current = e;
       setIsInstallable(true);
 
-      // Auto-trigger the install prompt after a short delay
-      // so the page has fully rendered first (better UX)
-      setTimeout(() => {
-        if (deferredPrompt.current) {
-          (deferredPrompt.current as any).prompt();
-          (deferredPrompt.current as any).userChoice.then((choice: { outcome: string }) => {
-            if (choice.outcome === "accepted") {
-              deferredPrompt.current = null;
-              setIsInstallable(false);
-              setIsInstalled(true);
-            }
-          });
-        }
-      }, 2000); // 2s delay so user sees the page first
+      // We cannot auto-trigger the install prompt without a user gesture.
+      // It must be called from a button click via triggerInstall().
     };
 
     window.addEventListener("beforeinstallprompt", handler);

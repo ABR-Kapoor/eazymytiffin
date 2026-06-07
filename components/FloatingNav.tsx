@@ -55,7 +55,7 @@ export function FloatingNav() {
     if (pathname.startsWith("/subscription"))  return { bg: "#7C3AED", shadow: "0 8px 32px rgba(124,58,237,0.5)" };
     if (pathname.startsWith("/profile"))       return { bg: "#0D9488", shadow: "0 8px 32px rgba(13,148,136,0.5)" };
     if (isVegTheme)                            return { bg: "#0d5c3d", shadow: "0 8px 32px rgba(13,92,61,0.5)" };
-    return                                            { bg: "#A30000", shadow: "0 8px 32px rgba(163,0,0,0.5)" };
+    return                                            { bg: "#E8392A", shadow: "0 8px 32px rgba(232,57,42,0.5)" };
   })();
 
   return (

@@ -66,9 +66,9 @@ export default function CustomerLayout({
     if (pathname.startsWith("/orders")) return "bg-[#2563EB]";
     if (pathname.startsWith("/subscription")) return "bg-[#7C3AED]";
     if (pathname.startsWith("/profile")) return "bg-[#0D9488]";
-    return isVegTheme ? "bg-[#0d5c3d]" : "bg-[#A30000]";
+    return isVegTheme ? "bg-[#0d5c3d]" : "bg-[#E8392A]";
   })();
-  const themeBorderColor = isVegTheme ? "border-[#0d5c3d]" : "border-[#A30000]";
+  const themeBorderColor = isVegTheme ? "border-[#0d5c3d]" : "border-[#E8392A]";
 
   return (
     <div style={{ minHeight: "100vh", background: "#f8f9fa" }}>

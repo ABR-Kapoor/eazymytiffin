@@ -10,7 +10,6 @@ const WhyUs = dynamic(() => import("./WhyUs"));
 const Testimonials = dynamic(() => import("./Testimonials"));
 const CTABanner = dynamic(() => import("./CTABanner"));
 const Footer = dynamic(() => import("./Footer"));
-const FloatingNav = dynamic(() => import("@/components/FloatingNav").then((m) => ({ default: m.FloatingNav })));
 
 export default function LandingPage() {
   return (
@@ -27,7 +26,6 @@ export default function LandingPage() {
         <CTABanner />
       </main>
       <Footer />
-      <FloatingNav />
     </>
   );
 }

@@ -22,6 +22,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (!clerkUser) {
       setUser(null);
       setUserLoading(false);
+      setSubLoading(false);
+      setOrderLoading(false);
       return;
     }
 
@@ -31,9 +33,32 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       try {
         // 1. Sync user to Supabase
         const syncRes = await fetch("/api/users/sync");
+
+        // If session expired or unauthorized, let Clerk/middleware handle redirect
+        if (syncRes.status === 401) {
+          setUserLoading(false);
+          setSubLoading(false);
+          setOrderLoading(false);
+          return;
+        }
+
+        if (!syncRes.ok) {
+          const errText = await syncRes.text().catch(() => "Unknown error");
+          console.error("[AppProvider] User sync failed:", syncRes.status, errText);
+          setUserLoading(false);
+          setSubLoading(false);
+          setOrderLoading(false);
+          return;
+        }
+
         const syncData = await syncRes.json();
         const supabaseUser = syncData.user;
-        if (!supabaseUser || cancelled) return;
+        if (!supabaseUser || cancelled) {
+          setUserLoading(false);
+          setSubLoading(false);
+          setOrderLoading(false);
+          return;
+        }
 
         setUser(supabaseUser);
         setUserLoading(false);
@@ -110,9 +135,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         }
       } catch (err) {
         console.error("[AppProvider] bootstrap error:", err);
-        setUserLoading(false);
-        setSubLoading(false);
-        setOrderLoading(false);
+        if (!cancelled) {
+          setUserLoading(false);
+          setSubLoading(false);
+          setOrderLoading(false);
+        }
       }
     };
 

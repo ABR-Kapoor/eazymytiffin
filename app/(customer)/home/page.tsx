@@ -153,7 +153,7 @@ export default function HomePage() {
     );
   }
 
-  const themeBg = isVegOnly ? "bg-[#0d5c3d]" : "bg-[#A30000]";
+  const themeBg = isVegOnly ? "bg-[#0d5c3d]" : "bg-[#E8392A]";
 
   return (
     <div className="bg-[#f8f9fa] min-h-screen pb-4">

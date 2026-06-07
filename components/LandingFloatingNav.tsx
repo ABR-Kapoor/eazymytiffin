@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { 
   Home, Info, UtensilsCrossed, Calendar, Phone, 
-  ArrowUpRight, LayoutDashboard, Shield, X, LayoutGrid 
+  ArrowUpRight, LayoutDashboard, Shield, X, LayoutGrid, LogIn 
 } from "lucide-react";
 import { useAuth, useUser } from "@clerk/nextjs";
 
@@ -68,7 +68,7 @@ export function LandingFloatingNav() {
       { href: "/home", label: "Dashboard", icon: LayoutDashboard },
       ...(isAdmin ? [{ href: "/admin", label: "Admin Panel", icon: Shield, primary: true }] : [])
     ] : [
-      { href: "/sign-in", label: "Login", icon: LayoutDashboard }
+      { href: "/sign-in", label: "Login", icon: LogIn }
     ])
   ];
 
@@ -86,9 +86,13 @@ export function LandingFloatingNav() {
       <div
         ref={fabRef}
         className="fixed z-[999] bottom-6 right-6 md:bottom-8 md:right-8"
+        style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}
       >
-        {/* Nav items fan up */}
-        <div className="flex flex-col items-end gap-2.5 mb-3">
+        {/* Nav items fan up — pointer-events disabled on whole group when closed */}
+        <div
+          className="flex flex-col items-end gap-2.5 mb-3"
+          style={{ pointerEvents: open ? "auto" : "none" }}
+        >
           {navItems.map(({ href, label, icon: Icon, primary }, idx) => {
             const delay = `${(navItems.length - 1 - idx) * 45}ms`;
 
@@ -99,8 +103,7 @@ export function LandingFloatingNav() {
                 style={{
                   transition: `opacity 220ms ease ${open ? delay : "0ms"}, transform 220ms cubic-bezier(0.34,1.56,0.64,1) ${open ? delay : "0ms"}`,
                   opacity: open ? 1 : 0,
-                  transform: open ? "translateY(0) scale(1)" : "translateY(20px) scale(0.75)",
-                  pointerEvents: open ? "auto" : "none",
+                  transform: open ? "translateY(0) scale(1)" : "translateY(16px) scale(0.8)",
                 }}
               >
                 {/* Label pill */}
@@ -133,8 +136,8 @@ export function LandingFloatingNav() {
           })}
         </div>
 
-        {/* Main toggle FAB */}
-        <div className="flex justify-end">
+        {/* Main toggle FAB — always on top via position relative + z-index */}
+        <div className="flex justify-end" style={{ position: "relative", zIndex: 10 }}>
           <button
             onClick={() => setOpen((v) => !v)}
             className="w-[56px] h-[56px] rounded-full flex items-center justify-center text-white transition-transform duration-300 active:scale-90"
