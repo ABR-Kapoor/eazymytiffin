@@ -60,19 +60,19 @@ export function TiffinPlanCard({ plan, isActive, onSelect, isLoading }: TiffinPl
           <Image src={getFallbackImage()} alt={plan.title} fill className="object-cover" />
         </div>
 
-        <div className="absolute bottom-[-2px] left-1/2 -translate-x-1/2 w-[90px] sm:w-[120px] h-[36px] sm:h-[40px] bg-white rounded-[10px] shadow-[0_4px_14px_rgba(0,0,0,0.15)] overflow-hidden flex z-10">
+        <div className="absolute bottom-[-2px] left-1/2 -translate-x-1/2 w-[84px] sm:w-[120px] h-[32px] sm:h-[40px] bg-white rounded-[8px] sm:rounded-[10px] shadow-[0_4px_14px_rgba(0,0,0,0.15)] overflow-hidden flex z-10">
           {isLoading ? (
             <div className="w-full h-full flex items-center justify-center">
               <div className="w-4 h-4 rounded-full border-2 border-[#FC8019]/30 border-t-[#FC8019] animate-spin" />
             </div>
           ) : isActive ? (
-            <div className="w-full h-full flex items-center justify-center text-[#1BA672] text-[12px] font-extrabold uppercase tracking-wide gap-1">
+            <div className="w-full h-full flex items-center justify-center text-[#1BA672] text-[10px] sm:text-[12px] font-extrabold uppercase tracking-wide gap-1">
               <Check size={14} /> Active
             </div>
           ) : (
             <button
               onClick={onSelect}
-              className="w-full h-full flex items-center justify-center text-[#FC8019] text-[12px] font-extrabold uppercase tracking-wide cursor-pointer hover:bg-[#FFF3E8] transition-colors bg-transparent border-none"
+              className="w-full h-full flex items-center justify-center text-[#FC8019] text-[10px] sm:text-[12px] font-extrabold uppercase tracking-wide cursor-pointer hover:bg-[#FFF3E8] transition-colors bg-transparent border-none"
             >
               Subscribe
             </button>

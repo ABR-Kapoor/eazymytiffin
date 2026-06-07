@@ -25,6 +25,7 @@ import {
 import { FoodCard } from "@/components/ui/FoodCard";
 import { FilterChips } from "@/components/ui/FilterChips";
 import TiffinPlansSection from "@/components/ui/TiffinPlansSection";
+import { ActiveOrderAlert } from "@/components/ui/ActiveOrderAlert";
 
 type Menu = {
   id: string;
@@ -84,6 +85,9 @@ export default function HomePage() {
     // Apply filters based on content
     if (activeFilter === "veg") {
       r = r.filter((m) => m.category === "veg");
+    }
+    if (activeFilter === "non_veg") {
+      r = r.filter((m) => m.category === "non_veg");
     }
     if (activeFilter === "rating") {
       r = r.filter((m) => getRating(m) >= 4.0);
@@ -193,7 +197,7 @@ export default function HomePage() {
         <div className="relative z-10 flex justify-center mt-5">
           <div className="bg-white/20 backdrop-blur-md rounded-full p-1 flex items-center gap-1 shadow-sm border border-white/10">
             <button
-              onClick={() => setIsVegOnly(true)}
+              onClick={() => { setIsVegOnly(true); setActiveFilter("veg"); }}
               className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[13px] tracking-wide transition-all ${
                 isVegOnly ? "bg-white text-slate-800 shadow-md font-bold" : "text-white font-semibold"
               }`}
@@ -204,7 +208,7 @@ export default function HomePage() {
               Veg Only
             </button>
             <button
-              onClick={() => setIsVegOnly(false)}
+              onClick={() => { setIsVegOnly(false); setActiveFilter("non_veg"); }}
               className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[13px] tracking-wide transition-all ${
                 !isVegOnly ? "bg-white text-slate-800 shadow-md font-bold" : "text-white font-semibold"
               }`}
@@ -220,25 +224,9 @@ export default function HomePage() {
 
       <div className="mt-6 relative z-20">
         {/* Active Order Alert */}
-        {activeOrder && (
-          <div className="mb-4 bg-white border border-[#FC8019]/20 rounded-2xl p-4 shadow-[0_4px_16px_rgba(0,0,0,0.06)] relative overflow-hidden flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-orange-50 flex items-center justify-center shrink-0">
-              <Truck size={24} className="text-[#FC8019] animate-pulse" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-extrabold text-[15px] text-[#1C1C1C] m-0">
-                Order Arriving in 15 mins
-              </p>
-              <p className="text-[13px] text-[#FC8019] font-bold m-0 mt-0.5 capitalize">
-                {activeOrder.status.replace(/_/g, " ")} • Track Order
-              </p>
-            </div>
-            <Link
-              href="/orders"
-              className="absolute inset-0 z-10"
-            />
-          </div>
-        )}
+        <div className="mb-4">
+          <ActiveOrderAlert />
+        </div>
 
         {/* 4. Feature Banners Carousel */}
         <div className="mb-6">
@@ -458,14 +446,16 @@ export default function HomePage() {
           <div className="mb-6 sticky top-[56px] bg-[#f8f9fa] py-2 z-30 -mx-4 px-4">
             <FilterChips
               options={[
+                { value: "all", label: "All" },
                 { value: "filter", label: <span className="flex items-center gap-1">Filter <SlidersHorizontal size={14} className="ml-1 text-slate-700" /></span> },
                 { value: "sort", label: <span className="flex items-center gap-1">Sort By <ChevronDown size={14} className="ml-0.5 text-slate-700" /></span> },
                 { value: "rating", label: "Rating 4.0+" },
                 { value: "veg", label: "Pure Veg" },
+                { value: "non_veg", label: "Non-Veg" },
                 { value: "offers", label: "Offers" },
               ]}
               activeValue={activeFilter === "all" ? "all" : activeFilter}
-              onChange={(val) => setActiveFilter(val as any)}
+              onChange={(val) => { setActiveFilter(val as any); if (val === "veg") setIsVegOnly(true); else if (val === "non_veg") setIsVegOnly(false); }}
             />
           </div>
 
@@ -519,21 +509,21 @@ export default function HomePage() {
 
       {/* Floating Cart */}
       {itemCount() > 0 && (
-        <div className="fixed bottom-[72px] left-0 right-0 px-4 z-[100] pointer-events-none transition-transform translate-y-0">
+        <div className="fixed bottom-[84px] left-0 right-0 px-4 z-[100] pointer-events-none transition-transform translate-y-0">
           <div className="max-w-[960px] mx-auto pointer-events-auto">
             <button
               onClick={() => router.push("/food/checkout")}
               className="w-full flex items-center justify-between bg-[#1BA672] text-white rounded-2xl px-4 sm:px-5 py-3 sm:py-4 cursor-pointer shadow-[0_8px_24px_rgba(27,166,114,0.4)] border-none hover:bg-[#14835A] transition-colors"
             >
               <div className="flex flex-col gap-0.5 min-w-0">
-                <p className="font-black text-[13px] sm:text-[15px] text-left m-0 tracking-wide uppercase truncate">
+                <p className="font-black text-[13px] sm:text-[15px] text-left m-0 tracking-wide truncate">
                   {itemCount()} item{itemCount() > 1 ? "s" : ""} added
                 </p>
                 <p className="text-[11px] sm:text-[12px] text-white/90 font-bold m-0 text-left truncate">
-                  ₹{total()} • Extra charges may apply
+                  ₹{total()} • No extra hidden charges
                 </p>
               </div>
-              <div className="flex items-center gap-1.5 sm:gap-2 font-black text-[13px] sm:text-[15px] uppercase tracking-wide shrink-0">
+              <div className="flex items-center gap-1.5 sm:gap-2 font-black text-[13px] sm:text-[15px] tracking-wide shrink-0">
                 View Cart <ChevronRight size={18} className="sm:mt-[-1px]" />
               </div>
             </button>

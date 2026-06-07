@@ -4,42 +4,25 @@ import { supabase, supabaseAdmin } from "@/lib/supabase";
 import crypto from "crypto";
 
 const DEFAULT_PLANS = [
-  {
-    id: "veg-weekly",
-    title: "Veg Weekly",
-    description: "Pure vegetarian meals",
-    category: "veg" as const,
-    meal_type: "both" as const,
-    duration_days: 7,
-    price: 560,
-  },
-  {
-    id: "nonveg-weekly",
-    title: "Non-Veg Weekly",
-    description: "Chicken & meat specials",
-    category: "non_veg" as const,
-    meal_type: "both" as const,
-    duration_days: 7,
-    price: 700,
-  },
-  {
-    id: "veg-monthly",
-    title: "Veg Monthly",
-    description: "Pure vegetarian meals",
-    category: "veg" as const,
-    meal_type: "both" as const,
-    duration_days: 26,
-    price: 2490,
-  },
-  {
-    id: "nonveg-monthly",
-    title: "Non-Veg Monthly",
-    description: "Chicken & meat specials",
-    category: "non_veg" as const,
-    meal_type: "both" as const,
-    duration_days: 26,
-    price: 3490,
-  },
+  { id: "veg-trial", title: "Veg 1 Meal Trial", description: "Pure vegetarian meals", category: "veg" as const, meal_type: "lunch" as const, duration_days: 1, price: 99 },
+  { id: "veg-1-meal", title: "Veg 1 Meal", description: "Pure vegetarian meals", category: "veg" as const, meal_type: "lunch" as const, duration_days: 1, price: 119 },
+  { id: "veg-1-day", title: "Veg 1 Day Meal", description: "Pure vegetarian meals", category: "veg" as const, meal_type: "both" as const, duration_days: 1, price: 199 },
+  { id: "veg-1-month", title: "Veg 1 Month", description: "Pure vegetarian meals", category: "veg" as const, meal_type: "both" as const, duration_days: 26, price: 3199 },
+
+  { id: "mix-trial", title: "Mix Veg 1 Meal Trial", description: "Mix veg meals", category: "veg" as const, meal_type: "lunch" as const, duration_days: 1, price: 109 },
+  { id: "mix-1-meal", title: "Mix Veg 1 Meal", description: "Mix veg meals", category: "veg" as const, meal_type: "lunch" as const, duration_days: 1, price: 139 },
+  { id: "mix-1-day", title: "Mix Veg 1 Day Meal", description: "Mix veg meals", category: "veg" as const, meal_type: "both" as const, duration_days: 1, price: 299 },
+  { id: "mix-1-month", title: "Mix Veg 1 Month", description: "Mix veg meals", category: "veg" as const, meal_type: "both" as const, duration_days: 26, price: 3599 },
+
+  { id: "nonveg-trial", title: "Non-Veg 1 Meal Trial", description: "Chicken & meat specials", category: "non_veg" as const, meal_type: "lunch" as const, duration_days: 1, price: 129 },
+  { id: "nonveg-1-meal", title: "Non-Veg 1 Meal", description: "Chicken & meat specials", category: "non_veg" as const, meal_type: "lunch" as const, duration_days: 1, price: 159 },
+  { id: "nonveg-1-day", title: "Non-Veg 1 Day Meal", description: "Chicken & meat specials", category: "non_veg" as const, meal_type: "both" as const, duration_days: 1, price: 259 },
+  { id: "nonveg-1-month", title: "Non-Veg 1 Month", description: "Chicken & meat specials", category: "non_veg" as const, meal_type: "both" as const, duration_days: 26, price: 4299 },
+
+  { id: "veg-weekly", title: "Veg Weekly", description: "Pure vegetarian meals", category: "veg" as const, meal_type: "both" as const, duration_days: 7, price: 560 },
+  { id: "nonveg-weekly", title: "Non-Veg Weekly", description: "Chicken & meat specials", category: "non_veg" as const, meal_type: "both" as const, duration_days: 7, price: 700 },
+  { id: "veg-monthly", title: "Veg Monthly", description: "Pure vegetarian meals", category: "veg" as const, meal_type: "both" as const, duration_days: 26, price: 2490 },
+  { id: "nonveg-monthly", title: "Non-Veg Monthly", description: "Chicken & meat specials", category: "non_veg" as const, meal_type: "both" as const, duration_days: 26, price: 3490 },
 ];
 
 export async function POST(req: NextRequest) {

@@ -126,22 +126,22 @@ export function FoodCard({ menu, quantity, onAdd, onUpdateQty, layout = "horizon
         </div>
         
         {/* Swiggy-style Add Button under image */}
-        <div className="absolute bottom-[-2px] left-1/2 -translate-x-1/2 w-[90px] sm:w-[120px] h-[36px] sm:h-[40px] bg-white rounded-[10px] shadow-[0_4px_14px_rgba(0,0,0,0.15)] overflow-hidden flex z-10">
+        <div className="absolute bottom-[-2px] left-1/2 -translate-x-1/2 w-[84px] sm:w-[120px] h-[32px] sm:h-[40px] bg-white rounded-[8px] sm:rounded-[10px] shadow-[0_4px_14px_rgba(0,0,0,0.15)] overflow-hidden flex z-10">
           {quantity === 0 ? (
             <button 
               onClick={onAdd} 
-              className="w-full h-full flex items-center justify-center text-[#1BA672] text-[16px] font-extrabold cursor-pointer hover:bg-[#f3fbf7] transition-colors uppercase tracking-wide border-none bg-transparent"
+              className="w-full h-full flex items-center justify-center text-[#1BA672] text-[13px] sm:text-[16px] font-extrabold cursor-pointer hover:bg-[#f3fbf7] transition-colors uppercase tracking-wide border-none bg-transparent"
             >
               ADD
             </button>
           ) : (
-            <div className="w-full h-full flex items-center justify-between px-2 bg-white">
-              <button onClick={() => onUpdateQty(quantity - 1)} className="text-[#1BA672] hover:bg-slate-50 rounded-md w-8 h-8 flex items-center justify-center bg-transparent border-none cursor-pointer p-0 transition-colors">
-                <Minus size={20} strokeWidth={3} />
+            <div className="w-full h-full flex items-center justify-between px-1.5 sm:px-2 bg-white">
+              <button onClick={() => onUpdateQty(quantity - 1)} className="text-[#1BA672] hover:bg-slate-50 rounded-md w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center bg-transparent border-none cursor-pointer p-0 transition-colors">
+                <Minus className="w-[16px] sm:w-[20px] h-[16px] sm:h-[20px]" strokeWidth={3} />
               </button>
-              <span className="font-extrabold text-[15px] text-[#1BA672] w-6 text-center">{quantity}</span>
-              <button onClick={() => onUpdateQty(quantity + 1)} className="text-[#1BA672] hover:bg-green-50 rounded-md w-8 h-8 flex items-center justify-center bg-transparent border-none cursor-pointer p-0 transition-colors">
-                <Plus size={20} strokeWidth={3} />
+              <span className="font-extrabold text-[13px] sm:text-[15px] text-[#1BA672] w-5 sm:w-6 text-center">{quantity}</span>
+              <button onClick={() => onUpdateQty(quantity + 1)} className="text-[#1BA672] hover:bg-green-50 rounded-md w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center bg-transparent border-none cursor-pointer p-0 transition-colors">
+                <Plus className="w-[16px] sm:w-[20px] h-[16px] sm:h-[20px]" strokeWidth={3} />
               </button>
             </div>
           )}

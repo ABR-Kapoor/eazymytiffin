@@ -30,6 +30,7 @@ const DESCRIPTIONS: Record<MealFilter, string> = {
 };
 
 interface PlanItem {
+  planId: string;
   label: string;
   price: string;
   badge?: string;
@@ -38,26 +39,26 @@ interface PlanItem {
 
 const PLAN_DATA: Record<string, PlanItem[]> = {
   veg: [
-    { label: "1 Meal Trial", price: "₹99", mealFilter: "1-meal-trial" },
-    { label: "1 Meal", price: "₹119", mealFilter: "1-meal" },
-    { label: "1 Day Meal", price: "₹199", mealFilter: "1-day-meal" },
-    { label: "1 Month", price: "₹3,199", badge: "Popular", mealFilter: "1-month" },
+    { planId: "veg-trial", label: "1 Meal Trial", price: "₹99", mealFilter: "1-meal-trial" },
+    { planId: "veg-1-meal", label: "1 Meal", price: "₹119", mealFilter: "1-meal" },
+    { planId: "veg-1-day", label: "1 Day Meal", price: "₹199", mealFilter: "1-day-meal" },
+    { planId: "veg-1-month", label: "1 Month", price: "₹3,199", badge: "Popular", mealFilter: "1-month" },
   ],
   mix: [
-    { label: "1 Meal Trial", price: "₹109", mealFilter: "1-meal-trial" },
-    { label: "1 Meal", price: "₹139", mealFilter: "1-meal" },
-    { label: "1 Day Meal", price: "₹299", mealFilter: "1-day-meal" },
-    { label: "1 Month", price: "₹3,599", badge: "Popular", mealFilter: "1-month" },
+    { planId: "mix-trial", label: "1 Meal Trial", price: "₹109", mealFilter: "1-meal-trial" },
+    { planId: "mix-1-meal", label: "1 Meal", price: "₹139", mealFilter: "1-meal" },
+    { planId: "mix-1-day", label: "1 Day Meal", price: "₹299", mealFilter: "1-day-meal" },
+    { planId: "mix-1-month", label: "1 Month", price: "₹3,599", badge: "Popular", mealFilter: "1-month" },
   ],
   nonveg: [
-    { label: "1 Meal Trial", price: "₹129", mealFilter: "1-meal-trial" },
-    { label: "1 Meal", price: "₹159", mealFilter: "1-meal" },
-    { label: "1 Day Meal", price: "₹259", mealFilter: "1-day-meal" },
-    { label: "1 Month", price: "₹4,299", badge: "Popular", mealFilter: "1-month" },
+    { planId: "nonveg-trial", label: "1 Meal Trial", price: "₹129", mealFilter: "1-meal-trial" },
+    { planId: "nonveg-1-meal", label: "1 Meal", price: "₹159", mealFilter: "1-meal" },
+    { planId: "nonveg-1-day", label: "1 Day Meal", price: "₹259", mealFilter: "1-day-meal" },
+    { planId: "nonveg-1-month", label: "1 Month", price: "₹4,299", badge: "Popular", mealFilter: "1-month" },
   ],
 };
 
-export default function TiffinPlansSection() {
+export default function TiffinPlansSection({ onSubscribe }: { onSubscribe?: (planId: string) => void }) {
   const [activeMealFilter, setActiveMealFilter] = useState<MealFilter>("1-month");
 
   const items = (["veg", "mix", "nonveg"] as const)
@@ -137,14 +138,24 @@ export default function TiffinPlansSection() {
                   />
                 </div>
 
-                <div className="absolute bottom-[-2px] left-1/2 -translate-x-1/2 w-[90px] sm:w-[120px] h-[36px] sm:h-[40px] bg-white rounded-[10px] shadow-[0_4px_14px_rgba(0,0,0,0.15)] overflow-hidden flex z-10">
-                  <Link
-                    href="/subscription"
-                    className="w-full h-full flex items-center justify-center text-[13px] font-extrabold uppercase tracking-wide"
-                    style={{ color: item.meta.color }}
-                  >
-                    Subscribe
-                  </Link>
+                <div className="absolute bottom-[-2px] left-1/2 -translate-x-1/2 w-[84px] sm:w-[120px] h-[32px] sm:h-[40px] bg-white rounded-[8px] sm:rounded-[10px] shadow-[0_4px_14px_rgba(0,0,0,0.15)] overflow-hidden flex z-10">
+                  {onSubscribe ? (
+                    <button
+                      onClick={() => onSubscribe(item.planId)}
+                      className="w-full h-full flex items-center justify-center text-[10px] sm:text-[13px] font-extrabold uppercase tracking-wide cursor-pointer"
+                      style={{ color: item.meta.color }}
+                    >
+                      Subscribe
+                    </button>
+                  ) : (
+                    <Link
+                      href="/subscription"
+                      className="w-full h-full flex items-center justify-center text-[10px] sm:text-[13px] font-extrabold uppercase tracking-wide"
+                      style={{ color: item.meta.color }}
+                    >
+                      Subscribe
+                    </Link>
+                  )}
                 </div>
               </div>
             </div>

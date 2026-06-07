@@ -11,7 +11,7 @@ type Address = { id: string; type: "home" | "hostel" | "office"; house_flat_no: 
 
 const ADDR_ICONS: Record<string, React.ReactNode> = { home: <Home size={18} />, hostel: <Building2 size={18} />, office: <Briefcase size={18} /> };
 
-function SlideToPayButton({ grand, placing, onSlideComplete }: { grand: number; placing: boolean; onSlideComplete: () => void }) {
+function SlideToPayButton({ grand, placing, disabled, onSlideComplete }: { grand: number; placing: boolean; disabled: boolean; onSlideComplete: () => void }) {
   const [drag, setDrag] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -22,6 +22,10 @@ function SlideToPayButton({ grand, placing, onSlideComplete }: { grand: number; 
 
   const handlePointerDown = (e: React.PointerEvent) => {
     if (placing) return;
+    if (disabled) {
+      onSlideComplete();
+      return;
+    }
     setIsDragging(true);
     e.currentTarget.setPointerCapture(e.pointerId);
   };
@@ -57,7 +61,8 @@ function SlideToPayButton({ grand, placing, onSlideComplete }: { grand: number; 
   return (
     <div 
       ref={containerRef}
-      className="w-full relative h-[56px] bg-[#1ea463] rounded-[16px] overflow-hidden flex items-center justify-center group shadow-[0_8px_20px_rgb(30,164,99,0.25)] touch-none"
+      onClick={() => { if (disabled) onSlideComplete(); }}
+      className={`w-full relative h-[56px] bg-[#1ea463] rounded-[16px] overflow-hidden flex items-center justify-center group shadow-[0_8px_20px_rgb(30,164,99,0.25)] touch-none transition-all duration-300 ${disabled ? "opacity-60 grayscale cursor-not-allowed" : "opacity-100"}`}
     >
       <div 
         onPointerDown={handlePointerDown}
@@ -67,13 +72,13 @@ function SlideToPayButton({ grand, placing, onSlideComplete }: { grand: number; 
         style={{ transform: `translateX(${drag}px)`, transition: isDragging ? "none" : "transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)" }}
         className="absolute left-1.5 top-1.5 bottom-1.5 w-[46px] bg-white rounded-[12px] flex items-center justify-center shadow-sm z-20 cursor-grab active:cursor-grabbing"
       >
-        <ChevronRight size={20} className="text-[#1ea463] -mr-2" strokeWidth={3} />
-        <ChevronRight size={20} className="text-[#1ea463] opacity-40" strokeWidth={3} />
+        <ChevronRight size={20} className="text-[#1ea463] -mr-2 animate-arrow" strokeWidth={3} />
+        <ChevronRight size={20} className="text-[#1ea463] opacity-40 animate-arrow" strokeWidth={3} style={{ animationDelay: "0.2s" }} />
       </div>
       
       <div 
-        className="absolute left-0 top-0 bottom-0 bg-[#178550] z-10"
-        style={{ width: drag + 23 + 6, transition: isDragging ? "none" : "width 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)" }}
+        className="absolute left-1.5 top-1.5 bottom-1.5 bg-[#178550] z-10 rounded-l-[12px]"
+        style={{ width: drag + 23, transition: isDragging ? "none" : "width 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)" }}
       />
       
       <span className={`font-extrabold text-white text-[16px] tracking-wide ml-8 z-30 flex items-center gap-1.5 transition-opacity duration-300 ${drag > 40 ? "opacity-0" : "opacity-100"}`}>
@@ -100,7 +105,7 @@ export default function CheckoutPage() {
   const [showAddressOptions, setShowAddressOptions] = useState(false);
   const [showPaymentOptions, setShowPaymentOptions] = useState(false);
   
-  useEffect(() => { if (items.length === 0) router.push("/food"); }, [items]);
+
 
   useEffect(() => {
     const fetchAddr = async () => {
@@ -157,6 +162,28 @@ export default function CheckoutPage() {
   const currentAddress = addresses.find(a => a.id === addressId);
   const addrString = currentAddress ? [currentAddress.house_flat_no, currentAddress.landmark, currentAddress.area].filter(Boolean).join(", ") : "Select an address";
 
+  if (items.length === 0) {
+    return (
+      <div className="min-h-[calc(100dvh-120px)] flex flex-col items-center justify-center px-4">
+        <div className="w-[160px] h-[150px] sm:w-[200px] sm:h-[190px] mb-5">
+          <img 
+            src="https://media-assets.swiggy.com/swiggy/image/upload/fl_lossy,f_auto,q_auto/2xempty_cart_yfxml0" 
+            alt="Empty Cart" 
+            className="w-full h-full object-contain"
+          />
+        </div>
+        <h2 className="text-[20px] font-bold text-[#535665] mb-2">Your cart is empty</h2>
+        <p className="text-[14px] text-[#7e808c] mb-8 text-center max-w-[280px]">You can go to home page to view more delicious meals</p>
+        <button 
+          onClick={() => router.push("/food")} 
+          className="bg-[#fc8019] text-white px-4 py-2.5 rounded-[12px] font-bold text-[13px] cursor-pointer hover:shadow-[0_2px_8px_rgba(252,128,25,0.4)] transition-shadow"
+        >
+          Browse menu
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-[100dvh] pb-[120px] relative">
       {toast && (
@@ -190,7 +217,7 @@ export default function CheckoutPage() {
         <div className="bg-white mx-0 sm:mx-2 mt-2 rounded-[16px] shadow-sm border border-gray-100 overflow-hidden transition-all origin-top">
           <div className="p-3 bg-gray-50 border-b border-gray-100 font-bold text-[13px] text-gray-700 flex justify-between items-center">
             Select Delivery Address
-            <button onClick={() => router.push("/profile/addresses")} className="text-orange-600 text-[12px]">Add New</button>
+            <button onClick={() => router.push("/profile")} className="text-orange-600 text-[12px]">Add New</button>
           </div>
           {addresses.map(addr => (
             <button key={addr.id} onClick={() => { setAddressId(addr.id); setShowAddressOptions(false); }} className={`w-full flex items-start gap-3 p-4 border-b border-gray-50 text-left ${addressId === addr.id ? 'bg-orange-50/50' : 'bg-white'}`}>
@@ -233,9 +260,7 @@ export default function CheckoutPage() {
             <div className="flex-1 min-w-0 pr-4">
               <h4 className="font-bold text-[14px] text-gray-900 leading-snug">{item.title}</h4>
               <p className="text-[12px] font-bold text-gray-900 mt-1">₹{item.price}</p>
-              <button className="text-[11px] font-bold text-gray-500 mt-2 flex items-center gap-0.5 active:text-gray-700">
-                Customize <ChevronDown size={14} />
-              </button>
+
             </div>
 
             {/* Qty Pill */}
@@ -252,11 +277,8 @@ export default function CheckoutPage() {
         
         {/* Actions Row */}
         <div className="border-t border-gray-100 bg-gray-50/30">
-          <button onClick={() => router.push("/food")} className="w-full flex items-center justify-between p-4 border-b border-gray-100 text-[13px] font-bold text-gray-700 active:bg-gray-100 transition-colors">
+          <button onClick={() => router.push("/food")} className="w-full flex items-center justify-between p-4 text-[13px] font-bold text-gray-700 active:bg-gray-100 transition-colors">
             Add more items <Plus size={18} className="text-gray-400"/>
-          </button>
-          <button className="w-full flex items-center justify-between p-4 text-[13px] font-bold text-gray-700 active:bg-gray-100 transition-colors">
-            Add cooking requests <Plus size={18} className="text-gray-400"/>
           </button>
         </div>
       </div>
@@ -324,7 +346,7 @@ export default function CheckoutPage() {
         )}
 
         {/* Slide to Pay Button */}
-        <SlideToPayButton grand={grand} placing={placing} onSlideComplete={handlePlaceOrder} />
+        <SlideToPayButton grand={grand} placing={placing} disabled={!addressId || !timeSlot || !paymentMethod} onSlideComplete={handlePlaceOrder} />
         </div>
       </div>
       

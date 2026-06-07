@@ -342,7 +342,7 @@ export default function ProfilePage() {
               </div>
               <div className="flex gap-3 mt-4">
                 <button onClick={handleCancelAddr} className="flex-1 py-2.5 rounded-xl border border-[#E8E8E8] bg-white font-bold text-[13px] text-[#686B78] cursor-pointer hover:bg-[#F8F9FA] transition-colors">{editingAddrId ? "Cancel" : "Cancel"}</button>
-                <button onClick={handleSaveAddress} className="flex-1 py-2.5 rounded-xl bg-[#0D9488] text-white border-none font-bold text-[13px] cursor-pointer hover:bg-[#0F766E] transition-colors shadow-sm">{editingAddrId ? "Update Address" : "Save Address"}</button>
+                <button onClick={handleSaveAddress} className="flex-1 py-2.5 rounded-xl bg-[#0D9488] text-white border-none font-bold text-[13px] cursor-pointer hover:bg-[#0F766E] transition-colors shadow-sm">{editingAddrId ? "Update" : "Save Address"}</button>
               </div>
             </div>
           )}

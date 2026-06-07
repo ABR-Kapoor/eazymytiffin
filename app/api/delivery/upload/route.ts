@@ -10,16 +10,16 @@ export async function POST(req: Request) {
     const arrayBuffer = await file.arrayBuffer();
 
     const ext = file.name.split(".").pop();
-    const filename = `menu-${Date.now()}.${ext}`;
+    const filename = `proof-${Date.now()}.${ext}`;
 
-    const { error } = await supabaseAdmin.storage.from("menu-images").upload(filename, arrayBuffer, { 
+    const { error } = await supabaseAdmin.storage.from("delivery-proofs").upload(filename, arrayBuffer, { 
       contentType: file.type,
       upsert: true 
     });
 
     if (error) throw error;
 
-    const { data: { publicUrl } } = supabaseAdmin.storage.from("menu-images").getPublicUrl(filename);
+    const { data: { publicUrl } } = supabaseAdmin.storage.from("delivery-proofs").getPublicUrl(filename);
 
     return NextResponse.json({ success: true, url: publicUrl });
   } catch (error: any) {

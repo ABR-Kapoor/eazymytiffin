@@ -7,6 +7,7 @@ const isPublicRoute = createRouteMatcher([
   "/sso-callback(.*)",
   "/api/webhook(.*)",
   "/api/webhooks(.*)",
+  "/api/payments/phonepe/callback(.*)",
   "/payments/success(.*)",
   "/payments/failed(.*)",
   "/payments/phonepe-mock(.*)",

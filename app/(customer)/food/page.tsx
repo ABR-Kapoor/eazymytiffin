@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { FoodCard } from "@/components/ui/FoodCard";
 import { FilterChips } from "@/components/ui/FilterChips";
+import { ActiveOrderAlert } from "@/components/ui/ActiveOrderAlert";
 import { useThemeStore } from "@/store/themeStore";
 import { useOrderStore } from "@/store/orderStore";
 
@@ -90,7 +91,7 @@ export default function FoodPage() {
         <div className="relative z-10 flex justify-center mt-5">
           <div className="bg-white/20 backdrop-blur-md rounded-full p-1 flex items-center gap-1 shadow-sm border border-white/10">
             <button
-              onClick={() => setIsVegOnly(true)}
+              onClick={() => { setIsVegOnly(true); setActiveTab("veg"); }}
               className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[13px] tracking-wide transition-all ${
                 isVegOnly ? "bg-white text-slate-800 shadow-md font-bold" : "text-white font-semibold"
               }`}
@@ -101,7 +102,7 @@ export default function FoodPage() {
               Veg Only
             </button>
             <button
-              onClick={() => setIsVegOnly(false)}
+              onClick={() => { setIsVegOnly(false); setActiveTab("non_veg"); }}
               className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[13px] tracking-wide transition-all ${
                 !isVegOnly ? "bg-white text-slate-800 shadow-md font-bold" : "text-white font-semibold"
               }`}
@@ -117,22 +118,8 @@ export default function FoodPage() {
 
       <div className="mt-6 relative z-20">
         {/* Weekly Menu Alert */}
-        {activeOrder && (
-          <div className="mb-4 bg-white border border-[#FC8019]/20 rounded-2xl p-4 shadow-[0_4px_16px_rgba(0,0,0,0.06)] relative overflow-hidden flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-orange-50 flex items-center justify-center shrink-0">
-              <Truck size={24} className="text-[#FC8019] animate-pulse" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-extrabold text-[15px] text-[#1C1C1C] m-0">
-                Order Arriving in 15 mins
-              </p>
-              <p className="text-[13px] text-[#FC8019] font-bold m-0 mt-0.5 capitalize">
-                {activeOrder.status.replace(/_/g, " ")} • Track Order
-              </p>
-            </div>
-            <Link href="/orders" className="absolute inset-0 z-10" />
-          </div>
-        )}
+        {/* Weekly Menu Alert */}
+        <ActiveOrderAlert />
 
       </div>
 
@@ -147,7 +134,7 @@ export default function FoodPage() {
             { value: "dinner", label: <span className="flex items-center gap-1"><Moon size={12} /> Dinner</span> }
           ]}
           activeValue={activeTab}
-          onChange={(v) => setActiveTab(v as any)}
+          onChange={(v) => { setActiveTab(v as any); if (v === "veg") setIsVegOnly(true); else if (v === "non_veg") setIsVegOnly(false); }}
         />
       </div>
 
@@ -179,18 +166,18 @@ export default function FoodPage() {
 
       {/* Floating Cart */}
       {itemCount() > 0 && (
-        <div className="fixed bottom-[72px] left-0 right-0 px-4 z-[100] pointer-events-none transition-transform translate-y-0">
+        <div className="fixed bottom-[84px] left-0 right-0 px-4 z-[100] pointer-events-none transition-transform translate-y-0">
           <div className="max-w-[960px] mx-auto pointer-events-auto">
             <button onClick={() => router.push("/food/checkout")} className="w-full flex items-center justify-between bg-[#1BA672] text-white rounded-2xl px-4 sm:px-5 py-3 sm:py-4 cursor-pointer shadow-[0_8px_24px_rgba(27,166,114,0.4)] border-none hover:bg-[#14835A] transition-colors">
               <div className="flex flex-col gap-0.5 min-w-0">
-                <p className="font-black text-[13px] sm:text-[15px] text-left m-0 tracking-wide uppercase truncate">
+                <p className="font-black text-[13px] sm:text-[15px] text-left m-0 tracking-wide truncate">
                   {itemCount()} item{itemCount() > 1 ? "s" : ""} added
                 </p>
                 <p className="text-[11px] sm:text-[12px] text-white/90 font-bold m-0 text-left truncate">
-                  ₹{total()} • Extra charges may apply
+                  ₹{total()} • No extra hidden charges
                 </p>
               </div>
-              <div className="flex items-center gap-1.5 sm:gap-2 font-black text-[13px] sm:text-[15px] uppercase tracking-wide shrink-0">
+              <div className="flex items-center gap-1.5 sm:gap-2 font-black text-[13px] sm:text-[15px] tracking-wide shrink-0">
                 View Cart <ChevronRight size={18} className="sm:mt-[-1px]" />
               </div>
             </button>
