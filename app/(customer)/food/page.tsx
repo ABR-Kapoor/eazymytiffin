@@ -7,11 +7,12 @@ import { useUserStore } from "@/store/userStore";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  Leaf, Drumstick, Search, X, ChevronRight,
-  UtensilsCrossed, Sun, Moon, Truck
+  Leaf, Drumstick, ChevronRight,
+  UtensilsCrossed, Sun, Moon
 } from "lucide-react";
 import { FoodCard } from "@/components/ui/FoodCard";
 import { FilterChips } from "@/components/ui/FilterChips";
+import { PageHero } from "@/components/ui/PageHero";
 import { ActiveOrderAlert } from "@/components/ui/ActiveOrderAlert";
 import { useThemeStore } from "@/store/themeStore";
 import { useOrderStore } from "@/store/orderStore";
@@ -25,7 +26,7 @@ type Menu = {
 export default function FoodPage() {
   const router = useRouter();
   const user = useUserStore((s) => s.user);
-  const isAdmin = useUserStore((s) => s.isAdmin)();
+  const isAdmin = useUserStore((s) => s.user?.role === "admin");
   const { items, addItem, updateQty, itemCount, total } = useCartStore();
   const { isVegTheme: isVegOnly, setVegTheme: setIsVegOnly } = useThemeStore();
   const { getActiveOrder } = useOrderStore();
@@ -58,63 +59,23 @@ export default function FoodPage() {
   return (
     <div className="bg-[#f8f9fa] min-h-screen pb-4">
       {/* Hero Section */}
-      <div className="relative bg-[#FC8019] pt-6 pb-10 px-4 rounded-b-[32px] shadow-sm transition-all duration-500 overflow-hidden -mx-4 lg:mx-0">
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/food.png')] opacity-60 invert pointer-events-none" />
-
-        <div className="relative z-10 mb-5 mt-2">
-          <h2 className="text-white text-[26px] font-black drop-shadow-sm leading-tight tracking-tight">
-            Explore Our Menu
-          </h2>
-          <p className="text-white/95 text-[14px] font-bold mt-1 tracking-wide">
-            Fresh meals delivered to your doorstep
-          </p>
-        </div>
-
-        <div className="relative z-10 flex items-center bg-white rounded-[16px] px-4 py-3 shadow-[0_6px_20px_rgba(0,0,0,0.1)]">
-          <input
-            type="text"
-            placeholder="Search for dishes..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="flex-1 bg-transparent outline-none text-[14px] text-[#1C1C1C] placeholder-[#93959F] font-medium"
-          />
-          {search && (
-            <button onClick={() => setSearch("")} className="mr-3 text-[#93959F]">
-              <X size={16} />
-            </button>
-          )}
-          <div className="w-[1px] h-5 bg-slate-200 mx-2" />
-          <Search size={20} className="text-[#FC8019] ml-2 mr-1 shrink-0" />
-        </div>
-
-        {/* Veg/Non-Veg Toggle */}
-        <div className="relative z-10 flex justify-center mt-5">
-          <div className="bg-white/20 backdrop-blur-md rounded-full p-1 flex items-center gap-1 shadow-sm border border-white/10">
-            <button
-              onClick={() => { setIsVegOnly(true); setActiveTab("veg"); }}
-              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[13px] tracking-wide transition-all ${
-                isVegOnly ? "bg-white text-slate-800 shadow-md font-bold" : "text-white font-semibold"
-              }`}
-            >
-              <div className="w-3.5 h-3.5 border-[1.5px] border-green-600 flex items-center justify-center rounded-[3px] bg-white">
-                <div className="w-1.5 h-1.5 bg-green-600 rounded-full" />
-              </div>
-              Veg Only
-            </button>
-            <button
-              onClick={() => { setIsVegOnly(false); setActiveTab("non_veg"); }}
-              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[13px] tracking-wide transition-all ${
-                !isVegOnly ? "bg-white text-slate-800 shadow-md font-bold" : "text-white font-semibold"
-              }`}
-            >
-              <div className="w-3.5 h-3.5 border-[1.5px] border-red-600 flex items-center justify-center rounded-[3px] bg-white">
-                <div className="w-1.5 h-1.5 bg-red-600 rounded-full" />
-              </div>
-              Non-Veg
-            </button>
-          </div>
-        </div>
-      </div>
+      <PageHero 
+        themeColor="#FC8019"
+        title={
+          <>
+            <span className="block text-white" style={{ WebkitTextStroke: "1px #222" }}>EAZY</span>
+            food
+          </>
+        }
+        subtitle="Order delicious meals instantly"
+        heroImages={[
+          { src: "/eazymytiffin-veg-menu-preview.png", bg: "#FACC15" },
+          { src: "/eazymytiffin-non-veg-menu-preview.png", bg: "#FB923C" },
+          { src: "/eazymytiffin-mix-menu-preview.png", bg: "#F87171" },
+        ]}
+        search={search}
+        setSearch={setSearch}
+      />
 
       <div className="mt-6 relative z-20">
         {/* Weekly Menu Alert */}

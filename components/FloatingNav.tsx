@@ -12,11 +12,11 @@ import { useAuth } from "@clerk/nextjs";
 
 export function FloatingNav() {
   const pathname = usePathname();
-  const unreadCount = useNotificationStore((s) => s.unreadCount());
+  const unreadCount = useNotificationStore((s) => s.notifications.filter((n) => !n.is_read).length);
   const isVegTheme = useThemeStore((s) => s.isVegTheme);
-  const userStore = useUserStore();
-  const isAdmin = userStore.isAdmin();
-  const isDeliveryBoy = userStore.isDeliveryBoy();
+  const user = useUserStore((s) => s.user);
+  const isAdmin = user?.role === "admin";
+  const isDeliveryBoy = user?.role === "delivery_boy";
   const { isSignedIn } = useAuth();
   const [open, setOpen] = useState(false);
   const fabRef = useRef<HTMLDivElement>(null);

@@ -8,11 +8,11 @@ import { useThemeStore } from "@/store/themeStore";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  Pause, Play, CheckCircle2, ChevronRight, Star, Leaf, Drumstick,
-  Truck, Search, X
+  ChevronRight
 } from "lucide-react";
 import TiffinPlansSection from "@/components/ui/TiffinPlansSection";
 import { ActiveOrderAlert } from "@/components/ui/ActiveOrderAlert";
+import { PageHero } from "@/components/ui/PageHero";
 
 const DEFAULT_PLANS = [
   // VEG MEALS
@@ -56,10 +56,10 @@ export default function SubscriptionPage() {
   const carouselRef = useRef<HTMLDivElement>(null);
 
   const { isVegTheme: isVegOnly, setVegTheme: setIsVegOnly } = useThemeStore();
+  const [search, setSearch] = useState("");
   const activeDiet = isVegOnly ? "veg" : "non_veg";
   const [activeSchedule, setActiveSchedule] = useState("all");
   const [activeMealFilter, setActiveMealFilter] = useState("all");
-  const [search, setSearch] = useState("");
 
   const [processingPlanId, setProcessingPlanId] = useState<string | null>(null);
   const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
@@ -124,63 +124,24 @@ export default function SubscriptionPage() {
       )}
 
       {/* Hero Section */}
-      <div className="relative bg-[#7C3AED] pt-6 pb-10 px-4 rounded-b-[32px] shadow-sm transition-all duration-500 overflow-hidden -mx-4 lg:mx-0">
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/food.png')] opacity-60 invert pointer-events-none" />
+      <PageHero 
+        themeColor="#7C3AED"
+        title={
+          <>
+            <span className="block text-white" style={{ WebkitTextStroke: "1px #222" }}>EAZY</span>
+            tiffin
+          </>
+        }
+        subtitle="Subscribe & save on daily meals"
+        heroImages={[
+          { src: "/eazymytiffin-monthly-meal-calendar.png", bg: "#FACC15" },
+          { src: "/eazymytiffin-savings-subscription.png", bg: "#FB923C" },
+          { src: "/eazymytiffin-light-meal-subscription.png", bg: "#2DD4BF" },
+        ]}
+        search={search}
+        setSearch={setSearch}
+      />
 
-        <div className="relative z-10 mb-5 mt-2">
-          <h2 className="text-white text-[26px] font-black drop-shadow-sm leading-tight tracking-tight">
-            Home-style Tiffin
-          </h2>
-          <p className="text-white/95 text-[14px] font-bold mt-1 tracking-wide">
-            Daily meals delivered fresh to your door
-          </p>
-        </div>
-
-        <div className="relative z-10 flex items-center bg-white rounded-[16px] px-4 py-3 shadow-[0_6px_20px_rgba(0,0,0,0.1)]">
-          <input
-            type="text"
-            placeholder="Search tiffin plans..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="flex-1 bg-transparent outline-none text-[14px] text-[#1C1C1C] placeholder-[#93959F] font-medium"
-          />
-          {search && (
-            <button onClick={() => setSearch("")} className="mr-3 text-[#93959F]">
-              <X size={16} />
-            </button>
-          )}
-          <div className="w-[1px] h-5 bg-slate-200 mx-2" />
-          <Search size={20} className="text-[#7C3AED] ml-2 mr-1 shrink-0" />
-        </div>
-
-        {/* Veg/Non-Veg Toggle */}
-        <div className="relative z-10 flex justify-center mt-5">
-          <div className="bg-white/20 backdrop-blur-md rounded-full p-1 flex items-center gap-1 shadow-sm border border-white/10">
-            <button
-              onClick={() => setIsVegOnly(true)}
-              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[13px] tracking-wide transition-all ${
-                isVegOnly ? "bg-white text-slate-800 shadow-md font-bold" : "text-white font-semibold"
-              }`}
-            >
-              <div className="w-3.5 h-3.5 border-[1.5px] border-green-600 flex items-center justify-center rounded-[3px] bg-white">
-                <div className="w-1.5 h-1.5 bg-green-600 rounded-full" />
-              </div>
-              Veg Only
-            </button>
-            <button
-              onClick={() => setIsVegOnly(false)}
-              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[13px] tracking-wide transition-all ${
-                !isVegOnly ? "bg-white text-slate-800 shadow-md font-bold" : "text-white font-semibold"
-              }`}
-            >
-              <div className="w-3.5 h-3.5 border-[1.5px] border-red-600 flex items-center justify-center rounded-[3px] bg-white">
-                <div className="w-1.5 h-1.5 bg-red-600 rounded-full" />
-              </div>
-              Non-Veg
-            </button>
-          </div>
-        </div>
-      </div>
 
       <div className="mt-6 relative z-20 space-y-5">
 

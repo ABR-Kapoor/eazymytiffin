@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   MessageCircle,
   Shield,
-  MapPin,
+  Navigation,
   ChevronDown,
   UserCircle,
 } from "lucide-react";
@@ -21,7 +21,7 @@ export default function CustomerLayout({
   children: React.ReactNode;
 }) {
   const user = useUserStore((s) => s.user);
-  const isAdmin = useUserStore((s) => s.isAdmin)();
+  const isAdmin = useUserStore((s) => s.user?.role === "admin");
   const isVegTheme = useThemeStore((s) => s.isVegTheme);
   const [mounted, setMounted] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -34,7 +34,7 @@ export default function CustomerLayout({
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
     };
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -53,7 +53,7 @@ export default function CustomerLayout({
       };
       fetchAddr();
     }
-  }, [user, pathname]);
+  }, [user]);
 
   if (!mounted) return null;
 
@@ -61,6 +61,7 @@ export default function CustomerLayout({
   const hasFullHero = ["/food", "/orders", "/subscription", "/profile", "/home/delivery"].some(p => pathname.startsWith(p));
 
   const themeBgColor = (() => {
+    if (pathname === "/home") return "bg-[#140019]";
     if (pathname.startsWith("/home/delivery")) return "bg-[#22C55E]";
     if (pathname.startsWith("/food")) return "bg-[#FC8019]";
     if (pathname.startsWith("/orders")) return "bg-[#2563EB]";
@@ -73,19 +74,22 @@ export default function CustomerLayout({
   return (
     <div style={{ minHeight: "100vh", background: "#f8f9fa" }}>
       {/* Top Navbar */}
-      <header
-        className={`sticky top-0 z-30 h-[56px] flex justify-center w-full transition-shadow duration-300 ${
-          isScrolled ? "shadow-sm" : ""
-        }`}
-        style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
-      >
+      {!hasFullHero && (
+        <header
+          className={`sticky top-0 z-30 h-[56px] flex justify-center w-full transition-shadow duration-300 ${
+            isScrolled ? "shadow-sm" : ""
+          }`}
+          style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
+        >
         <div className="relative w-full max-w-[960px] h-full">
           {/* Background layer with overflow-hidden for rounded corners */}
-          <div className={`absolute inset-0 overflow-hidden ${themeBgColor} transition-all duration-300 ${
-            isScrolled ? "rounded-b-[24px]" : ""
+          <div className={`absolute inset-0 overflow-hidden ${(isHome || hasFullHero) && !isScrolled ? "bg-transparent" : themeBgColor} transition-all duration-300 ${
+            isScrolled ? "rounded-b-[24px] shadow-sm" : ""
           }`}>
             {/* Food Pattern Overlay */}
-            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/food.png')] opacity-60 invert pointer-events-none" />
+            {!(isHome || hasFullHero) && (
+              <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/food.png')] opacity-60 invert pointer-events-none" />
+            )}
           </div>
 
           {/* Content layer (no overflow-hidden so dropdowns can bleed out) */}
@@ -95,7 +99,7 @@ export default function CustomerLayout({
             href="/profile"
             className="relative z-10 flex items-center gap-2.5 no-underline group flex-1 min-w-0"
           >
-            <MapPin size={22} className="shrink-0 text-white" />
+            <Navigation size={22} className="shrink-0 text-white fill-white" />
             <div className="flex flex-col justify-center">
               <div className="flex items-center gap-1 font-bold text-[15px] leading-tight text-white">
                 <span className="capitalize">{defaultAddress?.type || "Home"}</span>
@@ -110,7 +114,7 @@ export default function CustomerLayout({
           </Link>
 
           {/* Right: Actions */}
-          <div className="relative z-10 flex items-center gap-2.5 shrink-0 ml-4">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0 ml-4 relative z-10">
             {isAdmin && (
               <Link
                 href="/admin"
@@ -155,14 +159,15 @@ export default function CustomerLayout({
               <UserCircle size={22} strokeWidth={2.5} />
             </Link>
           </div>
+          </div>
         </div>
-      </div>
-      </header>
+        </header>
+      )}
 
       {/* Main Container */}
       <main
         id="main"
-        className={`max-w-[960px] mx-auto pb-24 px-4 lg:px-0 ${isHome || hasFullHero ? "pt-0" : "pt-4"}`}
+        className={`max-w-[960px] mx-auto pb-24 px-4 lg:px-0 ${isHome ? "-mt-[56px] relative z-10" : ""} ${(isHome || hasFullHero) ? "pt-0" : "pt-4"}`}
       >
         {children}
       </main>

@@ -96,55 +96,57 @@ export default function MealPlans() {
           </div>
         </div>
 
-        {/* Tab Switcher — Premium Warm Segmented Controls */}
-        <div
-          className="flex gap-1 sm:gap-2 mb-14 p-1.5 rounded-full w-full sm:w-fit border"
-          style={{ 
-            background: "rgba(244, 235, 224, 0.5)", 
-            borderColor: "rgba(212, 184, 150, 0.4)" 
-          }}
-          role="tablist"
-        >
-          {tabs.map((tab) => {
-            const isActive = active === tab.id;
-            const themeColors: Record<Tab, { text: string; border: string }> = {
-              veg:    { text: "#1B5E30", border: "#1B5E30" },
-              mix:    { text: "#D35400", border: "#D35400" },
-              nonveg: { text: "#E8392A", border: "#E8392A" },
-            };
+        {/* Tab Switcher */}
+        <div className="flex justify-center w-full mb-14">
+          <div
+            className="flex p-1 rounded-full w-full sm:w-fit border"
+            style={{ 
+              background: "rgba(244, 235, 224, 0.5)", 
+              borderColor: "rgba(212, 184, 150, 0.4)"
+            }}
+            role="tablist"
+          >
+            {tabs.map((tab) => {
+              const isActive = active === tab.id;
+              const themeColors: Record<Tab, { text: string; border: string }> = {
+                veg:    { text: "#1B5E30", border: "#1B5E30" },
+                mix:    { text: "#D35400", border: "#D35400" },
+                nonveg: { text: "#E8392A", border: "#E8392A" },
+              };
 
-            return (
-              <button
-                key={tab.id}
-                role="tab"
-                aria-selected={isActive}
-                onClick={() => setActive(tab.id)}
-                className="flex-1 sm:flex-initial flex items-center justify-center px-3 py-1.5 sm:px-5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-extrabold uppercase tracking-[0.5px] sm:tracking-[1.5px] transition-all duration-300 whitespace-nowrap"
-                style={
-                  isActive
-                    ? {
-                        background: "#FFFFFF",
-                        color: themeColors[tab.id].text,
-                        boxShadow: "0 6px 16px rgba(61, 31, 10, 0.08)",
-                        border: `2px solid ${themeColors[tab.id].border}`,
-                        transform: "translateY(-1px)",
-                      }
-                    : {
-                        background: "transparent",
-                        color: "#4A3A2A",
-                        opacity: 0.75,
-                        border: "2px solid transparent",
-                      }
-                }
-              >
-                <span className="hidden sm:inline">{tab.label}</span>
-                <span className="sm:hidden">{tab.mobileLabel}</span>
-              </button>
-            );
-          })}
+              return (
+                <button
+                  key={tab.id}
+                  role="tab"
+                  aria-selected={isActive}
+                  onClick={() => setActive(tab.id)}
+                  className="flex-1 sm:flex-initial text-center py-2.5 px-4 sm:px-6 rounded-full text-[12px] sm:text-[13px] font-extrabold uppercase tracking-[0.5px] sm:tracking-[1.5px] transition-all duration-300"
+                  style={{
+                    touchAction: "manipulation",
+                    ...(isActive
+                      ? {
+                          background: "#FFFFFF",
+                          color: themeColors[tab.id].text,
+                          boxShadow: "0 6px 16px rgba(61, 31, 10, 0.08)",
+                          border: `2px solid ${themeColors[tab.id].border}`,
+                        }
+                      : {
+                          background: "transparent",
+                          color: "#4A3A2A",
+                          opacity: 0.75,
+                          border: "2px solid transparent",
+                        })
+                  }}
+                >
+                  <span className="hidden sm:inline">{tab.label}</span>
+                  <span className="sm:hidden">{tab.mobileLabel}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-        {/* Tab Panel - Balanced 2-Column Structured Dashboard */}
+        {/* Tab Panel */}
         <div className="tab-active grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
           
           {/* Column 1: Vertical Plan Banner - Glare applied here */}

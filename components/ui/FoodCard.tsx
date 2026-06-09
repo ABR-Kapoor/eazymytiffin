@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Plus, Minus, UtensilsCrossed, Star, ChevronRight } from "lucide-react";
+import { Plus, Minus, Star } from "lucide-react";
 
 export type MenuType = {
   id: string; title: string; description: string | null;
@@ -29,9 +29,14 @@ export function FoodCard({ menu, quantity, onAdd, onUpdateQty, layout = "horizon
           {menu.image_url ? (
             <Image src={menu.image_url} alt={menu.title} fill className="object-cover" />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-slate-300">
-              <UtensilsCrossed size={32} />
-            </div>
+            <Image 
+              src={isVeg 
+                ? "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=300&auto=format&fit=crop" 
+                : "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?q=80&w=300&auto=format&fit=crop"} 
+              alt={menu.title} 
+              fill 
+              className="object-cover" 
+            />
           )}
           {menu.badge && (
             <div className="absolute top-0 left-0 bg-black/60 text-white text-[11px] font-bold px-2 py-1 rounded-br-[12px]">
@@ -121,7 +126,14 @@ export function FoodCard({ menu, quantity, onAdd, onUpdateQty, layout = "horizon
           {menu.image_url ? (
             <Image src={menu.image_url} alt={menu.title} fill className="object-cover" />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-slate-300"><UtensilsCrossed size={36} /></div>
+            <Image 
+              src={isVeg 
+                ? "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=300&auto=format&fit=crop" 
+                : "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?q=80&w=300&auto=format&fit=crop"} 
+              alt={menu.title} 
+              fill 
+              className="object-cover" 
+            />
           )}
         </div>
         

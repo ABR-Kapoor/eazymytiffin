@@ -1,7 +1,5 @@
 "use client";
 
-import React from "react";
-
 export type FilterOption<T extends string> = {
   value: T;
   label: React.ReactNode;

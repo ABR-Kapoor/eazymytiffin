@@ -7,10 +7,11 @@ import { supabase } from "@/lib/supabase";
 import { useConfirm } from "@/components/ConfirmProvider";
 import Link from "next/link";
 import {
-  PartyPopper, LogOut, Save, Edit2, Check, X, Phone, Mail, MapPin,
-  Shield, Star, Plus, Trash2, Home, Building, Briefcase, Smartphone,
-  ChevronRight, User, Pencil
+  PartyPopper, LogOut, Phone, Mail, MapPin,
+  Plus, Trash2, Home, Building, Briefcase, Smartphone,
+  User, Pencil
 } from "lucide-react";
+import { PageHero } from "@/components/ui/PageHero";
 
 type Address = {
   id: string;
@@ -37,11 +38,12 @@ export default function ProfilePage() {
   const { signOut } = useClerk();
   const user = useUserStore((s) => s.user);
   const setUser = useUserStore((s) => s.setUser);
-  const isAdmin = useUserStore((s) => s.isAdmin)();
+  const isAdmin = useUserStore((s) => s.user?.role === "admin");
 
   const [editing, setEditing] = useState(false);
   const [formData, setFormData] = useState({ full_name: "", phone: "", city: "Bilaspur" });
   const [saving, setSaving] = useState(false);
+  const [search, setSearch] = useState("");
 
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [addrLoading, setAddrLoading] = useState(true);
@@ -192,32 +194,49 @@ export default function ProfilePage() {
         </div>
       )}
       <div className="max-w-[960px] mx-auto">
+
         {/* Profile Hero */}
-        <div className="relative bg-[#0D9488] pt-6 pb-10 px-4 sm:px-6 rounded-b-[32px] shadow-sm transition-all duration-500 overflow-hidden -mx-4 lg:mx-0 mb-6">
-          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/food.png')] opacity-60 invert pointer-events-none" />
-          <div className="relative z-10 flex items-center gap-4 sm:gap-5">
-            <div className="w-[72px] h-[72px] sm:w-[80px] sm:h-[80px] rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center font-black text-[28px] sm:text-[32px] text-white border-2 border-white/30 shadow-lg">
-              {user?.full_name?.charAt(0)?.toUpperCase() || "U"}
-            </div>
-            <div className="flex-1 min-w-0">
-              <h1 className="font-black text-[20px] sm:text-[24px] text-white m-0 tracking-tight drop-shadow-sm truncate">
-                {user?.full_name || "—"}
-              </h1>
-              <p className="text-[13px] text-white/85 m-0 mt-0.5 font-medium truncate">{user?.email}</p>
-              <div className="flex gap-2 flex-wrap mt-2">
-                <span className="text-[10px] font-extrabold uppercase bg-[#1C1C1C]/80 text-white rounded-full px-3 py-1">
-                  {user?.role || "Customer"}
+        <PageHero 
+          themeColor="#0D9488"
+          title={
+            <>
+              <span className="block text-white" style={{ WebkitTextStroke: "1px #222" }}>MY</span>
+              profile
+            </>
+          }
+          subtitle={user?.full_name || "Manage your details"}
+          heroImages={[
+            { src: "/eazymytiffin-logo.png", bg: "#FACC15" },
+            { src: "/eazymytiffin-hero-premium-tiffin.png", bg: "#14B8A6" },
+            { src: "/eazymytiffin-weekly-special-meal.png", bg: "#F472B6" },
+          ]}
+          search={search}
+          setSearch={setSearch}
+        />
+
+        {/* User Info Card (Replacing the old Hero content) */}
+        <div className="bg-white rounded-[20px] p-5 sm:p-6 mb-5 border border-[#E8E8E8] shadow-[0_2px_12px_rgba(0,0,0,0.04)] transition-all flex items-center gap-4 sm:gap-5 mt-6">
+          <div className="w-[72px] h-[72px] sm:w-[80px] sm:h-[80px] rounded-full bg-[#0D9488]/10 flex items-center justify-center font-black text-[28px] sm:text-[32px] text-[#0D9488] border-2 border-[#0D9488]/20 shadow-sm shrink-0">
+            {user?.full_name?.charAt(0)?.toUpperCase() || "U"}
+          </div>
+          <div className="flex-1 min-w-0">
+            <h1 className="font-black text-[20px] sm:text-[24px] text-[#1C1C1C] m-0 tracking-tight truncate">
+              {user?.full_name || "—"}
+            </h1>
+            <p className="text-[13px] text-[#686B78] m-0 mt-0.5 font-medium truncate">{user?.email}</p>
+            <div className="flex gap-2 flex-wrap mt-2">
+              <span className="text-[10px] font-extrabold uppercase bg-[#1C1C1C]/10 text-[#1C1C1C] rounded-full px-3 py-1">
+                {user?.role || "Customer"}
+              </span>
+              <span className={`text-[10px] font-extrabold uppercase rounded-full px-3 py-1 flex items-center gap-1 ${user?.status === "active" ? "bg-[#1BA672]/10 text-[#1BA672]" : "bg-red-100 text-red-600"}`}>
+                <div className={`w-[6px] h-[6px] rounded-full ${user?.status === "active" ? "bg-[#1BA672]" : "bg-red-600"}`} />
+                {user?.status === "active" ? "Active" : "Blocked"}
+              </span>
+              {user?.is_phone_verified && (
+                <span className="text-[10px] font-extrabold uppercase bg-blue-100 text-blue-600 rounded-full px-3 py-1 flex items-center gap-1">
+                  <Smartphone size={10} /> Verified
                 </span>
-                <span className={`text-[10px] font-extrabold uppercase rounded-full px-3 py-1 flex items-center gap-1 ${user?.status === "active" ? "bg-emerald-800 text-white" : "bg-red-800 text-white"}`}>
-                  <div className={`w-[6px] h-[6px] rounded-full ${user?.status === "active" ? "bg-white" : "bg-white"}`} />
-                  {user?.status === "active" ? "Active" : "Blocked"}
-                </span>
-                {user?.is_phone_verified && (
-                  <span className="text-[10px] font-extrabold uppercase bg-blue-400/20 text-blue-100 rounded-full px-3 py-1 flex items-center gap-1">
-                    <Smartphone size={10} /> Verified
-                  </span>
-                )}
-              </div>
+              )}
             </div>
           </div>
         </div>

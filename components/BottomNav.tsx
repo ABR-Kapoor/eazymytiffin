@@ -16,9 +16,9 @@ const baseNavItems = [
 
 export function BottomNav() {
   const pathname = usePathname();
-  const unreadCount = useNotificationStore((s) => s.unreadCount());
+  const unreadCount = useNotificationStore((s) => s.notifications.filter((n) => !n.is_read).length);
   const isVegTheme = useThemeStore((s) => s.isVegTheme);
-  const isDeliveryBoy = useUserStore((s) => s.isDeliveryBoy)();
+  const isDeliveryBoy = useUserStore((s) => s.user?.role === "delivery_boy");
 
   const navItems = isDeliveryBoy
     ? [...baseNavItems, { href: "/home/delivery", label: "Delivery", icon: Bike }]
@@ -40,7 +40,9 @@ export function BottomNav() {
       <div className="h-[72px]" />
 
       <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pointer-events-none">
-        <nav className={`w-full max-w-[960px] flex justify-around items-center pointer-events-auto ${pageColor.bg} rounded-t-[24px] ${pageColor.shadow} pb-[max(12px,env(safe-area-inset-bottom))] pt-2 sm:pt-3 px-1 sm:px-2 transition-colors duration-300`}>
+        <nav className={`relative w-full max-w-[960px] flex justify-around items-center pointer-events-auto ${pageColor.bg} rounded-t-[24px] ${pageColor.shadow} pt-2 sm:pt-3 px-1 sm:px-2 transition-colors duration-300`} style={{ paddingBottom: "max(12px, env(safe-area-inset-bottom))" }}>
+          {/* Background bleed block to prevent white line gap on mobile OS nav bars */}
+          <div className="absolute top-[98%] left-0 right-0 h-[50px] bg-inherit pointer-events-none" />
           {navItems.map(({ href, label, icon: Icon }) => {
             const isActive =
               pathname === href || pathname.startsWith(href + "/");

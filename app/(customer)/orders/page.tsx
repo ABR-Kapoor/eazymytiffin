@@ -8,9 +8,9 @@ import { useConfirm } from "@/components/ConfirmProvider";
 import Link from "next/link";
 import {
   Package, Clock, CheckCircle2, Truck, ChefHat,
-  Phone, X, RefreshCw, AlertTriangle, Bike, Utensils, ClipboardList, CreditCard, ArrowRight,
-  Search
+  Phone, X, RefreshCw, AlertTriangle, Bike, Utensils, ClipboardList, CreditCard, ArrowRight
 } from "lucide-react";
+import { PageHero } from "@/components/ui/PageHero";
 
 const ORDER_STATUS_STEPS = [
   { key: "pending", label: "Order Placed", icon: <Clock size={16} /> },
@@ -35,7 +35,7 @@ const STATUS_COLORS: Record<string, { bg: string; text: string; label: string }>
 
 export default function OrdersPage() {
   const user = useUserStore((s) => s.user);
-  const isAdmin = useUserStore((s) => s.isAdmin)();
+  const isAdmin = useUserStore((s) => s.user?.role === "admin");
   const { orders, activeDelivery, isLoading, getActiveOrder } = useOrderStore();
   const [tab, setTab] = useState<"orders" | "subs">("orders");
   const [subscriptions, setSubscriptions] = useState<any[]>([]);
@@ -122,34 +122,37 @@ export default function OrdersPage() {
       )}
 
       {/* Hero Section */}
-      <div className="relative bg-[#2563EB] pt-6 pb-10 px-4 rounded-b-[32px] shadow-sm transition-all duration-500 overflow-hidden -mx-4 lg:mx-0">
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/food.png')] opacity-60 invert pointer-events-none" />
-
-        <div className="relative z-10 mb-5 mt-2">
-          <h2 className="text-white text-[26px] font-black drop-shadow-sm leading-tight tracking-tight">
-            Your Orders
-          </h2>
-          <p className="text-white/95 text-[14px] font-bold mt-1 tracking-wide">
-            Track all your food & subscription orders
-          </p>
-        </div>
-
+      <PageHero 
+        themeColor="#2563EB"
+        title={
+          <>
+            <span className="block text-white" style={{ WebkitTextStroke: "1px #222" }}>MY</span>
+            orders
+          </>
+        }
+        subtitle="Track your food & subscriptions"
+        heroImages={[
+          { src: "/eazymytiffin-priority-delivery.png", bg: "#FACC15" },
+          { src: "/eazymytiffin-monthly-meal-calendar.png", bg: "#2DD4BF" },
+          { src: "/eazymytiffin-savings-subscription.png", bg: "#F472B6" },
+        ]}
+      >
         {/* Quick Stats */}
-        <div className="relative z-10 grid grid-cols-3 gap-2 sm:gap-3">
-          <div className="bg-white/15 backdrop-blur-md rounded-[16px] p-2 sm:p-3 text-center border border-white/10">
-            <p className="text-white font-black text-[18px] sm:text-[20px] m-0">{orders.length}</p>
-            <p className="text-[10px] text-white/80 font-semibold m-0 mt-0.5">Total Orders</p>
+        <div className="mt-6 relative z-10 grid grid-cols-3 gap-3 w-full">
+          <div className="bg-white rounded-[16px] py-3 px-2 text-center shadow-[0_4px_12px_rgba(0,0,0,0.15)]">
+            <p className="text-[#1A1A1A] font-black text-[20px] sm:text-[22px] m-0 leading-none mb-1">{orders.length}</p>
+            <p className="text-[10px] sm:text-[11px] text-[#6B7280] font-extrabold m-0 uppercase tracking-wide">Total Orders</p>
           </div>
-          <div className="bg-white/15 backdrop-blur-md rounded-[16px] p-2 sm:p-3 text-center border border-white/10">
-            <p className="text-white font-black text-[18px] sm:text-[20px] m-0">{activeOrder ? 1 : 0}</p>
-            <p className="text-[10px] text-white/80 font-semibold m-0 mt-0.5">Active</p>
+          <div className="bg-white rounded-[16px] py-3 px-2 text-center shadow-[0_4px_12px_rgba(0,0,0,0.15)]">
+            <p className="text-[#1A1A1A] font-black text-[20px] sm:text-[22px] m-0 leading-none mb-1">{activeOrder ? 1 : 0}</p>
+            <p className="text-[10px] sm:text-[11px] text-[#6B7280] font-extrabold m-0 uppercase tracking-wide">Active</p>
           </div>
-          <div className="bg-white/15 backdrop-blur-md rounded-[16px] p-2 sm:p-3 text-center border border-white/10">
-            <p className="text-white font-black text-[18px] sm:text-[20px] m-0">{subscriptions.length}</p>
-            <p className="text-[10px] text-white/80 font-semibold m-0 mt-0.5">Subscriptions</p>
+          <div className="bg-white rounded-[16px] py-3 px-2 text-center shadow-[0_4px_12px_rgba(0,0,0,0.15)]">
+            <p className="text-[#1A1A1A] font-black text-[20px] sm:text-[22px] m-0 leading-none mb-1">{subscriptions.length}</p>
+            <p className="text-[10px] sm:text-[11px] text-[#6B7280] font-extrabold m-0 uppercase tracking-wide">Subscriptions</p>
           </div>
         </div>
-      </div>
+      </PageHero>
 
       <div className="mt-6">
         {/* Active Delivery Tracking Card */}

@@ -8,6 +8,7 @@ import {
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import { useUserStore } from "@/store/userStore";
+import { PageHero } from "@/components/ui/PageHero";
 
 type OrderItem = {
   id: string; menu_id: string; quantity: number; price: number;
@@ -45,6 +46,7 @@ export default function DeliveryDashboard() {
   const [currentView, setCurrentView] = useState<"list" | "details" | "map">("list");
   const [activeOrderId, setActiveOrderId] = useState<string | null>(null);
   const [filterTab, setFilterTab] = useState<"All Order" | "Active" | "Delivered">("All Order");
+  const [search, setSearch] = useState("");
 
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -154,13 +156,23 @@ export default function DeliveryDashboard() {
         )}
 
         {/* Top Header */}
-        <div className={`relative ${THEME.bg} pt-6 pb-10 px-4 rounded-b-[32px] shadow-sm transition-all duration-500 overflow-hidden`}>
-          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/food.png')] opacity-60 invert pointer-events-none" />
-          <div className="relative z-10 mb-5 mt-2">
-            <h2 className="text-white text-[26px] font-black drop-shadow-sm leading-tight tracking-tight">Your Deliveries</h2>
-            <p className="text-white/95 text-[14px] font-bold mt-1 tracking-wide">Manage your assigned deliveries</p>
-          </div>
-        </div>
+        <PageHero 
+          themeColor="#22C55E"
+          title={
+            <>
+              <span className="block text-white" style={{ WebkitTextStroke: "1px #222" }}>TRACK</span>
+              order
+            </>
+          }
+          subtitle="Real-time delivery updates"
+        heroImages={[
+          { src: "/eazymytiffin-priority-delivery.png", bg: "#FACC15" },
+          { src: "/eazymytiffin-weekly-special-meal.png", bg: "#4ADE80" },
+          { src: "/eazymytiffin-veg-meal-plan.png", bg: "#F472B6" },
+        ]}
+          search={search}
+          setSearch={setSearch}
+        />
 
         {/* List Content */}
         <div className="flex-1 px-5 pt-6 overflow-y-auto pb-10">

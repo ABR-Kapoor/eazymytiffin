@@ -65,6 +65,6 @@ export const useCartStore = create<CartState>((set, get) => ({
   setPaymentMethod: (paymentMethod) => set({ paymentMethod }),
 
   subtotal: () => get().items.reduce((sum, i) => sum + i.price * i.quantity, 0),
-  total: () => get().items.reduce((sum, i) => sum + i.price * i.quantity, 0),
+  total: () => get().subtotal(),
   itemCount: () => get().items.reduce((sum, i) => sum + i.quantity, 0),
 }));

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, forwardRef, useImperativeHandle } from "react";
-import { Bell, Check, CheckCheck, CreditCard, Truck, ClipboardList } from "lucide-react";
+import { Bell, CheckCheck, CreditCard, Truck, ClipboardList } from "lucide-react";
 import { useNotificationStore } from "@/store/notificationStore";
 
 const typeColors: Record<string, string> = {

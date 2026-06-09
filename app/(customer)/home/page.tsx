@@ -12,14 +12,8 @@ import {
   Search,
   ChevronRight,
   ChevronDown,
-  Truck,
   X,
-  MapPin,
-  User,
   UtensilsCrossed,
-  Mic,
-  Navigation,
-  Zap,
   SlidersHorizontal
 } from "lucide-react";
 import { FoodCard } from "@/components/ui/FoodCard";
@@ -53,6 +47,17 @@ export default function HomePage() {
   const { isVegTheme: isVegOnly, setVegTheme: setIsVegOnly } = useThemeStore();
   const [activeFilter, setActiveFilter] = useState("all");
   const [serviceMode, setServiceMode] = useState<"food" | "tiffin">("food");
+  const [placeholderText, setPlaceholderText] = useState("Eazy food");
+
+  useEffect(() => {
+    const items = ["Eazy food", "Eazy Tiffin"];
+    let i = 0;
+    const interval = setInterval(() => {
+      i = (i + 1) % items.length;
+      setPlaceholderText(items[i]);
+    }, 2000);
+    return () => clearInterval(interval);
+  }, []);
 
   const carouselRef = useRef<HTMLDivElement>(null);
 
@@ -157,67 +162,256 @@ export default function HomePage() {
 
   return (
     <div className="bg-[#f8f9fa] min-h-screen pb-4">
-      {/* 1. Header Area with Background */}
-      <div className={`relative ${themeBg} pt-6 pb-10 px-4 rounded-b-[32px] shadow-sm transition-all duration-500 overflow-hidden -mx-4 lg:mx-0`}>
-        {/* Food Pattern Overlay */}
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/food.png')] opacity-60 invert pointer-events-none" />
-        
-        {/* Greeting Section */}
-        <div className="relative z-10 mb-5 mt-2">
-          <h2 className="text-white text-[26px] font-black drop-shadow-sm leading-tight tracking-tight">
-            {greeting}, {firstName}!
-          </h2>
-          <p className="text-white/95 text-[14px] font-bold mt-1 tracking-wide">
-            What are you craving today?
-          </p>
+      {/* 1. New Swiggy-like Hero Section */}
+      <div className="relative bg-[#140019] pt-[80px] pb-0 px-0 -mx-4 lg:mx-0 rounded-b-[20px] shadow-sm">
+
+
+        {/* Service Tabs */}
+        {/* Service Tabs */}
+        <div className="flex w-full relative z-10 items-end" style={{ paddingLeft: "8px", paddingRight: "8px" }}>
+          {/* Eazy Food Tab */}
+          <button 
+            onClick={() => setServiceMode("food")}
+            className="flex-1 flex flex-col items-center justify-end relative transition-all duration-300"
+            style={{
+              height: "104px",
+              border: "none",
+              cursor: "pointer",
+              zIndex: serviceMode === "food" ? 20 : 10,
+              paddingBottom: "16px",
+              background: "transparent",
+              marginRight: "-6px",
+            }}
+          >
+            {/* Slanted Background */}
+            <div style={{
+              position: "absolute",
+              top: "-8px", left: 0, right: 0, bottom: 0,
+              transform: "perspective(120px) rotateX(12deg)",
+              transformOrigin: "bottom",
+              borderRadius: "28px 28px 0 0",
+              background: serviceMode === "food" ? "#431252" : "linear-gradient(to right, #310c3d, #140019)",
+              borderTop: `1px solid ${serviceMode === "food" ? "rgba(255,255,255,0.5)" : "rgba(255,255,255,0.2)"}`,
+              borderLeft: `1px solid ${serviceMode === "food" ? "rgba(255,255,255,0.5)" : "rgba(255,255,255,0.2)"}`,
+              borderRight: `1px solid ${serviceMode === "food" ? "rgba(255,255,255,0.5)" : "rgba(255,255,255,0.2)"}`,
+              boxShadow: serviceMode === "food" ? "0 -4px 16px rgba(255,255,255,0.2), inset 0 4px 12px rgba(255,255,255,0.1)" : "none",
+              zIndex: -1,
+              transition: "all 0.3s ease"
+            }} />
+            
+            {/* Glow under emoji */}
+            {serviceMode === "food" && (
+              <div style={{
+                position: "absolute",
+                top: "12px",
+                left: "50%",
+                transform: "translateX(-50%)",
+                width: "60px",
+                height: "60px",
+                borderRadius: "50%",
+                background: "rgba(255,200,100,0.15)",
+                filter: "blur(14px)",
+                pointerEvents: "none",
+              }} />
+            )}
+            <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Food/Hamburger.png" alt="Food" width={44} height={44} className="w-[44px] h-[44px] object-contain drop-shadow-xl mb-1.5" />
+            <span style={{
+              fontSize: "14px",
+              fontWeight: 800,
+              color: serviceMode === "food" ? "#ffffff" : "rgba(255,255,255,0.6)",
+              letterSpacing: "0.02em",
+            }}>Eazy Food</span>
+          </button>
+          
+          {/* Eazy Tiffin Tab */}
+          <button 
+            onClick={() => setServiceMode("tiffin")}
+            className="flex-1 flex flex-col items-center justify-end relative transition-all duration-300"
+            style={{
+              height: "104px",
+              border: "none",
+              cursor: "pointer",
+              zIndex: serviceMode === "tiffin" ? 20 : 10,
+              paddingBottom: "16px",
+              background: "transparent",
+              marginLeft: "-6px",
+            }}
+          >
+            {/* Slanted Background */}
+            <div style={{
+              position: "absolute",
+              top: "-8px", left: 0, right: 0, bottom: 0,
+              transform: "perspective(120px) rotateX(12deg)",
+              transformOrigin: "bottom",
+              borderRadius: "28px 28px 0 0",
+              background: serviceMode === "tiffin" ? "#431252" : "linear-gradient(to right, #140019, #310c3d)",
+              borderTop: `1px solid ${serviceMode === "tiffin" ? "rgba(255,255,255,0.5)" : "rgba(255,255,255,0.2)"}`,
+              borderLeft: `1px solid ${serviceMode === "tiffin" ? "rgba(255,255,255,0.5)" : "rgba(255,255,255,0.2)"}`,
+              borderRight: `1px solid ${serviceMode === "tiffin" ? "rgba(255,255,255,0.5)" : "rgba(255,255,255,0.2)"}`,
+              boxShadow: serviceMode === "tiffin" ? "0 -4px 16px rgba(255,255,255,0.2), inset 0 4px 12px rgba(255,255,255,0.1)" : "none",
+              zIndex: -1,
+              transition: "all 0.3s ease"
+            }} />
+
+            {/* Glow under emoji */}
+            {serviceMode === "tiffin" && (
+              <div style={{
+                position: "absolute",
+                top: "12px",
+                left: "50%",
+                transform: "translateX(-50%)",
+                width: "60px",
+                height: "60px",
+                borderRadius: "50%",
+                background: "rgba(100,180,255,0.15)",
+                filter: "blur(14px)",
+                pointerEvents: "none",
+              }} />
+            )}
+            <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Food/Pot%20of%20Food.png" alt="Tiffin" width={44} height={44} className="w-[44px] h-[44px] object-contain drop-shadow-xl mb-[2px]" />
+            <span style={{
+              fontSize: "14px",
+              fontWeight: 800,
+              color: serviceMode === "tiffin" ? "#ffffff" : "rgba(255,255,255,0.6)",
+              letterSpacing: "0.02em",
+            }}>Eazy Tiffin</span>
+          </button>
         </div>
 
-        {/* 2. Search Bar Overlaid */}
-        <div className="relative z-10 flex items-center bg-white rounded-[16px] px-4 py-3 shadow-[0_6px_20px_rgba(0,0,0,0.1)]">
-          <input
-            type="text"
-            placeholder="Search for restaurants, dishes..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="flex-1 bg-transparent outline-none text-[14px] text-[#1C1C1C] placeholder-[#93959F] font-medium"
-          />
-          {search && (
+        {/* Search Bar & Veg Toggle container */}
+        <div className="bg-[#431252] pt-5 pb-6 px-4 relative z-20 shadow-md" style={{ borderRadius: serviceMode === "food" ? "0 24px 24px 24px" : "24px 0 24px 24px" }}>
+          <div className="flex items-center gap-3">
+            {/* Search Bar */}
+            <div className="flex-1 bg-white rounded-[16px] px-4 h-[52px] flex items-center shadow-[0_4px_12px_rgba(0,0,0,0.15)]">
+              <Search size={22} className="text-[#6B7280] mr-3 shrink-0" strokeWidth={2} />
+              <input
+                type="text"
+                placeholder={`Search for '${placeholderText}'`}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="flex-1 bg-transparent outline-none text-[15px] text-[#4B5563] placeholder-[#6B7280] font-medium min-w-0"
+              />
+              {search && (
+                <button
+                  onClick={() => setSearch("")}
+                  className="mr-3 text-[#93959F]"
+                >
+                  <X size={18} />
+                </button>
+              )}
+            </div>
+            
+            {/* Compact Veg Toggle */}
             <button
-              onClick={() => setSearch("")}
-              className="mr-3 text-[#93959F]"
+              onClick={() => {
+                setIsVegOnly(!isVegOnly);
+                setActiveFilter(!isVegOnly ? "veg" : "all");
+              }}
+              className="bg-white rounded-[16px] p-2 flex flex-col items-center justify-center shadow-[0_4px_12px_rgba(0,0,0,0.15)] transition-colors shrink-0 min-w-[56px] h-[52px]"
             >
-              <X size={16} />
+              <span className="text-[11px] font-bold text-gray-600 tracking-wide mb-1 leading-none">VEG</span>
+              <div className="flex items-center gap-1.5">
+                <div className="w-3.5 h-3.5 border-[1.5px] border-[#0F8A65] flex items-center justify-center rounded-[3px]">
+                  <div className="w-1.5 h-1.5 bg-[#0F8A65] rounded-full" />
+                </div>
+                <div className={`w-7 h-4 rounded-full relative transition-colors duration-300 ${isVegOnly ? 'bg-[#0F8A65]' : 'bg-[#e2e2e7]'}`}>
+                  <div className={`absolute top-[2px] w-3 h-3 bg-white rounded-full transition-all duration-300 shadow-sm ${isVegOnly ? 'left-[14px]' : 'left-[2px]'}`} />
+                </div>
+              </div>
             </button>
-          )}
-          <div className="w-[1px] h-5 bg-slate-200 mx-2" />
-          <Search size={20} className="text-[#FC8019] ml-2 mr-1 shrink-0" />
-        </div>
+          </div>
 
-        {/* Veg/Non-Veg Toggle */}
-        <div className="relative z-10 flex justify-center mt-5">
-          <div className="bg-white/20 backdrop-blur-md rounded-full p-1 flex items-center gap-1 shadow-sm border border-white/10">
-            <button
-              onClick={() => { setIsVegOnly(true); setActiveFilter("veg"); }}
-              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[13px] tracking-wide transition-all ${
-                isVegOnly ? "bg-white text-slate-800 shadow-md font-bold" : "text-white font-semibold"
-              }`}
-            >
-              <div className="w-3.5 h-3.5 border-[1.5px] border-green-600 flex items-center justify-center rounded-[3px] bg-white">
-                <div className="w-1.5 h-1.5 bg-green-600 rounded-full" />
+          {/* Promo Banners */}
+          <div className="mt-6">
+            {/* Big Banner Redesigned */}
+            <div className="w-full relative flex flex-col items-center justify-center mb-6 mt-2 min-h-[160px] py-2">
+              <div className="flex flex-col items-center justify-center relative z-10 w-full px-2">
+                <div style={{
+                  color: "#FFD700",
+                  fontSize: "clamp(26px, 7.5vw, 36px)",
+                  fontWeight: 900,
+                  lineHeight: 1,
+                  fontFamily: "'Arial Black', Impact, sans-serif",
+                  WebkitTextStroke: "1px #b71c1c",
+                  textShadow: "0 1px 0 #c62828, 0 2px 0 #c62828, 0 3px 0 #c62828, 0 4px 0 #c62828, 0 5px 0 #c62828, 0 6px 0 #c62828, 0 7px 0 #c62828",
+                  transform: "rotate(-2deg)",
+                  zIndex: 20,
+                  position: "relative",
+                  marginTop: "30px"
+                }}>
+                  <span className="relative inline-block">
+                    {/* Top Chef Hat Icon */}
+                    <div className="absolute left-[45%] bottom-[85%] -translate-x-1/2 z-10 flex items-center justify-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" className="w-[55px] h-[55px] drop-shadow-xl -rotate-[20deg] hover:-rotate-[10deg] transition-transform origin-bottom">
+                        {/* Red Drop Shadow Offset */}
+                        <g transform="translate(0, 4)">
+                          <path d="M 25 70 C 0 70, -5 30, 30 35 C 30 0, 70 0, 70 35 C 105 30, 100 70, 75 70 Z" fill="#C62828" />
+                          <rect x="25" y="65" width="50" height="22" rx="4" fill="#C62828" />
+                        </g>
+                        
+                        {/* Yellow Primary Layer */}
+                        <g>
+                          <path d="M 25 70 C 0 70, -5 30, 30 35 C 30 0, 70 0, 70 35 C 105 30, 100 70, 75 70 Z" fill="#FFD700" />
+                          <rect x="25" y="65" width="50" height="22" rx="4" fill="#FFD700" />
+                          
+                          {/* Hat Base Pleats (Shadowed indents) */}
+                          <rect x="36" y="65" width="4" height="22" fill="#C62828" opacity="0.4" />
+                          <rect x="48" y="65" width="4" height="22" fill="#C62828" opacity="0.4" />
+                          <rect x="60" y="65" width="4" height="22" fill="#C62828" opacity="0.4" />
+                        </g>
+                      </svg>
+                    </div>
+                    GHAR
+                  </span>
+                  <span> KA KHANA</span>
+                </div>
               </div>
-              Veg Only
-            </button>
-            <button
-              onClick={() => { setIsVegOnly(false); setActiveFilter("non_veg"); }}
-              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[13px] tracking-wide transition-all ${
-                !isVegOnly ? "bg-white text-slate-800 shadow-md font-bold" : "text-white font-semibold"
-              }`}
-            >
-              <div className="w-3.5 h-3.5 border-[1.5px] border-red-600 flex items-center justify-center rounded-[3px] bg-white">
-                <div className="w-1.5 h-1.5 bg-red-600 rounded-full" />
+              <div className="mt-6 relative z-30">
+                <Link href="/food" className="px-6 py-1.5 border-[2px] border-[#FFD700] rounded-[20px] flex items-center justify-center bg-[#140019]/40 backdrop-blur-sm cursor-pointer hover:bg-[#FFD700]/10 transition-colors">
+                  <span className="text-[#FFD700] text-[13px] font-black uppercase tracking-[0.15em]" style={{ textShadow: "0 2px 4px rgba(0,0,0,0.5)" }}>Subscribe Now</span>
+                </Link>
               </div>
-              Non-Veg
-            </button>
+            </div>
+            
+            <div className="flex items-center justify-center gap-3 mb-5 px-6">
+              <div className="h-[1px] flex-1 bg-white/20" />
+              <span className="text-white/80 text-[11px] font-bold tracking-widest uppercase">Exciting Tiffin Offers</span>
+              <div className="h-[1px] flex-1 bg-white/20" />
+            </div>
+            
+            {/* Small Cards Row */}
+            <div className="flex gap-3 overflow-x-auto no-scrollbar snap-x pb-2 px-6">
+              {[
+                { title: "Trial Meal\nAt ₹49", subtitle: "SUPER\nOFFER", color: "bg-[#7B1FA2]", accent: "#E1BEE7" },
+                { title: "Up to 20% OFF\nOn Monthly", subtitle: "", color: "bg-[#6A1B9A]", icon: "🎫" },
+                { title: "Flat ₹100 OFF\nOn 1st Order", subtitle: "", color: "bg-[#4A148C]", icon: "🪙" },
+                { title: "Free Delivery\nEveryday", subtitle: "", color: "bg-[#311B92]", icon: "🚚" },
+              ].map((card, i) => (
+                <div key={i} className={`shrink-0 w-[115px] h-[140px] rounded-[20px] ${card.color} p-3 flex flex-col justify-between snap-start relative overflow-hidden shadow-[0_4px_12px_rgba(0,0,0,0.15)] border border-white/10`}>
+                  <div className="text-white font-bold text-[13px] leading-[1.2] z-10 whitespace-pre-line drop-shadow-sm">{card.title}</div>
+                  {card.subtitle && <div className="text-white font-black text-[24px] leading-[0.9] z-10 whitespace-pre-line tracking-tighter mt-auto drop-shadow-md italic" style={{ fontFamily: 'Impact, sans-serif' }}>{card.subtitle}</div>}
+                  {card.icon && <div className="text-[48px] absolute -bottom-4 -right-4 opacity-80 rotate-12 drop-shadow-md">{card.icon}</div>}
+                  
+                  {/* Decorative elements for first card */}
+                  {i === 0 && <div className="absolute bottom-1.5 left-2 right-2 flex justify-between"><span className="w-1.5 h-1.5 bg-yellow-400 rounded-full"></span><span className="w-1.5 h-1.5 bg-yellow-400 rounded-full"></span><span className="w-1.5 h-1.5 bg-yellow-400 rounded-full"></span><span className="w-1.5 h-1.5 bg-yellow-400 rounded-full"></span></div>}
+                  {i === 1 && (
+                    <div className="absolute bottom-2 left-2 flex gap-1">
+                      <div className="bg-yellow-400 text-black text-[28px] font-black leading-none px-1 py-1 rounded shadow-sm rotate-[-5deg]">%</div>
+                      <div className="bg-yellow-400 text-black text-[28px] font-black leading-none px-1 py-1 rounded shadow-sm rotate-[5deg]">%</div>
+                    </div>
+                  )}
+                  {i === 2 && (
+                    <div className="absolute bottom-2 left-2 flex gap-1">
+                      <div className="bg-yellow-400 text-black text-[28px] font-black leading-none px-1 py-1 rounded-full shadow-sm">₹</div>
+                      <div className="bg-yellow-400 text-black text-[28px] font-black leading-none px-1 py-1 rounded-full shadow-sm ml-[-10px] z-0">₹</div>
+                    </div>
+                  )}
+                  {i === 3 && (
+                    <div className="absolute -bottom-2 -left-2 text-[60px] opacity-20">☁️</div>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -300,9 +494,10 @@ export default function HomePage() {
       </div>
 
         {/* 4.5 Dietary Preferences Grid */}
-      <div className="px-0 sm:px-4 mb-6">
+      <div className="mb-6">
         <div className="grid grid-cols-2 gap-3" style={{ gridTemplateRows: "auto auto" }}>
           <Link href="/food?filter=veg" className="relative bg-green-50 rounded-[24px] p-4 flex flex-col justify-between overflow-hidden shadow-sm border border-green-100 group row-span-2 min-h-[200px] hover:shadow-md transition-shadow">
+            <div className="absolute inset-0 pointer-events-none z-0 opacity-80" style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/food.png')" }} />
             <div className="z-10">
               <h3 className="font-black text-[20px] text-[#282c3f] leading-tight tracking-tight">Pure Veg</h3>
               <p className="text-[12px] font-medium text-gray-500 leading-snug mt-1.5 pr-8">100% Vegetarian</p>
@@ -324,6 +519,7 @@ export default function HomePage() {
           </Link>
 
           <Link href="/food?filter=mix" className="relative bg-orange-50 rounded-[20px] p-3 pl-4 flex flex-col justify-center overflow-hidden shadow-sm border border-orange-100 group min-h-[95px] hover:shadow-md transition-shadow">
+            <div className="absolute inset-0 pointer-events-none z-0 opacity-80" style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/food.png')" }} />
             <div className="z-10 relative">
               <div className="flex items-center gap-1.5">
                 <h3 className="font-black text-[17px] text-[#282c3f] leading-tight tracking-tight">Mix Veg</h3>
@@ -344,6 +540,7 @@ export default function HomePage() {
           </Link>
 
           <Link href="/food?filter=nonveg" className="relative bg-red-50 rounded-[20px] p-3 pl-4 flex flex-col justify-center overflow-hidden shadow-sm border border-red-100 group min-h-[95px] hover:shadow-md transition-shadow">
+            <div className="absolute inset-0 pointer-events-none z-0 opacity-80" style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/food.png')" }} />
             <div className="z-10 relative">
               <div className="flex items-center gap-1.5 mb-0.5">
                 <h3 className="font-black text-[17px] text-[#282c3f] leading-tight tracking-tight">Non Veg</h3>
@@ -365,76 +562,7 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* 5. Service Mode Toggle Banner */}
-      <div className="mt-2 mb-6">
-        <div className="relative bg-gradient-to-br from-[#0284C7] to-[#0369A1] pt-6 pb-8 px-5 rounded-[32px] shadow-md overflow-hidden">
-          {/* Native CSS Diagonal Stripes Pattern */}
-          <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,rgba(255,255,255,0.05),rgba(255,255,255,0.05)_2px,transparent_2px,transparent_12px)] pointer-events-none" />
-
-          {/* Dynamic Corner Images */}
-          {/* Top Left */}
-          <img 
-            src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=300&auto=format&fit=crop" 
-            alt="Burger"
-            className={`absolute -top-10 -left-10 sm:-top-16 sm:-left-16 w-28 h-28 sm:w-52 sm:h-52 rounded-full shadow-2xl object-cover border-[6px] border-white/10 transition-all duration-700 ease-in-out ${serviceMode === "food" ? "opacity-100 scale-100 rotate-[12deg]" : "opacity-0 scale-50 -rotate-12"}`} 
-          />
-          <img 
-            src="https://images.unsplash.com/photo-1546833999-b9f581a1996d?q=80&w=300&auto=format&fit=crop" 
-            alt="Thali"
-            className={`absolute -top-10 -left-10 sm:-top-16 sm:-left-16 w-28 h-28 sm:w-52 sm:h-52 rounded-full shadow-2xl object-cover border-[6px] border-white/10 transition-all duration-700 ease-in-out ${serviceMode === "tiffin" ? "opacity-100 scale-100 -rotate-[12deg]" : "opacity-0 scale-50 rotate-12"}`} 
-          />
-          
-          {/* Bottom Right */}
-          <img 
-            src="https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=300&auto=format&fit=crop" 
-            alt="Pizza"
-            className={`absolute -bottom-12 -right-12 sm:-bottom-24 sm:-right-24 w-36 h-36 sm:w-64 sm:h-64 rounded-full shadow-2xl object-cover border-[6px] border-white/10 transition-all duration-700 ease-in-out ${serviceMode === "food" ? "opacity-100 scale-100 -rotate-[15deg]" : "opacity-0 scale-50 rotate-12"}`} 
-          />
-          <img 
-            src="https://images.unsplash.com/photo-1585937421612-70a008356fbe?q=80&w=300&auto=format&fit=crop" 
-            alt="Curry"
-            className={`absolute -bottom-12 -right-12 sm:-bottom-24 sm:-right-24 w-36 h-36 sm:w-64 sm:h-64 rounded-full shadow-2xl object-cover border-[6px] border-white/10 transition-all duration-700 ease-in-out ${serviceMode === "tiffin" ? "opacity-100 scale-100 rotate-[15deg]" : "opacity-0 scale-50 -rotate-12"}`} 
-          />
-          
-          <div className="relative z-10 flex flex-col items-center text-center">
-            <h3 className="font-black text-[20px] sm:text-[22px] text-white tracking-tight mb-1 drop-shadow-sm">
-              Choose Your Experience
-            </h3>
-            <p className="text-[12px] sm:text-[13px] text-white/95 font-semibold mb-5 leading-snug max-w-[260px] sm:max-w-[300px]">
-              Order instantly or subscribe to daily homestyle meals.
-            </p>
-
-            {/* Small Responsive Toggle Switch */}
-            <div className="bg-white/20 backdrop-blur-md p-1 rounded-full flex items-center shadow-inner relative w-[200px] sm:w-[240px] border border-white/20">
-              {/* Sliding Background */}
-              <div 
-                className="absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-full shadow-sm transition-all duration-300 ease-out"
-                style={{
-                  left: serviceMode === "food" ? "4px" : "calc(50%)",
-                }}
-              />
-              
-              <button
-                onClick={() => setServiceMode("food")}
-                className={`flex-1 flex items-center justify-center py-1.5 sm:py-2 relative z-10 transition-colors duration-300 ${
-                  serviceMode === "food" ? "text-[#1C1C1C]" : "text-white drop-shadow-sm"
-                }`}
-              >
-                <span className="font-extrabold text-[12px] tracking-wide">Eazy Food</span>
-              </button>
-
-              <button
-                onClick={() => setServiceMode("tiffin")}
-                className={`flex-1 flex items-center justify-center py-1.5 sm:py-2 relative z-10 transition-colors duration-300 ${
-                  serviceMode === "tiffin" ? "text-[#1C1C1C]" : "text-white drop-shadow-sm"
-                }`}
-              >
-                <span className="font-extrabold text-[12px] tracking-wide">Eazy Tiffin</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* 5. Service Mode Toggle Banner (Moved to Hero Section) */}
 
       {/* 6. Dynamic Content Based on Service Mode */}
       {serviceMode === "food" ? (
@@ -501,7 +629,7 @@ export default function HomePage() {
           )}
         </div>
       ) : (
-        <div className="-mt-6 pb-6">
+        <div className="pt-4 pb-6">
           {/* Render the full Tiffin Subscription UI instead of a placeholder */}
           <TiffinPlansSection />
         </div>

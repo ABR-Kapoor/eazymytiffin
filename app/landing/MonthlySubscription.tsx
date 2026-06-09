@@ -96,24 +96,13 @@ export default function MonthlySubscription() {
   const [activePlanTab, setActivePlanTab] = useState(0);
   const { triggerInstall } = usePWAInstall();
 
-  // Autoplay Timer - resets on manual select/swipe for perfect UX
+  // Autoplay Timer
   useEffect(() => {
     const timer = setInterval(() => {
       setActivePlanTab((prev) => (prev + 1) % plans.length);
     }, 5000);
     return () => clearInterval(timer);
-  }, [activePlanTab]);
-
-  // Synchronize carousel scroll position whenever activePlanTab changes
-  useEffect(() => {
-    const container = document.getElementById("mobile-plans-carousel");
-    if (container) {
-      container.scrollTo({
-        left: activePlanTab * container.clientWidth,
-        behavior: "smooth"
-      });
-    }
-  }, [activePlanTab]);
+  }, []);
 
   return (
     <section id="subscription-plans" className="py-12 sm:py-24 relative overflow-hidden" style={{ background: "#F9F9EF" }}>
@@ -131,66 +120,170 @@ export default function MonthlySubscription() {
               Monthly <span style={{ color: "var(--emt-red)" }}>Commitment</span>
             </h2>
             <p className="text-[17px] font-normal opacity-60">
-              Unlock the best value with our 30-day fixed meal subscriptions. Delivered fresh, every single day.
+              Unlock the best value with our 26-day fixed meal subscriptions. Delivered fresh, every single day.
             </p>
           </div>
           <div className="flex items-center gap-3 px-6 py-3 rounded-2xl bg-slate-50 border border-slate-300">
             <Calendar className="text-emerald-600" size={20} />
-            <span className="text-[14px] font-semibold text-slate-900 uppercase tracking-[1px]">30 Days Plan</span>
+            <span className="text-[14px] font-semibold text-slate-900 uppercase tracking-[1px]">26 Days Plan</span>
           </div>
         </div>
 
-        {/* Mobile Plan Tab Switcher */}
-        <div
-          className="flex md:hidden gap-1.5 mb-8 p-1 rounded-full w-full max-w-md sm:mx-0 border"
-          style={{ 
-            background: "rgba(244, 235, 224, 0.5)", 
-            borderColor: "rgba(212, 184, 150, 0.4)" 
-          }}
-          role="tablist"
-        >
-          {plans.map((plan, i) => {
-            const isActive = activePlanTab === i;
-            const shortNames = ["Light", "Veg", "Mix", "Non-Veg"];
-            return (
+        {/* Mobile Plan Tab Switcher + Slider */}
+        <div className="md:hidden mb-12">
+          {/* Tab Pills */}
+          <div
+            className="flex mb-6 p-1 rounded-full w-full border"
+            style={{ 
+              background: "rgba(244, 235, 224, 0.5)", 
+              borderColor: "rgba(212, 184, 150, 0.4)",
+            }}
+            role="tablist"
+          >
+            {plans.map((plan, i) => {
+              const isActive = activePlanTab === i;
+              const shortNames = ["Light", "Veg", "Mix", "Non-Veg"];
+              return (
+                <button
+                  key={plan.name}
+                  role="tab"
+                  aria-selected={isActive}
+                  onClick={() => setActivePlanTab(i)}
+                  className="flex-1 text-center py-2.5 rounded-full text-[11px] font-extrabold uppercase tracking-[0.5px] transition-all duration-300"
+                  style={
+                    isActive
+                      ? {
+                          background: plan.accent,
+                          color: "#FFFFFF",
+                          boxShadow: `0 4px 12px ${plan.accent}40`,
+                        }
+                      : {
+                          background: "transparent",
+                          color: "#4A3A2A",
+                          opacity: 0.7,
+                        }
+                  }
+                >
+                  {shortNames[i]}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Slider viewport */}
+          <div className="overflow-hidden rounded-[32px]">
+            {/* Slider track */}
+            <div
+              className="flex transition-transform duration-500 ease-in-out"
+              style={{ transform: `translateX(-${activePlanTab * 100}%)` }}
+            >
+              {plans.map((plan) => (
+                <div
+                  key={plan.name}
+                  className="w-full shrink-0"
+                >
+                  <div
+                    className="relative flex flex-col rounded-[32px] border-2 bg-white overflow-hidden"
+                    style={{ borderColor: plan.accent }}
+                  >
+                    {/* Visual Banner */}
+                    <div className="relative h-[160px] overflow-hidden">
+                      <img 
+                        src={plan.image} 
+                        alt={plan.name} 
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                    </div>
+
+                    <div className="p-6 pt-0 flex flex-col flex-1">
+                      {/* Plan Icon & Name */}
+                      <div className="mb-6 -mt-7 relative z-10">
+                        <div 
+                          className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4 shadow-xl border-4 border-white"
+                          style={{ background: "linear-gradient(135deg, white, #f8f8f8)" }}
+                        >
+                          <plan.Icon size={24} style={{ color: plan.accent }} />
+                        </div>
+                        <div className="mb-4 flex">
+                          <span className="w-fit inline-block text-[12px] font-bold uppercase tracking-[1px] px-3 py-1.5 rounded-full border" 
+                            style={{ 
+                              backgroundColor: `${plan.accent}15`,
+                              borderColor: `${plan.accent}30`,
+                              color: plan.accent
+                            }}>
+                            {plan.name}
+                          </span>
+                        </div>
+                        <p className="text-[13px] font-normal opacity-50 leading-relaxed">
+                          {plan.desc}
+                        </p>
+                      </div>
+
+                      {/* Pricing Rows */}
+                      <div className="flex flex-col gap-3 mb-8">
+                        <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                          <div>
+                            <p className="text-[10px] font-semibold opacity-40 uppercase tracking-[1px]">Daily Once</p>
+                            <p className="text-[20px] font-semibold text-slate-900">{plan.oneTime}</p>
+                          </div>
+                          <span className="text-[11px] font-normal opacity-40">/mo</span>
+                        </div>
+                        <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                          <div>
+                            <p className="text-[10px] font-semibold opacity-40 uppercase tracking-[1px]">Lunch + Dinner</p>
+                            <p className="text-[20px] font-semibold" style={{ color: plan.accent }}>{plan.both}</p>
+                          </div>
+                          <span className="text-[11px] font-normal opacity-40">/mo</span>
+                        </div>
+                      </div>
+
+                      {/* Features List */}
+                      <div className="flex-1">
+                        <p className="text-[11px] font-semibold uppercase tracking-[1px] mb-4 opacity-30">Plan Details</p>
+                        <ul className="flex flex-col gap-3 mb-8">
+                          {plan.includes.map((item) => (
+                            <li key={item} className="flex items-start gap-3 text-[13px] font-normal text-slate-700">
+                              <CheckCircle2 size={16} className="shrink-0 mt-0.5" style={{ color: plan.accent }} />
+                              {item}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      {/* Action Button */}
+                      <a
+                        href="tel:9770144899"
+                        className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl text-[13px] font-semibold uppercase tracking-[1.5px] transition-all duration-300"
+                        style={{ background: plan.accent, color: "white" }}
+                        onClick={() => triggerInstall()}
+                      >
+                        Subscribe <ArrowUpRight size={18} />
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Dots Indicator */}
+          <div className="flex justify-center gap-1.5 mt-4">
+            {plans.map((plan, i) => (
               <button
                 key={plan.name}
-                role="tab"
-                aria-selected={isActive}
-                onClick={() => {
-                  setActivePlanTab(i);
-                  const container = document.getElementById("mobile-plans-carousel");
-                  if (container) {
-                    container.scrollTo({
-                      left: i * container.clientWidth,
-                      behavior: "smooth"
-                    });
-                  }
+                onClick={() => setActivePlanTab(i)}
+                className="h-2 rounded-full transition-all duration-300"
+                style={{
+                  width: activePlanTab === i ? "16px" : "8px",
+                  background: activePlanTab === i ? plan.accent : "#CBD5E1"
                 }}
-                className="flex-1 text-center py-2.5 rounded-full text-[12px] font-extrabold uppercase tracking-[1px] transition-all duration-300"
-                style={
-                  isActive
-                    ? {
-                        background: plan.accent,
-                        color: "#FFFFFF",
-                        boxShadow: `0 4px 12px ${plan.accent}30`,
-                        transform: "translateY(-1px)",
-                      }
-                    : {
-                        background: "transparent",
-                        color: "#4A3A2A",
-                        opacity: 0.7,
-                      }
-                }
-              >
-                {shortNames[i]}
-              </button>
-
-            );
-          })}
+                aria-label={`Go to plan ${i + 1}`}
+              />
+            ))}
+          </div>
         </div>
 
-        {/* Plan Cards Grid (Desktop & Tablet) */}
         <div className="hidden md:grid grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           {plans.map((plan, i) => {
             const isHovered = hovered === i;
@@ -288,145 +381,7 @@ export default function MonthlySubscription() {
           })}
         </div>
 
-        {/* Plan Cards Carousel (Mobile Only) */}
-        <div className="w-full md:hidden relative mb-12">
-          <div 
-            className="w-full flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-none pb-4"
-            id="mobile-plans-carousel"
-            onScroll={(e) => {
-              const container = e.currentTarget;
-              const scrollPosition = container.scrollLeft;
-              const cardWidth = container.clientWidth;
-              if (cardWidth > 0) {
-                const newIndex = Math.round(scrollPosition / cardWidth);
-                if (newIndex >= 0 && newIndex < plans.length && newIndex !== activePlanTab) {
-                  const exactPosition = newIndex * cardWidth;
-                  if (Math.abs(scrollPosition - exactPosition) < 10) {
-                    setActivePlanTab(newIndex);
-                  }
-                }
-              }
-            }}
-          >
-            {plans.map((plan, i) => (
-              <div
-                key={plan.name}
-                className="w-full shrink-0 snap-center"
-              >
-                <div
-                  className="group relative flex flex-col rounded-[32px] border-2 bg-white overflow-hidden transition-all duration-500 cursor-default"
-                  style={{ 
-                    borderColor: plan.accent,
-                  }}
-                >
-                  {/* Visual Banner */}
-                  <div className="btn-glare relative h-[160px] overflow-hidden">
-                    <img 
-                      src={plan.image} 
-                      alt={plan.name} 
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                  </div>
 
-                  <div className="p-6 pt-0 flex flex-col flex-1">
-                    {/* Plan Icon & Name */}
-                    <div className="mb-6 -mt-7 relative z-10">
-                      <div 
-                        className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4 shadow-xl border-4 border-white"
-                        style={{ background: `linear-gradient(135deg, white, #f8f8f8)` }}
-                      >
-                        <plan.Icon size={24} style={{ color: plan.accent }} />
-                      </div>
-                      <div className="mb-4 flex">
-                        <span className="w-fit inline-block text-[12px] font-bold uppercase tracking-[1px] px-3 py-1.5 rounded-full border" 
-                          style={{ 
-                            backgroundColor: `${plan.accent}15`,
-                            borderColor: `${plan.accent}30`,
-                            color: plan.accent
-                          }}>
-                          {plan.name}
-                        </span>
-                      </div>
-                      <p className="text-[13px] font-normal opacity-50 leading-relaxed">
-                        {plan.desc}
-                      </p>
-                    </div>
-
-                    {/* Pricing Rows */}
-                    <div className="flex flex-col gap-3 mb-8">
-                      <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-100">
-                        <div>
-                          <p className="text-[10px] font-semibold opacity-40 uppercase tracking-[1px]">Daily Once</p>
-                          <p className="text-[20px] font-semibold text-slate-900">{plan.oneTime}</p>
-                        </div>
-                        <span className="text-[11px] font-normal opacity-40">/mo</span>
-                      </div>
-                      <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-100">
-                        <div>
-                          <p className="text-[10px] font-semibold opacity-40 uppercase tracking-[1px]">Lunch + Dinner</p>
-                          <p className="text-[20px] font-semibold" style={{ color: plan.accent }}>{plan.both}</p>
-                        </div>
-                        <span className="text-[11px] font-normal opacity-40">/mo</span>
-                      </div>
-                    </div>
-
-                    {/* Features List */}
-                    <div className="flex-1">
-                      <p className="text-[11px] font-semibold uppercase tracking-[1px] mb-4 opacity-30">Plan Details</p>
-                      <ul className="flex flex-col gap-3 mb-8">
-                        {plan.includes.map((item) => (
-                          <li key={item} className="flex items-start gap-3 text-[13px] font-normal text-slate-700">
-                            <CheckCircle2 size={16} className="shrink-0 mt-0.5" style={{ color: plan.accent }} />
-                            {item}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    {/* Action Button */}
-                    <a
-                      href="tel:9770144899"
-                      className="btn-glare flex items-center justify-center gap-2 w-full py-4 rounded-2xl text-[13px] font-semibold uppercase tracking-[1.5px] transition-all duration-300"
-                      style={{ 
-                        background: plan.accent, 
-                        color: "white" 
-                      }}
-                      onClick={() => triggerInstall()}
-                    >
-                      Subscribe <ArrowUpRight size={18} />
-                    </a>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Dots Indicator */}
-          <div className="flex justify-center gap-1.5 mt-4">
-            {plans.map((plan, i) => (
-              <button
-                key={plan.name}
-                onClick={() => {
-                  setActivePlanTab(i);
-                  const container = document.getElementById("mobile-plans-carousel");
-                  if (container) {
-                    container.scrollTo({
-                      left: i * container.clientWidth,
-                      behavior: "smooth"
-                    });
-                  }
-                }}
-                className="w-2 h-2 rounded-full transition-all duration-300"
-                style={{
-                  width: activePlanTab === i ? "16px" : "8px",
-                  background: activePlanTab === i ? plan.accent : "#CBD5E1"
-                }}
-                aria-label={`Go to plan ${i + 1}`}
-              />
-            ))}
-          </div>
-        </div>
 
 
         {/* Condensed Subscriber Advantage Tabs */}
