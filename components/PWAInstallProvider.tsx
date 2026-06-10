@@ -65,7 +65,12 @@ export function PWAInstallProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const triggerInstall = async () => {
-    if (!deferredPrompt.current) return;
+    if (isInstalled) return;
+    
+    if (!deferredPrompt.current) {
+      window.dispatchEvent(new Event("show-pwa-banner"));
+      return;
+    }
     try {
       deferredPrompt.current.prompt();
       const { outcome } = await deferredPrompt.current.userChoice;
@@ -76,6 +81,7 @@ export function PWAInstallProvider({ children }: { children: ReactNode }) {
       }
     } catch (err) {
       console.warn("PWA install error:", err);
+      window.dispatchEvent(new Event("show-pwa-banner"));
     }
   };
 

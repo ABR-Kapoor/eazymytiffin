@@ -1,6 +1,7 @@
-const CACHE_NAME = "eazymytiffin-v2";
+const CACHE_NAME = "eazymytiffin-v3";
 const STATIC_ASSETS = [
   "/",
+  "/?source=pwa",
   "/manifest.json",
   "/favicon.ico",
   "/eazymytiffin-logo.png",
@@ -103,8 +104,9 @@ self.addEventListener("fetch", (event) => {
           return networkResponse;
         } catch {
           // Offline: serve cached page
-          const cached = await caches.match(event.request);
-          return cached || new Response("Offline", { status: 503 });
+          // ignoreSearch: true ensures /?source=pwa matches /
+          const cached = await caches.match(event.request, { ignoreSearch: true });
+          return cached || (await caches.match("/")) || new Response("Offline", { status: 503 });
         }
       })()
     );

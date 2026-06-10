@@ -20,6 +20,7 @@ import { FoodCard } from "@/components/ui/FoodCard";
 import { FilterChips } from "@/components/ui/FilterChips";
 import TiffinPlansSection from "@/components/ui/TiffinPlansSection";
 import { ActiveOrderAlert } from "@/components/ui/ActiveOrderAlert";
+import { usePWAInstall } from "@/components/PWAInstallProvider";
 
 type Menu = {
   id: string;
@@ -113,6 +114,7 @@ export default function HomePage() {
   const [activeFilter, setActiveFilter] = useState("all");
   const [serviceMode, setServiceMode] = useState<"food" | "tiffin">("food");
   const [placeholderText, setPlaceholderText] = useState("Eazy food");
+  const { triggerInstall } = usePWAInstall();
 
   useEffect(() => {
     let i = 0;
@@ -188,6 +190,13 @@ export default function HomePage() {
 
   const firstName = user?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || "Guest";
 
+  const handleSearchClear = useCallback(() => setSearch(""), []);
+  const handleVegToggle = useCallback(() => {
+    setIsVegOnly(!isVegOnly);
+    setActiveFilter(!isVegOnly ? "veg" : "all");
+  }, [isVegOnly, setIsVegOnly]);
+  const handleServiceMode = useCallback((mode: "food" | "tiffin") => setServiceMode(mode), []);
+
   if (isLoading) {
     return (
       <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--color-bg)" }}>
@@ -196,18 +205,11 @@ export default function HomePage() {
     );
   }
 
-  const handleSearchClear = useCallback(() => setSearch(""), []);
-  const handleVegToggle = useCallback(() => {
-    setIsVegOnly(!isVegOnly);
-    setActiveFilter(!isVegOnly ? "veg" : "all");
-  }, [isVegOnly, setIsVegOnly]);
-  const handleServiceMode = useCallback((mode: "food" | "tiffin") => setServiceMode(mode), []);
-
   const themeBg = isVegOnly ? "bg-[#0d5c3d]" : "bg-[#E8392A]";
 
   return (
     <div className="bg-[#f8f9fa] min-h-screen pb-4">
-      <div className="relative bg-[#140019] pt-[80px] pb-0 px-0 -mx-4 lg:mx-0 rounded-b-[20px] shadow-sm">
+      <div className="relative bg-[#140019] pt-[64px] pb-0 px-0 -mx-4 lg:mx-0 rounded-b-[20px] shadow-sm">
         <div className="flex w-full relative z-10 items-end" style={{ paddingLeft: "8px", paddingRight: "8px" }}>
           <button
             onClick={() => handleServiceMode("food")}
@@ -279,7 +281,7 @@ export default function HomePage() {
               transform: "perspective(120px) rotateX(12deg)",
               transformOrigin: "bottom",
               borderRadius: "28px 28px 0 0",
-              background: serviceMode === "tiffin" ? "#431252" : "linear-gradient(to right, #140019, #310c3d)",
+              background: serviceMode === "tiffin" ? "#0284C7" : "linear-gradient(to right, #140019, #310c3d)",
               borderTop: `1px solid ${serviceMode === "tiffin" ? "rgba(255,255,255,0.5)" : "rgba(255,255,255,0.2)"}`,
               borderLeft: `1px solid ${serviceMode === "tiffin" ? "rgba(255,255,255,0.5)" : "rgba(255,255,255,0.2)"}`,
               borderRight: `1px solid ${serviceMode === "tiffin" ? "rgba(255,255,255,0.5)" : "rgba(255,255,255,0.2)"}`,
@@ -312,7 +314,7 @@ export default function HomePage() {
           </button>
         </div>
 
-        <div className="bg-[#431252] pt-5 pb-6 px-4 relative z-20 shadow-md" style={{ borderRadius: serviceMode === "food" ? "0 24px 24px 24px" : "24px 0 24px 24px" }}>
+        <div className={`pt-5 pb-6 px-4 relative z-20 shadow-md transition-colors duration-300 ${serviceMode === "food" ? "bg-[#431252]" : "bg-[#0284C7]"}`} style={{ borderRadius: serviceMode === "food" ? "0 24px 24px 24px" : "24px 0 24px 24px" }}>
           <div className="flex items-center gap-3">
             <div className="flex-1 bg-white rounded-[16px] px-4 h-[52px] flex items-center shadow-[0_4px_12px_rgba(0,0,0,0.15)]">
               <Search size={22} className="text-[#6B7280] mr-3 shrink-0" strokeWidth={2} />
@@ -346,21 +348,23 @@ export default function HomePage() {
             </button>
           </div>
 
-          <div className="mt-6">
-            <div className="w-full relative flex flex-col items-center justify-center mb-6 mt-2 min-h-[160px] py-2">
+          <div className="mt-8">
+            <div className="w-full relative flex flex-col items-center justify-center mb-3 mt-4 min-h-[120px] py-1">
               <div className="flex flex-col items-center justify-center relative z-10 w-full px-2">
                 <div style={{
-                  color: serviceMode === "tiffin" ? "#00E5FF" : "#FFD700",
+                  color: serviceMode === "tiffin" ? "#FFFFFF" : "#FFD700",
                   fontSize: "clamp(26px, 7.5vw, 36px)",
                   fontWeight: 900,
                   lineHeight: 1,
                   fontFamily: "'Arial Black', Impact, sans-serif",
                   WebkitTextStroke: `1px ${serviceMode === "tiffin" ? "#0D47A1" : "#b71c1c"}`,
-                  textShadow: "0 1px 0 #c62828, 0 2px 0 #c62828, 0 3px 0 #c62828, 0 4px 0 #c62828, 0 5px 0 #c62828, 0 6px 0 #c62828, 0 7px 0 #c62828",
+                  textShadow: serviceMode === "tiffin" 
+                    ? "0 1px 0 #0D47A1, 0 2px 0 #0D47A1, 0 3px 0 #0D47A1, 0 4px 0 #0D47A1, 0 5px 0 #0D47A1, 0 6px 0 #0D47A1, 0 7px 0 #0D47A1"
+                    : "0 1px 0 #c62828, 0 2px 0 #c62828, 0 3px 0 #c62828, 0 4px 0 #c62828, 0 5px 0 #c62828, 0 6px 0 #c62828, 0 7px 0 #c62828",
                   transform: "rotate(-2deg)",
                   zIndex: 20,
                   position: "relative",
-                  marginTop: "30px",
+                  marginTop: "20px",
                   transition: "all 0.3s ease",
                 }}>
                   <span className="relative inline-block">
@@ -374,10 +378,10 @@ export default function HomePage() {
                             <rect x="25" y="64" width="50" height="20" rx="4" fill="#0D47A1" />
                           </g>
                           <g>
-                            <path d="M 30 20 C 30 5, 70 5, 70 20" fill="none" stroke="#00E5FF" strokeWidth="8" strokeLinecap="round" />
-                            <rect x="25" y="20" width="50" height="20" rx="4" fill="#00E5FF" />
-                            <rect x="25" y="42" width="50" height="20" rx="4" fill="#00E5FF" />
-                            <rect x="25" y="64" width="50" height="20" rx="4" fill="#00E5FF" />
+                            <path d="M 30 20 C 30 5, 70 5, 70 20" fill="none" stroke="#FFFFFF" strokeWidth="8" strokeLinecap="round" />
+                            <rect x="25" y="20" width="50" height="20" rx="4" fill="#FFFFFF" />
+                            <rect x="25" y="42" width="50" height="20" rx="4" fill="#FFFFFF" />
+                            <rect x="25" y="64" width="50" height="20" rx="4" fill="#FFFFFF" />
                             <rect x="20" y="25" width="5" height="10" rx="2" fill="#0D47A1" opacity="0.6" />
                             <rect x="75" y="25" width="5" height="10" rx="2" fill="#0D47A1" opacity="0.6" />
                             <rect x="20" y="47" width="5" height="10" rx="2" fill="#0D47A1" opacity="0.6" />
@@ -407,14 +411,14 @@ export default function HomePage() {
                   <span> KA KHANA</span>
                 </div>
               </div>
-              <div className="mt-6 relative z-30">
-                <Link href="/food" className={`px-6 py-1.5 border-[2px] rounded-[20px] flex items-center justify-center bg-[#140019]/40 backdrop-blur-sm cursor-pointer transition-colors ${serviceMode === "tiffin" ? "border-[#00E5FF] hover:bg-[#00E5FF]/10" : "border-[#FFD700] hover:bg-[#FFD700]/10"}`}>
-                  <span className={`text-[13px] font-black uppercase tracking-[0.15em] ${serviceMode === "tiffin" ? "text-[#00E5FF]" : "text-[#FFD700]"}`} style={{ textShadow: "0 2px 4px rgba(0,0,0,0.5)" }}>Subscribe Now</span>
+              <div className="mt-4 relative z-30">
+                <Link href="/food" onClick={() => triggerInstall()} className={`px-4 py-1 border-[1.5px] rounded-full flex items-center justify-center bg-[#140019]/40 backdrop-blur-sm cursor-pointer transition-colors ${serviceMode === "tiffin" ? "border-white hover:bg-white/10" : "border-[#FFD700] hover:bg-[#FFD700]/10"}`}>
+                  <span className={`text-[11px] font-black uppercase tracking-widest ${serviceMode === "tiffin" ? "text-white" : "text-[#FFD700]"}`} style={{ textShadow: "0 2px 4px rgba(0,0,0,0.5)" }}>Subscribe Now</span>
                 </Link>
               </div>
             </div>
 
-            <div className="flex items-center justify-center gap-3 mb-5 px-6">
+            <div className="flex items-center justify-center gap-3 mb-4 px-6">
               <div className="h-[1px] flex-1 bg-white/20" />
               <span className="text-white/80 text-[11px] font-bold tracking-widest uppercase">Exciting Tiffin Offers</span>
               <div className="h-[1px] flex-1 bg-white/20" />
