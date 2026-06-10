@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
-import { useCartStore } from "@/store/cartStore";
+import { useCartStore, selectCartItems, selectCartItemCount, selectCartTotal } from "@/store/cartStore";
 import { useUserStore } from "@/store/userStore";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Leaf, Drumstick, ChevronRight,
@@ -15,7 +14,7 @@ import { FilterChips } from "@/components/ui/FilterChips";
 import { PageHero } from "@/components/ui/PageHero";
 import { ActiveOrderAlert } from "@/components/ui/ActiveOrderAlert";
 import { useThemeStore } from "@/store/themeStore";
-import { useOrderStore } from "@/store/orderStore";
+import { useOrderStore, selectActiveOrder } from "@/store/orderStore";
 
 type Menu = {
   id: string; title: string; description: string | null;
@@ -27,15 +26,19 @@ export default function FoodPage() {
   const router = useRouter();
   const user = useUserStore((s) => s.user);
   const isAdmin = useUserStore((s) => s.user?.role === "admin");
-  const { items, addItem, updateQty, itemCount, total } = useCartStore();
+  const items = useCartStore(selectCartItems);
+  const itemCount = useCartStore(selectCartItemCount);
+  const total = useCartStore(selectCartTotal);
+  const addItem = useCartStore((s) => s.addItem);
+  const updateQty = useCartStore((s) => s.updateQty);
   const { isVegTheme: isVegOnly, setVegTheme: setIsVegOnly } = useThemeStore();
-  const { getActiveOrder } = useOrderStore();
-  const activeOrder = getActiveOrder();
+  const activeOrder = useOrderStore(selectActiveOrder);
   const [menus, setMenus] = useState<Menu[]>([]);
   const [filtered, setFiltered] = useState<Menu[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState<"all" | "veg" | "non_veg" | "lunch" | "dinner">("all");
+
   useEffect(() => {
     const fetch_ = async () => {
       const { data } = await supabase.from("menus").select("*").eq("is_active", true).order("created_at", { ascending: false });
@@ -54,17 +57,17 @@ export default function FoodPage() {
     setFiltered(r);
   }, [search, activeTab, menus]);
 
-  const qty = (id: string) => items.find((i) => i.menu_id === id)?.quantity || 0;
+  const qty = useCallback((id: string) => items.find((i) => i.menu_id === id)?.quantity || 0, [items]);
+  const handleTabChange = useCallback((v: any) => { setActiveTab(v); if (v === "veg") setIsVegOnly(true); else if (v === "non_veg") setIsVegOnly(false); }, [setIsVegOnly]);
 
   return (
     <div className="bg-[#f8f9fa] min-h-screen pb-4">
-      {/* Hero Section */}
-      <PageHero 
+      <PageHero
         themeColor="#FC8019"
         title={
           <>
-            <span className="block text-white" style={{ WebkitTextStroke: "1px #222" }}>EAZY</span>
-            food
+            <span className="block text-white" style={{ WebkitTextStroke: "1px #222" }}>Eazy</span>
+            Food
           </>
         }
         subtitle="Order delicious meals instantly"
@@ -77,14 +80,12 @@ export default function FoodPage() {
         setSearch={setSearch}
       />
 
-      <div className="mt-6 relative z-20">
-        {/* Weekly Menu Alert */}
-        {/* Weekly Menu Alert */}
-        <ActiveOrderAlert />
+      {activeOrder && (
+        <div className="mt-6 relative z-20">
+          <ActiveOrderAlert />
+        </div>
+      )}
 
-      </div>
-
-      {/* Sticky Filters Row */}
       <div className="sticky top-[56px] z-20 py-3 mb-2 -mx-4 px-4 bg-[#f8f9fa] border-b border-slate-100 flex flex-col gap-3">
         <FilterChips
           options={[
@@ -95,7 +96,7 @@ export default function FoodPage() {
             { value: "dinner", label: <span className="flex items-center gap-1"><Moon size={12} /> Dinner</span> }
           ]}
           activeValue={activeTab}
-          onChange={(v) => { setActiveTab(v as any); if (v === "veg") setIsVegOnly(true); else if (v === "non_veg") setIsVegOnly(false); }}
+          onChange={handleTabChange}
         />
       </div>
 
@@ -116,7 +117,7 @@ export default function FoodPage() {
                 menu={menu}
                 quantity={qty(menu.id)}
                 price={120}
-                onAdd={() => addItem({ menu_id: menu.id, title: menu.title, price: 120, category: menu.category, image_url: menu.image_url, badge: menu.badge })}
+                onAdd={() => addItem({ menu_id: menu.id, title: menu.title, price: 120, category: menu.category, image_url: menu.image_url, badge: menu.badge, source: "food" })}
                 onUpdateQty={(val) => updateQty(menu.id, val)}
                 layout="horizontal"
               />
@@ -125,17 +126,16 @@ export default function FoodPage() {
         )}
       </div>
 
-      {/* Floating Cart */}
-      {itemCount() > 0 && (
+      {itemCount > 0 && (
         <div className="fixed bottom-[84px] left-0 right-0 px-4 z-[100] pointer-events-none transition-transform translate-y-0">
           <div className="max-w-[960px] mx-auto pointer-events-auto">
             <button onClick={() => router.push("/food/checkout")} className="w-full flex items-center justify-between bg-[#1BA672] text-white rounded-2xl px-4 sm:px-5 py-3 sm:py-4 cursor-pointer shadow-[0_8px_24px_rgba(27,166,114,0.4)] border-none hover:bg-[#14835A] transition-colors">
               <div className="flex flex-col gap-0.5 min-w-0">
                 <p className="font-black text-[13px] sm:text-[15px] text-left m-0 tracking-wide truncate">
-                  {itemCount()} item{itemCount() > 1 ? "s" : ""} added
+                  {itemCount} item{itemCount > 1 ? "s" : ""} added
                 </p>
                 <p className="text-[11px] sm:text-[12px] text-white/90 font-bold m-0 text-left truncate">
-                  ₹{total()} • No extra hidden charges
+                  ₹{total} • No extra hidden charges
                 </p>
               </div>
               <div className="flex items-center gap-1.5 sm:gap-2 font-black text-[13px] sm:text-[15px] tracking-wide shrink-0">

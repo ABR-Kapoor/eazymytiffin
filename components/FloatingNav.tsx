@@ -3,21 +3,22 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Calendar, UtensilsCrossed, Package, Bike, X, LayoutGrid, ArrowUpRight, Shield, Info, Phone, LayoutDashboard } from "lucide-react";
-import { useNotificationStore } from "@/store/notificationStore";
+import { Home, Calendar, UtensilsCrossed, Package, Bike, X, LayoutGrid, ArrowUpRight, Shield, Info, Phone, LayoutDashboard, LogOut } from "lucide-react";
+import { useNotificationStore, selectUnreadCount } from "@/store/notificationStore";
 import { useThemeStore } from "@/store/themeStore";
-import { useUserStore } from "@/store/userStore";
+import { useUserStore, selectUser, selectIsAdmin, selectIsDeliveryBoy } from "@/store/userStore";
 
-import { useAuth } from "@clerk/nextjs";
+import { useAuth, useClerk } from "@clerk/nextjs";
 
 export function FloatingNav() {
   const pathname = usePathname();
-  const unreadCount = useNotificationStore((s) => s.notifications.filter((n) => !n.is_read).length);
+  const unreadCount = useNotificationStore(selectUnreadCount);
   const isVegTheme = useThemeStore((s) => s.isVegTheme);
-  const user = useUserStore((s) => s.user);
-  const isAdmin = user?.role === "admin";
-  const isDeliveryBoy = user?.role === "delivery_boy";
+  const user = useUserStore(selectUser);
+  const isAdmin = useUserStore(selectIsAdmin);
+  const isDeliveryBoy = useUserStore(selectIsDeliveryBoy);
   const { isSignedIn } = useAuth();
+  const { signOut } = useClerk();
   const [open, setOpen] = useState(false);
   const fabRef = useRef<HTMLDivElement>(null);
 
@@ -27,7 +28,10 @@ export function FloatingNav() {
     { href: "/#weekly-menu", label: "Menu", icon: UtensilsCrossed },
     { href: "/#meal-plans", label: "Plans", icon: Calendar },
     { href: "/#contact", label: "Contact", icon: Phone },
-    ...(isSignedIn ? [{ href: "/home", label: "Dashboard", icon: LayoutDashboard }] : [{ href: "/sign-in", label: "Login", icon: LayoutDashboard }]),
+    ...(isSignedIn ? [
+      { href: "/home", label: "Dashboard", icon: LayoutDashboard },
+      { action: "signout", label: "Sign Out", icon: LogOut },
+    ] : [{ href: "/sign-in", label: "Login", icon: LayoutDashboard }]),
     { href: "tel:9770144899", label: "Book Now", icon: ArrowUpRight },
     ...(isAdmin ? [{ href: "/admin", label: "Admin", icon: Shield }] : []),
     ...(isDeliveryBoy ? [{ href: "/home/delivery", label: "Delivery", icon: Bike }] : [])
@@ -75,8 +79,11 @@ export function FloatingNav() {
       >
         {/* Nav items fan up */}
         <div className="flex flex-col items-end gap-3 mb-3">
-          {navItems.map(({ href, label, icon: Icon }, idx) => {
-            const isActive = pathname === href || pathname.startsWith(href + "/");
+          {navItems.map((item, idx) => {
+            const { label, icon: Icon } = item;
+            const href = "href" in item ? item.href : undefined;
+            const isAction = "action" in item;
+            const isActive = href ? pathname === href || pathname.startsWith(href + "/") : false;
             const isOrders = href === "/orders";
             const delay = `${(navItems.length - 1 - idx) * 55}ms`;
 
@@ -104,26 +111,40 @@ export function FloatingNav() {
                 </span>
 
                 {/* Icon circle */}
-                <Link
-                  href={href}
-                  className="relative w-[52px] h-[52px] rounded-full flex items-center justify-center no-underline transition-transform duration-150 active:scale-90"
-                  style={{
-                    background: isActive ? pageColor.bg : "#fff",
-                    color: isActive ? "#fff" : "#1C1C1C",
-                    boxShadow: isActive ? pageColor.shadow : "0 4px 16px rgba(0,0,0,0.18)",
-                  }}
-                  onClick={() => setOpen(false)}
-                >
-                  <Icon size={22} strokeWidth={isActive ? 2.5 : 2} />
-                  {isOrders && unreadCount > 0 && (
-                    <span
-                      className="absolute -top-1 -right-1 rounded-full text-[9px] font-extrabold min-w-[17px] h-[17px] flex items-center justify-center px-[3px] leading-none text-white ring-2 ring-white"
-                      style={{ background: pageColor.bg }}
-                    >
-                      {unreadCount > 9 ? "9+" : unreadCount}
-                    </span>
-                  )}
-                </Link>
+                {isAction ? (
+                  <button
+                    onClick={() => { signOut({ redirectUrl: "/" }); setOpen(false); }}
+                    className="w-[52px] h-[52px] rounded-full flex items-center justify-center no-underline transition-transform duration-150 active:scale-90 border-none cursor-pointer"
+                    style={{
+                      background: "#fff",
+                      color: "#E23744",
+                      boxShadow: "0 4px 16px rgba(0,0,0,0.18)",
+                    }}
+                  >
+                    <Icon size={22} strokeWidth={2} />
+                  </button>
+                ) : (
+                  <Link
+                    href={href!}
+                    className="relative w-[52px] h-[52px] rounded-full flex items-center justify-center no-underline transition-transform duration-150 active:scale-90"
+                    style={{
+                      background: isActive ? pageColor.bg : "#fff",
+                      color: isActive ? "#fff" : "#1C1C1C",
+                      boxShadow: isActive ? pageColor.shadow : "0 4px 16px rgba(0,0,0,0.18)",
+                    }}
+                    onClick={() => setOpen(false)}
+                  >
+                    <Icon size={22} strokeWidth={isActive ? 2.5 : 2} />
+                    {isOrders && unreadCount > 0 && (
+                      <span
+                        className="absolute -top-1 -right-1 rounded-full text-[9px] font-extrabold min-w-[17px] h-[17px] flex items-center justify-center px-[3px] leading-none text-white ring-2 ring-white"
+                        style={{ background: pageColor.bg }}
+                      >
+                        {unreadCount > 9 ? "9+" : unreadCount}
+                      </span>
+                    )}
+                  </Link>
+                )}
               </div>
             );
           })}

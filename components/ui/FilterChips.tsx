@@ -1,5 +1,7 @@
 "use client";
 
+import { memo } from "react";
+
 export type FilterOption<T extends string> = {
   value: T;
   label: React.ReactNode;
@@ -10,10 +12,10 @@ type FilterChipsProps<T extends string> = {
   activeValue: T;
   onChange: (val: T) => void;
   className?: string;
-  allowToggle?: boolean; // if true, clicking active deselects it
+  allowToggle?: boolean;
 };
 
-export function FilterChips<T extends string>({ options, activeValue, onChange, className = "", allowToggle = false }: FilterChipsProps<T>) {
+function FilterChipsInner<T extends string>({ options, activeValue, onChange, className = "", allowToggle = false }: FilterChipsProps<T>) {
   return (
     <div className={`flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 ${className}`}>
       {options.map((opt) => {
@@ -43,3 +45,5 @@ export function FilterChips<T extends string>({ options, activeValue, onChange, 
     </div>
   );
 }
+
+export const FilterChips = memo(FilterChipsInner) as <T extends string>(props: FilterChipsProps<T>) => React.JSX.Element;

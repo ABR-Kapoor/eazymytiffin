@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { CustomSelect } from "@/components/CustomSelect";
 import { useConfirm } from "@/components/ConfirmProvider";
+import { useToast } from "@/lib/useToast";
 
 type TiffinDay = {
   id: string;
@@ -49,7 +50,7 @@ export default function AdminTiffinOrdersPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
+  const { toast, showToast } = useToast();
 
   // Create modal
   const [showCreate, setShowCreate] = useState(false);
@@ -67,10 +68,6 @@ export default function AdminTiffinOrdersPage() {
   const [notifying, setSending] = useState(false);
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-
-  const showToast = (msg: string, type: "success" | "error" = "success") => {
-    setToast({ msg, type }); setTimeout(() => setToast(null), 3500);
-  };
 
   const fetchOrders = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);

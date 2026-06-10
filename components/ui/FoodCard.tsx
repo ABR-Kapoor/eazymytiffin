@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import Image from "next/image";
 import { Plus, Minus, Star } from "lucide-react";
 
@@ -18,7 +19,7 @@ type FoodCardProps = {
   price?: number; // fallback price
 };
 
-export function FoodCard({ menu, quantity, onAdd, onUpdateQty, layout = "horizontal", price = 120 }: FoodCardProps) {
+export const FoodCard = memo(function FoodCard({ menu, quantity, onAdd, onUpdateQty, layout = "horizontal", price = 120 }: FoodCardProps) {
   const isVeg = menu.category === "veg";
 
   if (layout === "vertical") {
@@ -161,5 +162,4 @@ export function FoodCard({ menu, quantity, onAdd, onUpdateQty, layout = "horizon
       </div>
     </div>
   );
-}
-
+});

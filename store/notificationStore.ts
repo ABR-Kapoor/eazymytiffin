@@ -6,17 +6,14 @@ type Notification = Tables["notifications"];
 interface NotificationState {
   notifications: Notification[];
   isLoading: boolean;
-  // Setters
   setNotifications: (notifications: Notification[]) => void;
   addNotification: (notification: Notification) => void;
   markRead: (id: string) => void;
   markAllRead: () => void;
   setLoading: (loading: boolean) => void;
-  // Computed
-  unreadCount: () => number;
 }
 
-export const useNotificationStore = create<NotificationState>((set, get) => ({
+export const useNotificationStore = create<NotificationState>((set) => ({
   notifications: [],
   isLoading: false,
 
@@ -40,6 +37,8 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     })),
 
   setLoading: (isLoading) => set({ isLoading }),
-
-  unreadCount: () => get().notifications.filter((n) => !n.is_read).length,
 }));
+
+export const selectNotifications = (s: NotificationState) => s.notifications;
+export const selectUnreadCount = (s: NotificationState) =>
+  s.notifications.filter((n) => !n.is_read).length;

@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { Plus, Edit2, Trash2, Upload, X, Check, Search } from "lucide-react";
+import { useToast } from "@/lib/useToast";
 
 type MenuItem = {
   id: string; title: string; description: string | null; image_url: string | null;
@@ -27,12 +28,8 @@ export default function AdminMealsPage() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [search, setSearch] = useState("");
-  const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
+  const { toast, showToast } = useToast();
   const fileRef = useRef<HTMLInputElement>(null);
-
-  const showToast = (msg: string, type: "success" | "error" = "success") => {
-    setToast({ msg, type }); setTimeout(() => setToast(null), 3000);
-  };
 
   const fetchData = async () => {
     const { data } = await supabase.from("menus").select("*").order("created_at", { ascending: false });

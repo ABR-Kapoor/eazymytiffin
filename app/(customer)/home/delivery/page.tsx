@@ -7,8 +7,9 @@ import {
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
-import { useUserStore } from "@/store/userStore";
+import { useUserStore, selectIsDeliveryBoy } from "@/store/userStore";
 import { PageHero } from "@/components/ui/PageHero";
+import { useToast } from "@/lib/useToast";
 
 type OrderItem = {
   id: string; menu_id: string; quantity: number; price: number;
@@ -46,7 +47,6 @@ export default function DeliveryDashboard() {
   const [currentView, setCurrentView] = useState<"list" | "details" | "map">("list");
   const [activeOrderId, setActiveOrderId] = useState<string | null>(null);
   const [filterTab, setFilterTab] = useState<"All Order" | "Active" | "Delivered">("All Order");
-  const [search, setSearch] = useState("");
 
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -54,22 +54,17 @@ export default function DeliveryDashboard() {
   const [selectedEta, setSelectedEta] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const channelRef = useRef<any>(null);
-  const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
+  const { toast, showToast } = useToast();
 
   useEffect(() => {
     if (redirectedRef.current) return;
     if (!storeLoading) {
-      const isDelBoy = useUserStore.getState().isDeliveryBoy();
+      const isDelBoy = selectIsDeliveryBoy(useUserStore.getState());
       if (!isDelBoy) { redirectedRef.current = true; router.push("/home"); }
     }
   }, [storeLoading, router]);
 
-  const showToast = (msg: string, type: "success" | "error" = "success") => {
-    setToast({ msg, type }); setTimeout(() => setToast(null), 3500);
-  };
-
   const handleProofUpload = async (file: File) => {
-    setUploading(true);
     try {
       const formData = new FormData();
       formData.append("file", file);
@@ -160,8 +155,8 @@ export default function DeliveryDashboard() {
           themeColor="#22C55E"
           title={
             <>
-              <span className="block text-white" style={{ WebkitTextStroke: "1px #222" }}>TRACK</span>
-              order
+              <span className="block text-white" style={{ WebkitTextStroke: "1px #222" }}>Track</span>
+              Order
             </>
           }
           subtitle="Real-time delivery updates"
@@ -170,9 +165,9 @@ export default function DeliveryDashboard() {
           { src: "/eazymytiffin-weekly-special-meal.png", bg: "#4ADE80" },
           { src: "/eazymytiffin-veg-meal-plan.png", bg: "#F472B6" },
         ]}
-          search={search}
-          setSearch={setSearch}
-        />
+        >
+          <div className="h-[76px]" />
+        </PageHero>
 
         {/* List Content */}
         <div className="flex-1 px-5 pt-6 overflow-y-auto pb-10">

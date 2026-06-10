@@ -3,13 +3,14 @@
 import { useState, useEffect, useRef } from "react";
 import { 
   Home, Info, UtensilsCrossed, Calendar, Phone, 
-  ArrowUpRight, LayoutDashboard, Shield, X, LayoutGrid, LogIn 
+  ArrowUpRight, LayoutDashboard, Shield, X, LayoutGrid, LogIn, LogOut 
 } from "lucide-react";
-import { useAuth, useUser } from "@clerk/nextjs";
+import { useAuth, useUser, useClerk } from "@clerk/nextjs";
 
 export function LandingFloatingNav() {
   const { isSignedIn } = useAuth();
   const { user } = useUser();
+  const { signOut } = useClerk();
   const [isAdmin, setIsAdmin] = useState(false);
   const [open, setOpen] = useState(false);
   const fabRef = useRef<HTMLDivElement>(null);
@@ -66,7 +67,8 @@ export function LandingFloatingNav() {
     { href: "tel:9770144899", label: "Book Now", icon: ArrowUpRight, primary: true },
     ...(isSignedIn ? [
       { href: "/home", label: "Dashboard", icon: LayoutDashboard },
-      ...(isAdmin ? [{ href: "/admin", label: "Admin Panel", icon: Shield, primary: true }] : [])
+      ...(isAdmin ? [{ href: "/admin", label: "Admin Panel", icon: Shield, primary: true }] : []),
+      { href: "#", label: "Sign Out", icon: LogOut, action: () => signOut({ redirectUrl: "/" }) }
     ] : [
       { href: "/sign-in", label: "Login", icon: LogIn }
     ])
@@ -93,7 +95,7 @@ export function LandingFloatingNav() {
           className="flex flex-col items-end gap-2.5 mb-3"
           style={{ pointerEvents: open ? "auto" : "none" }}
         >
-          {navItems.map(({ href, label, icon: Icon, primary }, idx) => {
+          {navItems.map(({ href, label, icon: Icon, primary, action }, idx) => {
             const delay = `${(navItems.length - 1 - idx) * 45}ms`;
 
             return (
@@ -127,7 +129,14 @@ export function LandingFloatingNav() {
                     color: primary ? "#fff" : "#1A1A1A",
                     boxShadow: primary ? "0 4px 16px rgba(232,57,42,0.4)" : "0 4px 16px rgba(0,0,0,0.15)",
                   }}
-                  onClick={(e) => handleNavClick(e, href)}
+                  onClick={(e) => {
+                    if (action) {
+                      e.preventDefault();
+                      action();
+                    } else {
+                      handleNavClick(e, href);
+                    }
+                  }}
                 >
                   <Icon size={20} strokeWidth={2.5} />
                 </a>

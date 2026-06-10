@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Plus, X, Edit2, Trash2, ChefHat, ToggleLeft, ToggleRight, ClipboardList } from "lucide-react";
 import { CustomSelect } from "@/components/CustomSelect";
 import { useConfirm } from "@/components/ConfirmProvider";
+import { useToast } from "@/lib/useToast";
 
 type Plan = {
   id: string;
@@ -28,15 +29,11 @@ export default function AdminPlansPage() {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
   const { confirm } = useConfirm();
-  const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
+  const { toast, showToast } = useToast();
   const [modal, setModal] = useState<"create" | "edit" | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState({ ...emptyForm });
   const [saving, setSaving] = useState(false);
-
-  const showToast = (msg: string, type: "success" | "error" = "success") => {
-    setToast({ msg, type }); setTimeout(() => setToast(null), 3500);
-  };
 
   const fetchPlans = async () => {
     setLoading(true);

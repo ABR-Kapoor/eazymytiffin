@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { useCartStore } from "@/store/cartStore";
+import { useCartStore, selectCartItems, selectCartSubtotal, selectCartItemCount } from "@/store/cartStore";
 import { useUserStore } from "@/store/userStore";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Minus, Plus, MapPin, ChevronDown, ChevronRight, Check, Leaf, Drumstick, Home, Building2, Briefcase, Wallet, Clock, IndianRupee } from "lucide-react";
+import { useToast } from "@/lib/useToast";
 
 type Address = { id: string; type: "home" | "hostel" | "office"; house_flat_no: string | null; landmark: string | null; area: string; city: string; is_default: boolean; };
 
@@ -95,17 +96,17 @@ function SlideToPayButton({ grand, placing, disabled, onSlideComplete }: { grand
 export default function CheckoutPage() {
   const router = useRouter();
   const user = useUserStore((s) => s.user);
-  const { items, removeItem, updateQty, subtotal, clearCart, timeSlot, setTimeSlot, addressId, setAddressId, paymentMethod, setPaymentMethod } = useCartStore();
+  const items = useCartStore(selectCartItems);
+  const subtotal = useCartStore(selectCartSubtotal);
+  const { removeItem, updateQty, clearCart, timeSlot, setTimeSlot, addressId, setAddressId, paymentMethod, setPaymentMethod } = useCartStore();
   
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [placing, setPlacing] = useState(false);
-  const [toast, setToast] = useState<string | null>(null);
+  const { toast, showToast } = useToast();
 
   // Modals/Sheets
   const [showAddressOptions, setShowAddressOptions] = useState(false);
   const [showPaymentOptions, setShowPaymentOptions] = useState(false);
-  
-
 
   useEffect(() => {
     const fetchAddr = async () => {
@@ -117,13 +118,12 @@ export default function CheckoutPage() {
     fetchAddr();
   }, [user]);
 
-  const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 3000); };
-
   const handlePlaceOrder = async () => {
     if (!user) { router.push("/sign-in"); return; }
-    if (!addressId) { showToast("Please select a delivery address"); return; }
-    if (!timeSlot) { showToast("Please select a time slot"); return; }
-    if (!paymentMethod) { showToast("Please select a payment method"); setShowPaymentOptions(true); return; }
+    if (!addressId) { showToast("Please select a delivery address", "error"); return; }
+    const hasTiffin = items.some(i => i.source === "tiffin");
+    if (hasTiffin && !timeSlot) { showToast("Please select a time slot", "error"); return; }
+    if (!paymentMethod) { showToast("Please select a payment method", "error"); setShowPaymentOptions(true); return; }
     
     setPlacing(true);
     try {
@@ -132,10 +132,10 @@ export default function CheckoutPage() {
         headers: { "Content-Type": "application/json" }, 
         body: JSON.stringify({ 
           addressId, 
-          timeSlot, 
+          timeSlot: hasTiffin ? timeSlot : "instant", 
           paymentMethod, 
           items: items.map((i) => ({ menu_id: i.menu_id, quantity: i.quantity, price: i.price })), 
-          subtotal: subtotal(), 
+          subtotal, 
           notes: "" 
         }) 
       });
@@ -149,16 +149,16 @@ export default function CheckoutPage() {
           router.push("/orders"); 
         } 
       } else {
-        showToast(result.error || "Failed to place order.");
+        showToast(result.error || "Failed to place order.", "error");
       }
     } catch { 
-      showToast("Network error."); 
+      showToast("Network error.", "error"); 
     } finally { 
       setPlacing(false); 
     }
   };
 
-  const grand = subtotal();
+  const grand = subtotal;
   const currentAddress = addresses.find(a => a.id === addressId);
   const addrString = currentAddress ? [currentAddress.house_flat_no, currentAddress.landmark, currentAddress.area].filter(Boolean).join(", ") : "Select an address";
 
@@ -188,7 +188,7 @@ export default function CheckoutPage() {
     <div className="min-h-[100dvh] pb-[120px] relative">
       {toast && (
         <div className="fixed top-[72px] left-1/2 -translate-x-1/2 z-[200] bg-gray-900 text-white rounded-full px-5 py-3 text-[13px] font-bold shadow-2xl transition-all whitespace-nowrap">
-          {toast}
+          {toast.msg}
         </div>
       )}
 
@@ -235,18 +235,20 @@ export default function CheckoutPage() {
       )}
 
       {/* Delivery Time Slot */}
-      <div className="bg-white mx-0 sm:mx-2 mt-4 rounded-[20px] shadow-sm border border-gray-100 p-4">
-        <h3 className="font-bold text-[14px] text-gray-900 mb-3 flex items-center gap-1.5"><Clock size={16} className="text-gray-400" /> Select Delivery Time</h3>
-        <div className="flex gap-3">
-          {(["lunch", "dinner"] as const).map(slot => (
-            <button key={slot} onClick={() => setTimeSlot(slot)} className={`flex-1 py-3 px-2 rounded-[12px] border ${timeSlot === slot ? 'border-orange-500 bg-orange-50/50 shadow-sm' : 'border-gray-200 bg-white'} transition-all text-center relative overflow-hidden active:scale-95`}>
-              <p className="font-bold text-[13px] text-gray-900 capitalize">{slot}</p>
-              <p className="text-[11px] font-medium text-gray-500 mt-0.5">{slot === "lunch" ? "12 PM - 2 PM" : "7 PM - 9 PM"}</p>
-              {timeSlot === slot && <div className="absolute top-0 right-0 w-8 h-8 bg-orange-500 rounded-bl-[16px] flex items-start justify-end p-1.5"><Check size={12} className="text-white" /></div>}
-            </button>
-          ))}
+      {items.some(i => i.source === "tiffin") && (
+        <div className="bg-white mx-0 sm:mx-2 mt-4 rounded-[20px] shadow-sm border border-gray-100 p-4">
+          <h3 className="font-bold text-[14px] text-gray-900 mb-3 flex items-center gap-1.5"><Clock size={16} className="text-gray-400" /> Select Delivery Time</h3>
+          <div className="flex gap-3">
+            {(["lunch", "dinner"] as const).map(slot => (
+              <button key={slot} onClick={() => setTimeSlot(slot)} className={`flex-1 py-3 px-2 rounded-[12px] border ${timeSlot === slot ? 'border-orange-500 bg-orange-50/50 shadow-sm' : 'border-gray-200 bg-white'} transition-all text-center relative overflow-hidden active:scale-95`}>
+                <p className="font-bold text-[13px] text-gray-900 capitalize">{slot}</p>
+                <p className="text-[11px] font-medium text-gray-500 mt-0.5">{slot === "lunch" ? "12 PM - 2 PM" : "7 PM - 9 PM"}</p>
+                {timeSlot === slot && <div className="absolute top-0 right-0 w-8 h-8 bg-orange-500 rounded-bl-[16px] flex items-start justify-end p-1.5"><Check size={12} className="text-white" /></div>}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Cart Items Card */}
       <div className="bg-white mx-0 sm:mx-2 mt-4 rounded-[20px] shadow-sm border border-gray-100 overflow-hidden">
@@ -288,7 +290,7 @@ export default function CheckoutPage() {
         <h3 className="font-extrabold text-[14px] text-gray-900 mb-3">Bill Details</h3>
         <div className="flex justify-between items-center mb-2">
            <span className="text-[12px] font-medium text-gray-500">Item Total</span>
-           <span className="text-[12px] font-bold text-gray-900">₹{subtotal()}</span>
+           <span className="text-[12px] font-bold text-gray-900">₹{subtotal}</span>
         </div>
         <div className="flex justify-between items-center mb-2">
            <span className="text-[12px] font-medium text-gray-500">Delivery Fee</span>
@@ -346,7 +348,7 @@ export default function CheckoutPage() {
         )}
 
         {/* Slide to Pay Button */}
-        <SlideToPayButton grand={grand} placing={placing} disabled={!addressId || !timeSlot || !paymentMethod} onSlideComplete={handlePlaceOrder} />
+        <SlideToPayButton grand={grand} placing={placing} disabled={!addressId || (!timeSlot && items.some(i => i.source === "tiffin")) || !paymentMethod} onSlideComplete={handlePlaceOrder} />
         </div>
       </div>
       

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Bell, Search, Filter, Trash2, RefreshCw, Send, ArrowRight, ClipboardList, Megaphone, User } from "lucide-react";
 import { CustomSelect } from "@/components/CustomSelect";
+import { useToast } from "@/lib/useToast";
 
 type Notification = {
   id: string; title: string; body: string; type: string; channel: string; is_read: boolean; created_at: string;
@@ -16,11 +17,7 @@ export default function AdminNotificationsPage() {
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({ userId: "all", title: "", body: "", type: "system", channel: "in_app" });
   const [sending, setSending] = useState(false);
-  const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
-
-  const showToast = (msg: string, type: "success" | "error" = "success") => {
-    setToast({ msg, type }); setTimeout(() => setToast(null), 3000);
-  };
+  const { toast, showToast } = useToast();
 
   const fetchData = async () => {
     const { data: notifs } = await supabase

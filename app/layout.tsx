@@ -3,6 +3,7 @@ import { Montserrat } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { AppProvider } from "./providers";
 import { PWAInstallProvider } from "@/components/PWAInstallProvider";
+import { DeepLinkHandler } from "@/components/DeepLinkHandler";
 import "./globals.css";
 
 const montserrat = Montserrat({
@@ -23,6 +24,9 @@ export const metadata: Metadata = {
     capable: true,
     statusBarStyle: "default",
     title: "EazyMyTiffin",
+  },
+  icons: {
+    apple: "/icons/icon-192x192.png",
   },
   openGraph: {
     title: "EazyMyTiffin — India's Premium Tiffin Brand",
@@ -60,7 +64,7 @@ export default function RootLayout({
 
       }}
     >
-      <html lang="en" className={`${montserrat.variable} h-full`} suppressHydrationWarning>
+        <html lang="en" className={`${montserrat.variable} h-full`} suppressHydrationWarning>
         <body className="min-h-full flex flex-col font-[family-name:var(--font-montserrat)]">
           <a href="#main" className="skip-link">
             Skip to main content
@@ -68,6 +72,7 @@ export default function RootLayout({
           <PWAInstallProvider>
             <AppProvider>
               {children}
+              <DeepLinkHandler />
             </AppProvider>
           </PWAInstallProvider>
         </body>

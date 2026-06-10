@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useOrderStore } from "@/store/orderStore";
+import { useOrderStore, selectActiveOrder, selectActiveDelivery, selectOrders, selectOrderLoading } from "@/store/orderStore";
 import { useUserStore } from "@/store/userStore";
 import { supabase } from "@/lib/supabase";
 import { useConfirm } from "@/components/ConfirmProvider";
@@ -11,6 +11,7 @@ import {
   Phone, X, RefreshCw, AlertTriangle, Bike, Utensils, ClipboardList, CreditCard, ArrowRight
 } from "lucide-react";
 import { PageHero } from "@/components/ui/PageHero";
+import { useToast } from "@/lib/useToast";
 
 const ORDER_STATUS_STEPS = [
   { key: "pending", label: "Order Placed", icon: <Clock size={16} /> },
@@ -36,22 +37,18 @@ const STATUS_COLORS: Record<string, { bg: string; text: string; label: string }>
 export default function OrdersPage() {
   const user = useUserStore((s) => s.user);
   const isAdmin = useUserStore((s) => s.user?.role === "admin");
-  const { orders, activeDelivery, isLoading, getActiveOrder } = useOrderStore();
+  const orders = useOrderStore(selectOrders);
+  const activeDelivery = useOrderStore(selectActiveDelivery);
+  const isLoading = useOrderStore(selectOrderLoading);
+  const activeOrder = useOrderStore(selectActiveOrder);
   const [tab, setTab] = useState<"orders" | "subs">("orders");
   const [subscriptions, setSubscriptions] = useState<any[]>([]);
   const [payments, setPayments] = useState<any[]>([]);
   const [subsLoading, setSubsLoading] = useState(false);
   const [cancelling, setCancelling] = useState<string | null>(null);
   const { confirm } = useConfirm();
-  const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
+  const { toast, showToast } = useToast();
   const [deliveryUsers, setDeliveryUsers] = useState<Record<string, any>>({});
-
-  const activeOrder = getActiveOrder();
-
-  const showToast = (msg: string, type: "success" | "error" = "success") => {
-    setToast({ msg, type });
-    setTimeout(() => setToast(null), 3500);
-  };
 
   useEffect(() => {
     if (tab === "subs" && user && subscriptions.length === 0) {
@@ -126,8 +123,8 @@ export default function OrdersPage() {
         themeColor="#2563EB"
         title={
           <>
-            <span className="block text-white" style={{ WebkitTextStroke: "1px #222" }}>MY</span>
-            orders
+            <span className="block text-white" style={{ WebkitTextStroke: "1px #222" }}>My</span>
+            Orders
           </>
         }
         subtitle="Track your food & subscriptions"

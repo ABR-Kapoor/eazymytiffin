@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { memo } from 'react';
 import { Search, X } from 'lucide-react';
 import { useThemeStore } from '@/store/themeStore';
 
@@ -15,7 +15,7 @@ type PageHeroProps = {
   children?: React.ReactNode;
 };
 
-export function PageHero({ title, subtitle, themeColor, rightContent, heroImages, search = "", setSearch, children }: PageHeroProps) {
+export const PageHero = memo(function PageHero({ title, subtitle, themeColor, rightContent, heroImages, search = "", setSearch, children }: PageHeroProps) {
   const { isVegTheme: isVegOnly, setVegTheme: setIsVegOnly } = useThemeStore();
   return (
     <div 
@@ -109,8 +109,8 @@ export function PageHero({ title, subtitle, themeColor, rightContent, heroImages
           >
             <span className="text-[11px] font-bold text-gray-600 tracking-wide mb-1 leading-none">VEG</span>
             <div className="flex items-center gap-1.5">
-              <div className="w-3.5 h-3.5 border-[1.5px] border-[#0F8A65] flex items-center justify-center rounded-[3px]">
-                <div className="w-1.5 h-1.5 bg-[#0F8A65] rounded-full" />
+              <div className={`w-3.5 h-3.5 border-[1.5px] flex items-center justify-center rounded-[3px] ${isVegOnly ? 'border-[#0F8A65]' : 'border-[#E23744]'}`}>
+                <div className={`w-1.5 h-1.5 rounded-full ${isVegOnly ? 'bg-[#0F8A65]' : 'bg-[#E23744]'}`} />
               </div>
               <div className={`w-7 h-4 rounded-full relative transition-colors duration-300 ${isVegOnly ? 'bg-[#0F8A65]' : 'bg-[#e2e2e7]'}`}>
                 <div className={`absolute top-[2px] w-3 h-3 bg-white rounded-full transition-all duration-300 shadow-sm ${isVegOnly ? 'left-[14px]' : 'left-[2px]'}`} />
@@ -123,4 +123,4 @@ export function PageHero({ title, subtitle, themeColor, rightContent, heroImages
       {children}
     </div>
   );
-}
+});

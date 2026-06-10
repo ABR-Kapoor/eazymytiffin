@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Calendar, UtensilsCrossed, Package, Bike } from "lucide-react";
-import { useNotificationStore } from "@/store/notificationStore";
+import { Home, Calendar, UtensilsCrossed, Package, Bike, User } from "lucide-react";
+import { useNotificationStore, selectUnreadCount } from "@/store/notificationStore";
 import { useThemeStore } from "@/store/themeStore";
-import { useUserStore } from "@/store/userStore";
+import { useUserStore, selectIsDeliveryBoy } from "@/store/userStore";
 
 const baseNavItems = [
   { href: "/home", label: "Home", icon: Home },
@@ -16,12 +16,15 @@ const baseNavItems = [
 
 export function BottomNav() {
   const pathname = usePathname();
-  const unreadCount = useNotificationStore((s) => s.notifications.filter((n) => !n.is_read).length);
+  const unreadCount = useNotificationStore(selectUnreadCount);
   const isVegTheme = useThemeStore((s) => s.isVegTheme);
-  const isDeliveryBoy = useUserStore((s) => s.user?.role === "delivery_boy");
+  const isDeliveryBoy = useUserStore(selectIsDeliveryBoy);
 
   const navItems = isDeliveryBoy
-    ? [...baseNavItems, { href: "/home/delivery", label: "Delivery", icon: Bike }]
+    ? [
+        { href: "/home/delivery", label: "Delivery", icon: Bike },
+        { href: "/profile", label: "Profile", icon: User }
+      ]
     : baseNavItems;
 
   const pageColor = (() => {
@@ -36,12 +39,9 @@ export function BottomNav() {
 
   return (
     <>
-      {/* Spacer so content doesn't hide behind the nav */}
       <div className="h-[72px]" />
-
       <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pointer-events-none">
         <nav className={`relative w-full max-w-[960px] flex justify-around items-center pointer-events-auto ${pageColor.bg} rounded-t-[24px] ${pageColor.shadow} pt-2 sm:pt-3 px-1 sm:px-2 transition-colors duration-300`} style={{ paddingBottom: "max(12px, env(safe-area-inset-bottom))" }}>
-          {/* Background bleed block to prevent white line gap on mobile OS nav bars */}
           <div className="absolute top-[98%] left-0 right-0 h-[50px] bg-inherit pointer-events-none" />
           {navItems.map(({ href, label, icon: Icon }) => {
             const isActive =

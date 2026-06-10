@@ -6,6 +6,7 @@ import { Search, RefreshCw, Pause, Play, X, Plus, ChevronDown, Check, Users, Arr
 import Link from "next/link";
 import { CustomSelect } from "@/components/CustomSelect";
 import { useConfirm } from "@/components/ConfirmProvider";
+import { useToast } from "@/lib/useToast";
 
 type Sub = {
   id: string; user_id: string; plan_id: string | null; category: string; meal_type: string;
@@ -29,7 +30,7 @@ export default function AdminSubscriptionsPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
-  const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
+  const { toast, showToast } = useToast();
   const [showExtendModal, setShowExtendModal] = useState<string | null>(null);
   const [extendDays, setExtendDays] = useState(7);
   const { confirm } = useConfirm();
@@ -41,11 +42,6 @@ export default function AdminSubscriptionsPage() {
   const [plans, setPlans] = useState<{ id: string; title: string; meal_type: string; category: string; duration_days: number }[]>([]);
   const [createForm, setCreateForm] = useState({ userId: "", planId: "", category: "veg", mealType: "both", startsAt: new Date().toISOString().split("T")[0] });
   const [creating, setCreating] = useState(false);
-
-  const showToast = (msg: string, type: "success" | "error" = "success") => {
-    setToast({ msg, type });
-    setTimeout(() => setToast(null), 3000);
-  };
 
   const fetchData = async () => {
     setLoading(true);

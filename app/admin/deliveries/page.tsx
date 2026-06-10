@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { RefreshCw, Truck, Bike, Sun, Moon, Clock, Camera, MapPin, List, Activity, CheckCircle, AlertCircle } from "lucide-react";
 import { CustomSelect } from "@/components/CustomSelect";
+import { useToast } from "@/lib/useToast";
 
 type Assignment = {
   id: string; order_id: string; delivery_boy_id: string; status: string; eta: string | null; proof_image: string | null; created_at: string;
@@ -24,22 +25,18 @@ export default function AdminDeliveriesPage() {
   const [deliveryBoys, setDeliveryBoys] = useState<{ id: string; full_name: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("active");
-  const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
+  const { toast, showToast } = useToast();
   const channelRef = useRef<any>(null);
-
-  const showToast = (msg: string, type: "success" | "error" = "success") => {
-    setToast({ msg, type }); setTimeout(() => setToast(null), 3000);
-  };
 
   const fetchData = async () => {
     const q = supabase
-      .from("delivery_assignments")
-      .select(`id, order_id, delivery_boy_id, status, eta, proof_image, created_at,
-        delivery_boy:users!delivery_assignments_delivery_boy_id_fkey(full_name, phone),
-        order:food_orders(total_amount, time_slot,
-          user:users!food_orders_user_id_fkey(full_name, phone),
-          address:addresses(area, city, google_map_link)
-        )`)
+      .from("food_orders")
+      .select(`id, status, assigned_delivery_boy, eta, created_at, total_amount, time_slot,
+        delivery_boy:users!food_orders_assigned_delivery_boy_fkey(full_name, phone),
+        user:users!food_orders_user_id_fkey(full_name, phone),
+        address:addresses(area, city, google_map_link),
+        delivery_assignments(proof_image)
+      `)
       .order("created_at", { ascending: false })
       .limit(100);
 
@@ -48,7 +45,25 @@ export default function AdminDeliveriesPage() {
     }
 
     const { data } = await q;
-    setAssignments((data as any) || []);
+
+    const mappedAssignments = (data || []).map((o: any) => ({
+      id: o.id,
+      order_id: o.id,
+      delivery_boy_id: o.assigned_delivery_boy,
+      status: o.status,
+      eta: o.eta,
+      proof_image: o.delivery_assignments?.[0]?.proof_image || null,
+      created_at: o.created_at,
+      delivery_boy: o.delivery_boy,
+      order: {
+        total_amount: o.total_amount,
+        time_slot: o.time_slot,
+        user: o.user,
+        address: o.address
+      }
+    }));
+
+    setAssignments(mappedAssignments);
 
     const { data: boys } = await supabase.from("users").select("id, full_name").eq("role", "delivery_boy").eq("status", "active");
     setDeliveryBoys(boys || []);
@@ -58,7 +73,7 @@ export default function AdminDeliveriesPage() {
   useEffect(() => {
     fetchData();
     channelRef.current = supabase.channel("admin:deliveries")
-      .on("postgres_changes", { event: "*", schema: "public", table: "delivery_assignments" }, fetchData)
+      .on("postgres_changes", { event: "*", schema: "public", table: "food_orders" }, fetchData)
       .subscribe();
     return () => { if (channelRef.current) supabase.removeChannel(channelRef.current); };
   }, [statusFilter]);

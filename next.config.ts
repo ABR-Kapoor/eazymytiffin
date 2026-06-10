@@ -11,6 +11,12 @@ const nextConfig: NextConfig = {
         hostname: '**',
       },
     ],
+    formats: ['image/avif', 'image/webp'],
+    deviceSizes: [320, 480, 640, 768, 1024, 1280],
+    minimumCacheTTL: 86400,
+  },
+  experimental: {
+    optimisticClientCache: true,
   },
 };
 

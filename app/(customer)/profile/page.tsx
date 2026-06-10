@@ -9,9 +9,11 @@ import Link from "next/link";
 import {
   PartyPopper, LogOut, Phone, Mail, MapPin,
   Plus, Trash2, Home, Building, Briefcase, Smartphone,
-  User, Pencil
+  User, Pencil, Store, ChevronRight,
+  Wallet, Package, ClipboardList, ShoppingBag, Bell, LifeBuoy, MessageCircle, Star
 } from "lucide-react";
 import { PageHero } from "@/components/ui/PageHero";
+import { useToast } from "@/lib/useToast";
 
 type Address = {
   id: string;
@@ -43,7 +45,6 @@ export default function ProfilePage() {
   const [editing, setEditing] = useState(false);
   const [formData, setFormData] = useState({ full_name: "", phone: "", city: "Bilaspur" });
   const [saving, setSaving] = useState(false);
-  const [search, setSearch] = useState("");
 
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [addrLoading, setAddrLoading] = useState(true);
@@ -51,12 +52,7 @@ export default function ProfilePage() {
   const [newAddr, setNewAddr] = useState({ type: "home", area: "", house_flat_no: "", landmark: "", hostel_company_name: "", floor: "", google_map_link: "", city: "Bilaspur" });
   const { confirm } = useConfirm();
   const [editingAddrId, setEditingAddrId] = useState<string | null>(null);
-  const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
-
-  const showToast = (msg: string, type: "success" | "error" = "success") => {
-    setToast({ msg, type });
-    setTimeout(() => setToast(null), 3000);
-  };
+  const { toast, showToast } = useToast();
 
   useEffect(() => {
     if (user) {
@@ -200,8 +196,8 @@ export default function ProfilePage() {
           themeColor="#0D9488"
           title={
             <>
-              <span className="block text-white" style={{ WebkitTextStroke: "1px #222" }}>MY</span>
-              profile
+              <span className="block text-white" style={{ WebkitTextStroke: "1px #222" }}>My</span>
+              Profile
             </>
           }
           subtitle={user?.full_name || "Manage your details"}
@@ -210,9 +206,9 @@ export default function ProfilePage() {
             { src: "/eazymytiffin-hero-premium-tiffin.png", bg: "#14B8A6" },
             { src: "/eazymytiffin-weekly-special-meal.png", bg: "#F472B6" },
           ]}
-          search={search}
-          setSearch={setSearch}
-        />
+        >
+          <div className="h-[76px]" />
+        </PageHero>
 
         {/* User Info Card (Replacing the old Hero content) */}
         <div className="bg-white rounded-[20px] p-5 sm:p-6 mb-5 border border-[#E8E8E8] shadow-[0_2px_12px_rgba(0,0,0,0.04)] transition-all flex items-center gap-4 sm:gap-5 mt-6">
@@ -242,7 +238,7 @@ export default function ProfilePage() {
         </div>
 
         {/* Account Information */}
-        <div className="bg-white rounded-[20px] p-5 sm:p-6 mb-5 border border-[#E8E8E8] shadow-[0_2px_12px_rgba(0,0,0,0.04)] transition-all">
+        <div id="account" className="bg-white rounded-[20px] p-5 sm:p-6 mb-5 border border-[#E8E8E8] shadow-[0_2px_12px_rgba(0,0,0,0.04)] transition-all scroll-mt-[100px]">
           <div className="flex justify-between items-center mb-5">
             <h2 className="font-extrabold text-[16px] text-[#1C1C1C] m-0">Account Information</h2>
             {!editing ? (
@@ -310,7 +306,7 @@ export default function ProfilePage() {
         </div>
 
         {/* Saved Addresses */}
-        <div className="bg-white rounded-[20px] p-5 sm:p-6 mb-6 border border-[#E8E8E8] shadow-[0_2px_12px_rgba(0,0,0,0.04)] transition-all">
+        <div id="addresses" className="bg-white rounded-[20px] p-5 sm:p-6 mb-6 border border-[#E8E8E8] shadow-[0_2px_12px_rgba(0,0,0,0.04)] transition-all scroll-mt-[100px]">
           <div className="flex justify-between items-center mb-5">
             <h2 className="font-extrabold text-[16px] text-[#1C1C1C] m-0">
               Saved Addresses
@@ -429,6 +425,106 @@ export default function ProfilePage() {
               })}
             </div>
           )}
+        </div>
+
+        {!user || user.role !== "delivery_boy" ? (
+          <>
+            {/* Tiffin Meal */}
+            <div className="mb-8">
+              <h2 className="font-extrabold text-[16px] text-[#1C1C1C] mb-3 ml-2 tracking-wide">
+                Tiffin Meal
+              </h2>
+              <div className="bg-white rounded-[20px] p-1.5 border border-[#E8E8E8] shadow-[0_2px_12px_rgba(0,0,0,0.02)]">
+                <Link href="/subscription" className="flex items-center justify-between p-4 hover:bg-[#F8F9FA] rounded-xl transition-colors cursor-pointer group">
+                  <div className="flex items-center gap-4">
+                    <Package size={22} className="text-[#93959F]" strokeWidth={1.5} />
+                    <span className="text-[15px] font-bold text-[#374151]">My Subscriptions</span>
+                  </div>
+                  <ChevronRight size={20} className="text-[#D4D4D8] group-hover:text-[#1C1C1C] transition-colors" />
+                </Link>
+                <div className="h-[1px] bg-[#F3F4F6] mx-4" />
+                <Link href="/food" className="flex items-center justify-between p-4 hover:bg-[#F8F9FA] rounded-xl transition-colors cursor-pointer group">
+                  <div className="flex items-center gap-4">
+                    <ClipboardList size={22} className="text-[#93959F]" strokeWidth={1.5} />
+                    <span className="text-[15px] font-bold text-[#374151]">Foods</span>
+                  </div>
+                  <ChevronRight size={20} className="text-[#D4D4D8] group-hover:text-[#1C1C1C] transition-colors" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Home Chef */}
+            <div className="mb-8">
+              <h2 className="font-extrabold text-[16px] text-[#1C1C1C] mb-3 ml-2 tracking-wide">
+                Home Chef
+              </h2>
+              <div className="bg-white rounded-[20px] p-1.5 border border-[#E8E8E8] shadow-[0_2px_12px_rgba(0,0,0,0.02)]">
+                <Link href="/orders" className="flex items-center justify-between p-4 hover:bg-[#F8F9FA] rounded-xl transition-colors cursor-pointer group">
+                  <div className="flex items-center gap-4">
+                    <ShoppingBag size={22} className="text-[#93959F]" strokeWidth={1.5} />
+                    <span className="text-[15px] font-bold text-[#374151]">My Order</span>
+                  </div>
+                  <ChevronRight size={20} className="text-[#D4D4D8] group-hover:text-[#1C1C1C] transition-colors" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Collaborate With Us */}
+            <div className="mb-8">
+              <h2 className="font-extrabold text-[16px] text-[#1C1C1C] mb-3 ml-2 tracking-wide">
+                Collaborate With Us
+              </h2>
+              <div className="bg-white rounded-[20px] p-1.5 border border-[#E8E8E8] shadow-[0_2px_12px_rgba(0,0,0,0.02)]">
+                <Link href="/about" className="flex items-center justify-between p-4 hover:bg-[#F8F9FA] rounded-xl transition-colors cursor-pointer group">
+                  <div className="flex items-center gap-4">
+                    <MapPin size={22} className="text-[#93959F]" strokeWidth={1.5} />
+                    <span className="text-[15px] font-bold text-[#374151]">Where we are?</span>
+                  </div>
+                  <ChevronRight size={20} className="text-[#D4D4D8] group-hover:text-[#1C1C1C] transition-colors" />
+                </Link>
+                <div className="h-[1px] bg-[#F3F4F6] mx-4" />
+                <Link href="/partner/delivery" className="flex items-center justify-between p-4 hover:bg-[#F8F9FA] rounded-xl transition-colors cursor-pointer group">
+                  <div className="flex items-center gap-4">
+                    <Briefcase size={22} className="text-[#93959F]" strokeWidth={1.5} />
+                    <span className="text-[15px] font-bold text-[#374151]">Register for Delivery Partner</span>
+                  </div>
+                  <ChevronRight size={20} className="text-[#D4D4D8] group-hover:text-[#1C1C1C] transition-colors" />
+                </Link>
+                <div className="h-[1px] bg-[#F3F4F6] mx-4" />
+                <Link href="/partner/business" className="flex items-center justify-between p-4 hover:bg-[#F8F9FA] rounded-xl transition-colors cursor-pointer group">
+                  <div className="flex items-center gap-4">
+                    <Store size={22} className="text-[#93959F]" strokeWidth={1.5} />
+                    <span className="text-[15px] font-bold text-[#374151]">Register for Tiffin Business Partner</span>
+                  </div>
+                  <ChevronRight size={20} className="text-[#D4D4D8] group-hover:text-[#1C1C1C] transition-colors" />
+                </Link>
+                <div className="h-[1px] bg-[#F3F4F6] mx-4" />
+                <Link href="/partner/chef" className="flex items-center justify-between p-4 hover:bg-[#F8F9FA] rounded-xl transition-colors cursor-pointer group">
+                  <div className="flex items-center gap-4">
+                    <Store size={22} className="text-[#93959F]" strokeWidth={1.5} />
+                    <span className="text-[15px] font-bold text-[#374151]">Register for Insta Home Chef</span>
+                  </div>
+                  <ChevronRight size={20} className="text-[#D4D4D8] group-hover:text-[#1C1C1C] transition-colors" />
+                </Link>
+              </div>
+            </div>
+          </>
+        ) : null}
+
+        {/* More */}
+        <div className="mb-8">
+          <h2 className="font-extrabold text-[16px] text-[#1C1C1C] mb-3 ml-2 tracking-wide">
+            More
+          </h2>
+          <div className="bg-white rounded-[20px] p-1.5 border border-[#E8E8E8] shadow-[0_2px_12px_rgba(0,0,0,0.02)]">
+            <a href="https://wa.me/919770144899" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-4 hover:bg-[#F8F9FA] rounded-xl transition-colors cursor-pointer group">
+              <div className="flex items-center gap-4">
+                <MessageCircle size={22} className="text-[#93959F]" strokeWidth={1.5} />
+                <span className="text-[15px] font-bold text-[#374151]">Chat Support</span>
+              </div>
+              <ChevronRight size={20} className="text-[#D4D4D8] group-hover:text-[#1C1C1C] transition-colors" />
+            </a>
+          </div>
         </div>
 
         {/* Sign Out */}

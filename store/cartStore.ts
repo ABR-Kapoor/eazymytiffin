@@ -8,6 +8,7 @@ export interface CartItem {
   category: "veg" | "non_veg";
   image_url: string | null;
   badge: string | null;
+  source?: "tiffin" | "food";
 }
 
 interface CartState {
@@ -15,7 +16,6 @@ interface CartState {
   timeSlot: "lunch" | "dinner" | null;
   addressId: string | null;
   paymentMethod: "phonepe" | "cod" | null;
-  // Setters
   addItem: (item: Omit<CartItem, "quantity">) => void;
   removeItem: (menu_id: string) => void;
   updateQty: (menu_id: string, quantity: number) => void;
@@ -23,13 +23,9 @@ interface CartState {
   setTimeSlot: (slot: "lunch" | "dinner") => void;
   setAddressId: (id: string) => void;
   setPaymentMethod: (method: "phonepe" | "cod") => void;
-  // Computed
-  total: () => number;
-  itemCount: () => number;
-  subtotal: () => number;
 }
 
-export const useCartStore = create<CartState>((set, get) => ({
+export const useCartStore = create<CartState>((set) => ({
   items: [],
   timeSlot: null,
   addressId: null,
@@ -37,6 +33,13 @@ export const useCartStore = create<CartState>((set, get) => ({
 
   addItem: (newItem) =>
     set((state) => {
+      if (state.items.length > 0) {
+        const currentSource = state.items[0].source;
+        if (currentSource && newItem.source && currentSource !== newItem.source) {
+          return { items: [{ ...newItem, quantity: 1 }], timeSlot: null };
+        }
+      }
+
       const existing = state.items.find((i) => i.menu_id === newItem.menu_id);
       if (existing) {
         return {
@@ -63,8 +66,13 @@ export const useCartStore = create<CartState>((set, get) => ({
   setTimeSlot: (timeSlot) => set({ timeSlot }),
   setAddressId: (addressId) => set({ addressId }),
   setPaymentMethod: (paymentMethod) => set({ paymentMethod }),
-
-  subtotal: () => get().items.reduce((sum, i) => sum + i.price * i.quantity, 0),
-  total: () => get().subtotal(),
-  itemCount: () => get().items.reduce((sum, i) => sum + i.quantity, 0),
 }));
+
+export const selectCartItems = (s: CartState) => s.items;
+export const selectCartSubtotal = (s: CartState) =>
+  s.items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+export const selectCartTotal = selectCartSubtotal;
+export const selectCartItemCount = (s: CartState) =>
+  s.items.reduce((sum, i) => sum + i.quantity, 0);
+export const selectHasTiffinItems = (s: CartState) =>
+  s.items.some((i) => i.source === "tiffin");

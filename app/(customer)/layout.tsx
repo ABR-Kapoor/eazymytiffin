@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo, useCallback } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   MessageCircle,
   Shield,
@@ -10,24 +10,40 @@ import {
   ChevronDown,
   UserCircle,
 } from "lucide-react";
-import { useUserStore } from "@/store/userStore";
+import { useUserStore, selectUser, selectIsAdmin, selectIsDeliveryBoy } from "@/store/userStore";
 import { useThemeStore } from "@/store/themeStore";
 import { NotificationBell } from "@/components/NotificationBell";
 import { BottomNav } from "@/components/BottomNav";
+
+const PAGE_THEMES: Record<string, { bg: string }> = {
+  "/home/delivery": { bg: "bg-[#22C55E]" },
+  "/food": { bg: "bg-[#FC8019]" },
+  "/orders": { bg: "bg-[#2563EB]" },
+  "/subscription": { bg: "bg-[#7C3AED]" },
+  "/profile": { bg: "bg-[#0D9488]" },
+};
 
 export default function CustomerLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const user = useUserStore((s) => s.user);
-  const isAdmin = useUserStore((s) => s.user?.role === "admin");
+  const user = useUserStore(selectUser);
+  const isAdmin = useUserStore(selectIsAdmin);
+  const isDeliveryBoy = useUserStore(selectIsDeliveryBoy);
   const isVegTheme = useThemeStore((s) => s.isVegTheme);
   const [mounted, setMounted] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [defaultAddress, setDefaultAddress] = useState<any>(null);
   const notifRef = useRef<{ toggle: () => void }>(null);
   const pathname = usePathname();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isDeliveryBoy && !pathname.startsWith("/home/delivery") && !pathname.startsWith("/profile")) {
+      router.replace("/home/delivery");
+    }
+  }, [isDeliveryBoy, pathname, router]);
 
   useEffect(() => {
     setMounted(true);
@@ -39,41 +55,39 @@ export default function CustomerLayout({
   }, []);
 
   useEffect(() => {
-    if (user) {
-      const fetchAddr = async () => {
-        const { supabase } = await import("@/lib/supabase");
-        const { data } = await supabase
-          .from("addresses")
-          .select("*")
-          .eq("user_id", user.id)
-          .order("is_default", { ascending: false })
-          .limit(1)
-          .single();
-        if (data) setDefaultAddress(data);
-      };
-      fetchAddr();
-    }
+    if (!user) return;
+    let cancelled = false;
+    const fetchAddr = async () => {
+      const { supabase } = await import("@/lib/supabase");
+      const { data } = await supabase
+        .from("addresses")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("is_default", { ascending: false })
+        .limit(1)
+        .single();
+      if (!cancelled && data) setDefaultAddress(data);
+    };
+    fetchAddr();
+    return () => { cancelled = true; };
   }, [user]);
+
+  const themeBgColor = useMemo(() => {
+    const matched = Object.entries(PAGE_THEMES).find(([prefix]) =>
+      pathname.startsWith(prefix)
+    );
+    if (matched) return matched[1].bg;
+    if (pathname === "/home") return "bg-[#140019]";
+    return isVegTheme ? "bg-[#0d5c3d]" : "bg-[#E8392A]";
+  }, [pathname, isVegTheme]);
 
   if (!mounted) return null;
 
   const isHome = pathname === "/home";
   const hasFullHero = ["/food", "/orders", "/subscription", "/profile", "/home/delivery"].some(p => pathname.startsWith(p));
 
-  const themeBgColor = (() => {
-    if (pathname === "/home") return "bg-[#140019]";
-    if (pathname.startsWith("/home/delivery")) return "bg-[#22C55E]";
-    if (pathname.startsWith("/food")) return "bg-[#FC8019]";
-    if (pathname.startsWith("/orders")) return "bg-[#2563EB]";
-    if (pathname.startsWith("/subscription")) return "bg-[#7C3AED]";
-    if (pathname.startsWith("/profile")) return "bg-[#0D9488]";
-    return isVegTheme ? "bg-[#0d5c3d]" : "bg-[#E8392A]";
-  })();
-  const themeBorderColor = isVegTheme ? "border-[#0d5c3d]" : "border-[#E8392A]";
-
   return (
     <div style={{ minHeight: "100vh", background: "#f8f9fa" }}>
-      {/* Top Navbar */}
       {!hasFullHero && (
         <header
           className={`sticky top-0 z-30 h-[56px] flex justify-center w-full transition-shadow duration-300 ${
@@ -82,19 +96,15 @@ export default function CustomerLayout({
           style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
         >
         <div className="relative w-full max-w-[960px] h-full">
-          {/* Background layer with overflow-hidden for rounded corners */}
           <div className={`absolute inset-0 overflow-hidden ${(isHome || hasFullHero) && !isScrolled ? "bg-transparent" : themeBgColor} transition-all duration-300 ${
             isScrolled ? "rounded-b-[24px] shadow-sm" : ""
           }`}>
-            {/* Food Pattern Overlay */}
             {!(isHome || hasFullHero) && (
               <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/food.png')] opacity-60 invert pointer-events-none" />
             )}
           </div>
 
-          {/* Content layer (no overflow-hidden so dropdowns can bleed out) */}
           <div className="relative z-10 flex items-center justify-between h-full px-4 text-white">
-            {/* Left: Location */}
           <Link
             href="/profile"
             className="relative z-10 flex items-center gap-2.5 no-underline group flex-1 min-w-0"
@@ -113,7 +123,6 @@ export default function CustomerLayout({
             </div>
           </Link>
 
-          {/* Right: Actions */}
           <div className="flex items-center gap-2 sm:gap-3 shrink-0 ml-4 relative z-10">
             {isAdmin && (
               <Link
@@ -164,7 +173,6 @@ export default function CustomerLayout({
         </header>
       )}
 
-      {/* Main Container */}
       <main
         id="main"
         className={`max-w-[960px] mx-auto pb-24 px-4 lg:px-0 ${isHome ? "-mt-[56px] relative z-10" : ""} ${(isHome || hasFullHero) ? "pt-0" : "pt-4"}`}

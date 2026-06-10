@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { Bike, UserPlus, UserMinus, Phone } from "lucide-react";
 import { CustomSelect } from "@/components/CustomSelect";
 import { useConfirm } from "@/components/ConfirmProvider";
+import { useToast } from "@/lib/useToast";
 
 type DeliveryBoy = {
   id: string; full_name: string; phone: string; email: string; city: string;
@@ -17,12 +18,8 @@ export default function AdminDeliveryBoysPage() {
   const [customers, setCustomers] = useState<{ id: string; full_name: string; phone: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const { confirm } = useConfirm();
-  const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
+  const { toast, showToast } = useToast();
   const [promoteUserId, setPromoteUserId] = useState("");
-
-  const showToast = (msg: string, type: "success" | "error" = "success") => {
-    setToast({ msg, type }); setTimeout(() => setToast(null), 3000);
-  };
 
   const fetchData = async () => {
     const { data: boyData } = await supabase.from("users").select("*").eq("role", "delivery_boy").order("created_at", { ascending: false });

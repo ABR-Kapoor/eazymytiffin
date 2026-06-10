@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useSubscriptionStore } from "@/store/subscriptionStore";
 import { useUserStore } from "@/store/userStore";
-import { useOrderStore } from "@/store/orderStore";
+import { useOrderStore, selectActiveOrder } from "@/store/orderStore";
 import { useThemeStore } from "@/store/themeStore";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -13,6 +13,7 @@ import {
 import TiffinPlansSection from "@/components/ui/TiffinPlansSection";
 import { ActiveOrderAlert } from "@/components/ui/ActiveOrderAlert";
 import { PageHero } from "@/components/ui/PageHero";
+import { useToast } from "@/lib/useToast";
 
 const DEFAULT_PLANS = [
   // VEG MEALS
@@ -51,8 +52,7 @@ export default function SubscriptionPage() {
   const router = useRouter();
   const user = useUserStore((s) => s.user);
   const { activeSubscription: sub, plans, subscriptionDays, isLoading, setActiveSubscription } = useSubscriptionStore();
-  const { getActiveOrder } = useOrderStore();
-  const activeOrder = getActiveOrder();
+  const activeOrder = useOrderStore(selectActiveOrder);
   const carouselRef = useRef<HTMLDivElement>(null);
 
   const { isVegTheme: isVegOnly, setVegTheme: setIsVegOnly } = useThemeStore();
@@ -62,7 +62,7 @@ export default function SubscriptionPage() {
   const [activeMealFilter, setActiveMealFilter] = useState("all");
 
   const [processingPlanId, setProcessingPlanId] = useState<string | null>(null);
-  const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
+  const { toast, showToast } = useToast();
 
   const displayPlans = plans.length > 0 ? plans : DEFAULT_PLANS;
 
@@ -80,11 +80,6 @@ export default function SubscriptionPage() {
     if (search && !p.title.toLowerCase().includes(search.toLowerCase()) && !(p.description || "").toLowerCase().includes(search.toLowerCase())) return false;
     return true;
   });
-
-  const showToast = (msg: string, type: "success" | "error" = "success") => {
-    setToast({ msg, type });
-    setTimeout(() => setToast(null), 3500);
-  };
 
   const handleSelectPlan = async (planId: string) => {
     if (!user) { router.push("/sign-in?redirect_url=/subscription"); return; }
@@ -128,8 +123,8 @@ export default function SubscriptionPage() {
         themeColor="#7C3AED"
         title={
           <>
-            <span className="block text-white" style={{ WebkitTextStroke: "1px #222" }}>EAZY</span>
-            tiffin
+            <span className="block text-white" style={{ WebkitTextStroke: "1px #222" }}>Eazy</span>
+            Tiffin
           </>
         }
         subtitle="Subscribe & save on daily meals"

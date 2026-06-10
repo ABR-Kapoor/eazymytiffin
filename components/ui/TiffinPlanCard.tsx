@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import Image from "next/image";
 import { Check } from "lucide-react";
 
@@ -16,7 +17,7 @@ type TiffinPlanCardProps = {
   isLoading?: boolean;
 };
 
-export function TiffinPlanCard({ plan, isActive, onSelect, isLoading }: TiffinPlanCardProps) {
+export const TiffinPlanCard = memo(function TiffinPlanCard({ plan, isActive, onSelect, isLoading }: TiffinPlanCardProps) {
   const isWeekly = plan.duration_days === 7;
   const isVeg = plan.category === "veg";
 
@@ -81,4 +82,4 @@ export function TiffinPlanCard({ plan, isActive, onSelect, isLoading }: TiffinPl
       </div>
     </div>
   );
-}
+});
