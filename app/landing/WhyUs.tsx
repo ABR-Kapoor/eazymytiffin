@@ -131,6 +131,7 @@ export default function WhyUs() {
                     src={r.image} 
                     alt={r.title} 
                     fill
+                    sizes="(max-width: 767px) 100vw, (max-width: 1023px) 50vw, 33vw"
                     className="object-cover transition-transform duration-1000 group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
@@ -174,6 +175,7 @@ export default function WhyUs() {
                     src={r.image} 
                     alt={r.title} 
                     fill
+                    sizes="100vw"
                     className="object-cover"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />

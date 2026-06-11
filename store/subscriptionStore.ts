@@ -10,20 +10,13 @@ interface SubscriptionState {
   plans: Plan[];
   subscriptionDays: SubDay[];
   isLoading: boolean;
-  // Setters
   setActiveSubscription: (sub: Subscription | null) => void;
   setPlans: (plans: Plan[]) => void;
   setSubscriptionDays: (days: SubDay[]) => void;
   setLoading: (loading: boolean) => void;
-  // Computed
-  getRemainingProgress: () => number;
-  isActive: () => boolean;
-  isPaused: () => boolean;
-  canPauseLunch: () => boolean;
-  canPauseDinner: () => boolean;
 }
 
-export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
+export const useSubscriptionStore = create<SubscriptionState>((set) => ({
   activeSubscription: null,
   plans: [],
   subscriptionDays: [],
@@ -33,25 +26,16 @@ export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
   setPlans: (plans) => set({ plans }),
   setSubscriptionDays: (subscriptionDays) => set({ subscriptionDays }),
   setLoading: (isLoading) => set({ isLoading }),
-
-  getRemainingProgress: () => {
-    const sub = get().activeSubscription;
-    if (!sub) return 0;
-    return Math.round((sub.remaining_days / sub.total_days) * 100);
-  },
-
-  isActive: () => get().activeSubscription?.status === "active",
-  isPaused: () => get().activeSubscription?.status === "paused",
-
-  // Lunch cutoff: 11 AM
-  canPauseLunch: () => {
-    const now = new Date();
-    return now.getHours() < 11;
-  },
-
-  // Dinner cutoff: 6 PM
-  canPauseDinner: () => {
-    const now = new Date();
-    return now.getHours() < 18;
-  },
 }));
+
+export const selectActiveSub = (s: SubscriptionState) => s.activeSubscription;
+export const selectPlans = (s: SubscriptionState) => s.plans;
+export const selectSubDays = (s: SubscriptionState) => s.subscriptionDays;
+export const selectSubLoading = (s: SubscriptionState) => s.isLoading;
+export const selectIsSubActive = (s: SubscriptionState) => s.activeSubscription?.status === "active";
+export const selectIsPaused = (s: SubscriptionState) => s.activeSubscription?.status === "paused";
+export const selectRemainingProgress = (s: SubscriptionState) => {
+  const sub = s.activeSubscription;
+  if (!sub) return 0;
+  return Math.round((sub.remaining_days / sub.total_days) * 100);
+};

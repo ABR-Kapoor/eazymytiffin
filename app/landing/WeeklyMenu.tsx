@@ -26,24 +26,13 @@ export default function WeeklyMenu() {
   const [activeDay, setActiveDay] = useState(0);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  // Autoplay Timer - resets on manual select/swipe for perfect UX
+  // Autoplay Timer
   useEffect(() => {
     const timer = setInterval(() => {
       setActiveDay((prev) => (prev + 1) % menuData.length);
     }, 5000);
     return () => clearInterval(timer);
-  }, [activeDay]);
-
-  // Synchronize carousel scroll position whenever activeDay changes
-  useEffect(() => {
-    const container = document.getElementById("mobile-days-carousel");
-    if (container) {
-      container.scrollTo({
-        left: activeDay * container.clientWidth,
-        behavior: "smooth"
-      });
-    }
-  }, [activeDay]);
+  }, []);
 
 
   return (
@@ -92,7 +81,7 @@ export default function WeeklyMenu() {
           {isDropdownOpen && (
             <>
               {/* Tap-away overlay to dismiss list */}
-              <div className="fixed inset-0 z-40 bg-black/5" onClick={() => setIsDropdownOpen(false)} />
+              <div className="fixed inset-0 z-30" onClick={() => setIsDropdownOpen(false)} />
               
               {/* Floating Menu List */}
               <div 
@@ -166,6 +155,7 @@ export default function WeeklyMenu() {
                     src={row.image} 
                     alt={row.day} 
                     fill
+                    sizes="(max-width: 767px) 100vw, (max-width: 1023px) 50vw, 25vw"
                     className="object-cover transition-transform duration-1000 group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
@@ -222,30 +212,19 @@ export default function WeeklyMenu() {
           })}
         </div>
 
-        {/* Menu Cards Carousel (Mobile Only) */}
+        {/* Menu Cards Carousel (Mobile Only) - translateX controlled slider */}
         <div className="w-full md:hidden relative mb-12">
-          <div 
-            className="w-full flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-none pb-4"
-            id="mobile-days-carousel"
-            onScroll={(e) => {
-              const container = e.currentTarget;
-              const scrollPosition = container.scrollLeft;
-              const cardWidth = container.clientWidth;
-              if (cardWidth > 0) {
-                const newIndex = Math.round(scrollPosition / cardWidth);
-                if (newIndex >= 0 && newIndex < menuData.length && newIndex !== activeDay) {
-                  const exactPosition = newIndex * cardWidth;
-                  if (Math.abs(scrollPosition - exactPosition) < 10) {
-                    setActiveDay(newIndex);
-                  }
-                }
-              }
-            }}
-          >
+          {/* Slider viewport */}
+          <div className="overflow-hidden rounded-[32px]">
+            {/* Slider track */}
+            <div
+              className="flex transition-transform duration-500 ease-in-out"
+              style={{ transform: `translateX(-${activeDay * 100}%)` }}
+            >
             {menuData.map((row, i) => (
               <div
                 key={row.day}
-                className="w-full shrink-0 snap-center"
+                className="w-full shrink-0"
               >
                 <div
                   className="group relative flex flex-col rounded-[32px] border-2 bg-white overflow-hidden transition-all duration-500 cursor-default"
@@ -260,6 +239,7 @@ export default function WeeklyMenu() {
                       src={row.image} 
                       alt={row.day} 
                       fill
+                      sizes="100vw"
                       className="object-cover"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
@@ -315,22 +295,14 @@ export default function WeeklyMenu() {
               </div>
             ))}
           </div>
+          </div>
 
           {/* Dots indicator for the carousel */}
           <div className="flex justify-center gap-1.5 mt-4">
             {menuData.map((_, i) => (
               <button
                 key={i}
-                onClick={() => {
-                  const container = document.getElementById("mobile-days-carousel");
-                  if (container) {
-                    container.scrollTo({
-                      left: i * container.clientWidth,
-                      behavior: "smooth"
-                    });
-                    setActiveDay(i);
-                  }
-                }}
+                onClick={() => setActiveDay(i)}
                 className={`w-2 h-2 rounded-full transition-all duration-300 ${
                   activeDay === i ? "bg-[#1B5E30] w-4" : "bg-slate-300"
                 }`}

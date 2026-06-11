@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { Search, RefreshCw, Shield, Bike, User, Users, Pencil, Plus, Trash2, Home, Building, Briefcase, MapPin, X } from "lucide-react";
 import { CustomSelect } from "@/components/CustomSelect";
 import { useConfirm } from "@/components/ConfirmProvider";
+import { useToast } from "@/lib/useToast";
 
 type Address = {
   id: string; user_id: string; type: "home" | "hostel" | "office";
@@ -44,11 +45,7 @@ export default function AdminUsersPage() {
   const [addrForm, setAddrForm] = useState<Partial<Address>>({ type: "home", area: "", house_flat_no: "", landmark: "", city: "Bilaspur" });
   const [editingAddrId, setEditingAddrId] = useState<string | null>(null);
   const [savingAddr, setSavingAddr] = useState(false);
-  const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
-
-  const showToast = (msg: string, type: "success" | "error" = "success") => {
-    setToast({ msg, type }); setTimeout(() => setToast(null), 3000);
-  };
+  const { toast, showToast } = useToast();
 
   const fetchAddresses = async (userId: string) => {
     setAddrLoading(true);

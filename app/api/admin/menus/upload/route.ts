@@ -7,14 +7,12 @@ export async function POST(req: Request) {
     const formData = await req.formData();
     const file = formData.get("file") as File;
     if (!file) throw new Error("No file uploaded");
-
     const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
 
     const ext = file.name.split(".").pop();
     const filename = `menu-${Date.now()}.${ext}`;
 
-    const { error } = await supabaseAdmin.storage.from("menu-images").upload(filename, buffer, { 
+    const { error } = await supabaseAdmin.storage.from("menu-images").upload(filename, arrayBuffer, { 
       contentType: file.type,
       upsert: true 
     });

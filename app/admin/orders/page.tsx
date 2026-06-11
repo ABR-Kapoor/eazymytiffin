@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, Fragment } from "react";
 import { supabase } from "@/lib/supabase";
 import { Search, RefreshCw, ChevronDown, ShoppingBag, Sun, Moon } from "lucide-react";
 import { CustomSelect } from "@/components/CustomSelect";
+import { useToast } from "@/lib/useToast";
 
 type Order = {
   id: string; user_id: string; status: string; payment_status: string;
@@ -34,14 +35,10 @@ export default function AdminOrdersPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
+  const { toast, showToast } = useToast();
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
   const [orderItems, setOrderItems] = useState<Record<string, any[]>>({});
   const channelRef = useRef<any>(null);
-
-  const showToast = (msg: string, type: "success" | "error" = "success") => {
-    setToast({ msg, type }); setTimeout(() => setToast(null), 3000);
-  };
 
   const fetchOrders = async () => {
     const { data } = await supabase

@@ -138,6 +138,10 @@ body {
   from { transform: translateX(-40px); opacity: 0; }
   to   { transform: translateX(0);     opacity: 1; }
 }
+@keyframes arrow-slide {
+  0%, 100% { transform: translateX(0); opacity: 1; }
+  50% { transform: translateX(4px); opacity: 0.4; }
+}
 @keyframes gradientShift {
   0%   { background-position: 0% 50%; }
   50%  { background-position: 100% 50%; }
@@ -225,6 +229,7 @@ body {
 .animate-fade-in   { animation: fadeIn   0.5s  ease both; }
 .animate-slide-left  { animation: slideLeft  0.5s ease both; }
 .animate-slide-right { animation: slideRight 0.5s ease both; }
+.animate-arrow       { animation: arrow-slide 1.5s ease-in-out infinite; }
 .tab-active        { animation: tabFadeIn 280ms ease both; }
 .float             { animation: float 3.2s ease-in-out infinite; }
 .spin-slow         { animation: spinSlow 8s linear infinite; }

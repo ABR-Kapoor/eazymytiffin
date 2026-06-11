@@ -1,7 +1,8 @@
 "use client";
 
+import { memo, useState } from "react";
 import Image from "next/image";
-import { Plus, Minus, UtensilsCrossed, Star, ChevronRight } from "lucide-react";
+import { Plus, Minus, Star } from "lucide-react";
 
 export type MenuType = {
   id: string; title: string; description: string | null;
@@ -18,20 +19,36 @@ type FoodCardProps = {
   price?: number; // fallback price
 };
 
-export function FoodCard({ menu, quantity, onAdd, onUpdateQty, layout = "horizontal", price = 120 }: FoodCardProps) {
+export const FoodCard = memo(function FoodCard({ menu, quantity, onAdd, onUpdateQty, layout = "horizontal", price = 120 }: FoodCardProps) {
   const isVeg = menu.category === "veg";
+  const [imgError, setImgError] = useState(false);
+
+  const fallbackImg = isVeg 
+    ? "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=300&auto=format&fit=crop" 
+    : "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?q=80&w=300&auto=format&fit=crop";
+
+  const showImage = menu.image_url && !imgError;
 
   if (layout === "vertical") {
     // 6.7 Horizontal Food Card (Item Card) - usually scrollable in a horizontal list, but the card itself is tall/vertical
     return (
       <div className="w-[160px] shrink-0 bg-white border border-[#E8E8E8] rounded-[12px] shadow-[0_2px_8px_rgba(0,0,0,0.08)] flex flex-col overflow-hidden relative">
         <div className="w-full h-[120px] relative bg-[#F2F2F2]">
-          {menu.image_url ? (
-            <Image src={menu.image_url} alt={menu.title} fill className="object-cover" />
+          {showImage ? (
+            <Image 
+              src={menu.image_url as string} 
+              alt={menu.title} 
+              fill 
+              className="object-cover" 
+              onError={() => setImgError(true)}
+            />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-slate-300">
-              <UtensilsCrossed size={32} />
-            </div>
+            <Image 
+              src={fallbackImg} 
+              alt={menu.title} 
+              fill 
+              className="object-cover" 
+            />
           )}
           {menu.badge && (
             <div className="absolute top-0 left-0 bg-black/60 text-white text-[11px] font-bold px-2 py-1 rounded-br-[12px]">
@@ -118,30 +135,41 @@ export function FoodCard({ menu, quantity, onAdd, onUpdateQty, layout = "horizon
 
       <div className="w-[100px] sm:w-[140px] shrink-0 relative flex flex-col items-center pb-2">
         <div className="w-[100px] sm:w-[140px] h-[100px] sm:h-[140px] rounded-[16px] relative overflow-hidden bg-[#F2F2F2] shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
-          {menu.image_url ? (
-            <Image src={menu.image_url} alt={menu.title} fill className="object-cover" />
+          {showImage ? (
+            <Image 
+              src={menu.image_url as string} 
+              alt={menu.title} 
+              fill 
+              className="object-cover" 
+              onError={() => setImgError(true)}
+            />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-slate-300"><UtensilsCrossed size={36} /></div>
+            <Image 
+              src={fallbackImg} 
+              alt={menu.title} 
+              fill 
+              className="object-cover" 
+            />
           )}
         </div>
         
         {/* Swiggy-style Add Button under image */}
-        <div className="absolute bottom-[-2px] left-1/2 -translate-x-1/2 w-[90px] sm:w-[120px] h-[36px] sm:h-[40px] bg-white rounded-[10px] shadow-[0_4px_14px_rgba(0,0,0,0.15)] overflow-hidden flex z-10">
+        <div className="absolute bottom-[-2px] left-1/2 -translate-x-1/2 w-[84px] sm:w-[120px] h-[32px] sm:h-[40px] bg-white rounded-[8px] sm:rounded-[10px] shadow-[0_4px_14px_rgba(0,0,0,0.15)] overflow-hidden flex z-10">
           {quantity === 0 ? (
             <button 
               onClick={onAdd} 
-              className="w-full h-full flex items-center justify-center text-[#1BA672] text-[16px] font-extrabold cursor-pointer hover:bg-[#f3fbf7] transition-colors uppercase tracking-wide border-none bg-transparent"
+              className="w-full h-full flex items-center justify-center text-[#1BA672] text-[13px] sm:text-[16px] font-extrabold cursor-pointer hover:bg-[#f3fbf7] transition-colors uppercase tracking-wide border-none bg-transparent"
             >
               ADD
             </button>
           ) : (
-            <div className="w-full h-full flex items-center justify-between px-2 bg-white">
-              <button onClick={() => onUpdateQty(quantity - 1)} className="text-[#1BA672] hover:bg-slate-50 rounded-md w-8 h-8 flex items-center justify-center bg-transparent border-none cursor-pointer p-0 transition-colors">
-                <Minus size={20} strokeWidth={3} />
+            <div className="w-full h-full flex items-center justify-between px-1.5 sm:px-2 bg-white">
+              <button onClick={() => onUpdateQty(quantity - 1)} className="text-[#1BA672] hover:bg-slate-50 rounded-md w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center bg-transparent border-none cursor-pointer p-0 transition-colors">
+                <Minus className="w-[16px] sm:w-[20px] h-[16px] sm:h-[20px]" strokeWidth={3} />
               </button>
-              <span className="font-extrabold text-[15px] text-[#1BA672] w-6 text-center">{quantity}</span>
-              <button onClick={() => onUpdateQty(quantity + 1)} className="text-[#1BA672] hover:bg-green-50 rounded-md w-8 h-8 flex items-center justify-center bg-transparent border-none cursor-pointer p-0 transition-colors">
-                <Plus size={20} strokeWidth={3} />
+              <span className="font-extrabold text-[13px] sm:text-[15px] text-[#1BA672] w-5 sm:w-6 text-center">{quantity}</span>
+              <button onClick={() => onUpdateQty(quantity + 1)} className="text-[#1BA672] hover:bg-green-50 rounded-md w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center bg-transparent border-none cursor-pointer p-0 transition-colors">
+                <Plus className="w-[16px] sm:w-[20px] h-[16px] sm:h-[20px]" strokeWidth={3} />
               </button>
             </div>
           )}
@@ -149,5 +177,4 @@ export function FoodCard({ menu, quantity, onAdd, onUpdateQty, layout = "horizon
       </div>
     </div>
   );
-}
-
+});

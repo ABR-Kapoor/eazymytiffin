@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect, forwardRef, useImperativeHandle } from "react";
-import { Bell, Check, CheckCheck, CreditCard, Truck, ClipboardList } from "lucide-react";
-import { useNotificationStore } from "@/store/notificationStore";
+import { Bell, CheckCheck, CreditCard, Truck, ClipboardList } from "lucide-react";
+import { useNotificationStore, selectUnreadCount, selectNotifications } from "@/store/notificationStore";
 
 const typeColors: Record<string, string> = {
   payment: "#E8392A",
@@ -21,11 +21,12 @@ const typeIcons: Record<string, any> = {
 export const NotificationBell = forwardRef<{ toggle: () => void }, { compact?: boolean; iconColor?: string }>(({ compact, iconColor }, ref) => {
   const [open, setOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
-  const { notifications, unreadCount, markRead, markAllRead } = useNotificationStore();
+  const notifications = useNotificationStore(selectNotifications);
+  const count = useNotificationStore(selectUnreadCount);
+  const { markRead, markAllRead } = useNotificationStore();
 
   useImperativeHandle(ref, () => ({ toggle: handleOpen }));
 
-  // Close on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
@@ -46,7 +47,6 @@ export const NotificationBell = forwardRef<{ toggle: () => void }, { compact?: b
 
   const handleMarkAll = async () => {
     markAllRead();
-    // Persist to DB
     await fetch("/api/notifications/mark-read", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -63,7 +63,6 @@ export const NotificationBell = forwardRef<{ toggle: () => void }, { compact?: b
     });
   };
 
-  const count = unreadCount();
   const recentNotifs = notifications.slice(0, 12);
 
   return (
@@ -120,7 +119,6 @@ export const NotificationBell = forwardRef<{ toggle: () => void }, { compact?: b
             animation: "fadeUp 0.22s ease both",
           }}
         >
-          {/* Header */}
           <div
             style={{
               padding: "16px 20px 12px",
@@ -163,7 +161,6 @@ export const NotificationBell = forwardRef<{ toggle: () => void }, { compact?: b
             )}
           </div>
 
-          {/* Notification list */}
           <div style={{ overflowY: "auto", maxHeight: "380px" }}>
             {recentNotifs.length === 0 ? (
               <div

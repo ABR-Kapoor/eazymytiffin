@@ -101,9 +101,9 @@ export default function AdminDashboard() {
           .eq("payment_status", "failed"),
         supabase.from("users").select("*", { count: "exact", head: true }),
         supabase
-          .from("delivery_assignments")
+          .from("food_orders")
           .select("*", { count: "exact", head: true })
-          .neq("status", "delivered"),
+          .in("status", ["assigned", "out_for_delivery", "arriving"]),
         supabase
           .from("payments")
           .select("amount")
@@ -115,9 +115,9 @@ export default function AdminDashboard() {
           .order("created_at", { ascending: false })
           .limit(10),
         supabase
-          .from("delivery_assignments")
-          .select("id, order_id, status, eta, delivery_boy_id")
-          .neq("status", "delivered")
+          .from("food_orders")
+          .select("id, status, eta, assigned_delivery_boy, created_at")
+          .in("status", ["assigned", "out_for_delivery", "arriving"])
           .order("created_at", { ascending: false })
           .limit(8),
       ]);
@@ -129,7 +129,7 @@ export default function AdminDashboard() {
 
       // Fetch delivery boy details
       const deliveryBoyIds = (liveDeliveries || [])
-        .map((d: any) => d.delivery_boy_id)
+        .map((d: any) => d.assigned_delivery_boy)
         .filter(Boolean);
       let boyMap: Record<string, any> = {};
       if (deliveryBoyIds.length > 0) {
@@ -154,8 +154,11 @@ export default function AdminDashboard() {
       setActivity(recentNotifs || []);
       setDeliveries(
         (liveDeliveries || []).map((d: any) => ({
-          ...d,
-          delivery_boy: boyMap[d.delivery_boy_id] || null,
+          id: d.id,
+          order_id: d.id,
+          status: d.status,
+          eta: d.eta,
+          delivery_boy: boyMap[d.assigned_delivery_boy] || null,
         })),
       );
       setLastRefresh(new Date());
@@ -196,7 +199,7 @@ export default function AdminDashboard() {
       )
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "delivery_assignments" },
+        { event: "*", schema: "public", table: "food_orders" },
         () => {
           fetchAll();
         },

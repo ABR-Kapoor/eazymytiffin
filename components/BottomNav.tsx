@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Calendar, UtensilsCrossed, Package, Bike } from "lucide-react";
-import { useNotificationStore } from "@/store/notificationStore";
+import { Home, Calendar, UtensilsCrossed, Package, Bike, User } from "lucide-react";
+import { useNotificationStore, selectUnreadCount } from "@/store/notificationStore";
 import { useThemeStore } from "@/store/themeStore";
-import { useUserStore } from "@/store/userStore";
+import { useUserStore, selectIsDeliveryBoy } from "@/store/userStore";
 
 const baseNavItems = [
   { href: "/home", label: "Home", icon: Home },
@@ -16,12 +16,15 @@ const baseNavItems = [
 
 export function BottomNav() {
   const pathname = usePathname();
-  const unreadCount = useNotificationStore((s) => s.unreadCount());
+  const unreadCount = useNotificationStore(selectUnreadCount);
   const isVegTheme = useThemeStore((s) => s.isVegTheme);
-  const isDeliveryBoy = useUserStore((s) => s.isDeliveryBoy)();
+  const isDeliveryBoy = useUserStore(selectIsDeliveryBoy);
 
   const navItems = isDeliveryBoy
-    ? [...baseNavItems, { href: "/home/delivery", label: "Delivery", icon: Bike }]
+    ? [
+        { href: "/home/delivery", label: "Delivery", icon: Bike },
+        { href: "/profile", label: "Profile", icon: User }
+      ]
     : baseNavItems;
 
   const pageColor = (() => {
@@ -31,16 +34,15 @@ export function BottomNav() {
     if (pathname.startsWith("/subscription")) return { bg: "bg-[#7C3AED]", shadow: "shadow-[0_-4px_24px_rgba(124,58,237,0.3)]", ring: "ring-[#7C3AED]", text: "text-[#7C3AED]" };
     if (pathname.startsWith("/profile")) return { bg: "bg-[#0D9488]", shadow: "shadow-[0_-4px_24px_rgba(13,148,136,0.3)]", ring: "ring-[#0D9488]", text: "text-[#0D9488]" };
     if (isVegTheme) return { bg: "bg-[#0d5c3d]", shadow: "shadow-[0_-4px_24px_rgba(13,92,61,0.3)]", ring: "ring-[#0d5c3d]", text: "text-[#0d5c3d]" };
-    return { bg: "bg-[#A30000]", shadow: "shadow-[0_-4px_24px_rgba(163,0,0,0.3)]", ring: "ring-[#A30000]", text: "text-[#A30000]" };
+    return { bg: "bg-[#E8392A]", shadow: "shadow-[0_-4px_24px_rgba(232,57,42,0.3)]", ring: "ring-[#E8392A]", text: "text-[#E8392A]" };
   })();
 
   return (
     <>
-      {/* Spacer so content doesn't hide behind the nav */}
       <div className="h-[72px]" />
-
       <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pointer-events-none">
-        <nav className={`w-full max-w-[960px] flex justify-around items-center pointer-events-auto ${pageColor.bg} rounded-t-[24px] ${pageColor.shadow} pb-[max(12px,env(safe-area-inset-bottom))] pt-2 sm:pt-3 px-1 sm:px-2 transition-colors duration-300`}>
+        <nav className={`relative w-full max-w-[960px] flex justify-around items-center pointer-events-auto ${pageColor.bg} rounded-t-[24px] ${pageColor.shadow} pt-2 sm:pt-3 px-1 sm:px-2 transition-colors duration-300`} style={{ paddingBottom: "max(12px, env(safe-area-inset-bottom))" }}>
+          <div className="absolute top-[98%] left-0 right-0 h-[50px] bg-inherit pointer-events-none" />
           {navItems.map(({ href, label, icon: Icon }) => {
             const isActive =
               pathname === href || pathname.startsWith(href + "/");

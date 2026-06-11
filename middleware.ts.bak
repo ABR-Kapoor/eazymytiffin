@@ -1,0 +1,3 @@
+// This file is intentionally empty.
+// Auth proxy logic is in proxy.ts (Next.js 16+).
+// See: https://nextjs.org/docs/messages/middleware-to-proxy

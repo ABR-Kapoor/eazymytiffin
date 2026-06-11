@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { AppProvider } from "./providers";
+import { PWAInstallProvider } from "@/components/PWAInstallProvider";
+import { DeepLinkHandler } from "@/components/DeepLinkHandler";
 import "./globals.css";
 
 const montserrat = Montserrat({
@@ -17,6 +19,15 @@ export const metadata: Metadata = {
     "Order fresh, hygienic tiffin delivered daily. Veg, Non-Veg & Mix plans from ₹99. 26 days/month. Daily menu change. Call 9770144899.",
   keywords:
     "tiffin service, home food delivery, tiffin plan, veg tiffin, non-veg tiffin, monthly tiffin, tiffin subscription, EazyMyTiffin",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "EazyMyTiffin",
+  },
+  icons: {
+    apple: "/icons/icon-192x192.png",
+  },
   openGraph: {
     title: "EazyMyTiffin — India's Premium Tiffin Brand",
     description: "Fresh home-style tiffin delivered daily. Plans from ₹99.",
@@ -53,14 +64,17 @@ export default function RootLayout({
 
       }}
     >
-      <html lang="en" className={`${montserrat.variable} h-full`} suppressHydrationWarning>
+        <html lang="en" className={`${montserrat.variable} h-full`} suppressHydrationWarning>
         <body className="min-h-full flex flex-col font-[family-name:var(--font-montserrat)]">
           <a href="#main" className="skip-link">
             Skip to main content
           </a>
-          <AppProvider>
-            {children}
-          </AppProvider>
+          <PWAInstallProvider>
+            <AppProvider>
+              {children}
+              <DeepLinkHandler />
+            </AppProvider>
+          </PWAInstallProvider>
         </body>
       </html>
     </ClerkProvider>

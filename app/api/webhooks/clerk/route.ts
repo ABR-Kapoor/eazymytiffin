@@ -30,14 +30,14 @@ export async function POST(req: NextRequest) {
     }
 
     if (evt.type === "user.created") {
-      const { id, email_addresses, first_name, last_name } = evt.data;
+      const { id, email_addresses, first_name, last_name, phone_numbers } = evt.data;
 
       await supabaseAdmin.from("users").insert([
         {
           clerk_user_id: id,
-          email: email_addresses[0]?.email_address || "",
+          email: email_addresses?.[0]?.email_address || "",
           full_name: `${first_name || ""} ${last_name || ""}`.trim(),
-          phone: email_addresses[0]?.email_address?.split("@")[0] || "",
+          phone: phone_numbers?.[0]?.phone_number || "",
           role: "customer",
           status: "active",
           city: "Bilaspur",

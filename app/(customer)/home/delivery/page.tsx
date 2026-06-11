@@ -3,11 +3,13 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import {
   MapPin, Phone, Clock, Camera,
-  Navigation2, Bike, CheckCircle2, ArrowRight, Upload, ChevronLeft, LocateFixed, MoreHorizontal, User
+  Navigation2, Bike, CheckCircle2, ArrowRight, Upload, ChevronLeft, LocateFixed, MoreHorizontal, User, X
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
-import { useUserStore } from "@/store/userStore";
+import { useUserStore, selectIsDeliveryBoy } from "@/store/userStore";
+import { PageHero } from "@/components/ui/PageHero";
+import { useToast } from "@/lib/useToast";
 
 type OrderItem = {
   id: string; menu_id: string; quantity: number; price: number;
@@ -47,19 +49,35 @@ export default function DeliveryDashboard() {
   const [filterTab, setFilterTab] = useState<"All Order" | "Active" | "Delivered">("All Order");
 
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [proofUrl, setProofUrl] = useState<string | null>(null);
+  const [selectedEta, setSelectedEta] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const channelRef = useRef<any>(null);
-  const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
+  const { toast, showToast } = useToast();
 
   useEffect(() => {
     if (redirectedRef.current) return;
     if (!storeLoading) {
-      const isDelBoy = useUserStore.getState().isDeliveryBoy();
+      const isDelBoy = selectIsDeliveryBoy(useUserStore.getState());
       if (!isDelBoy) { redirectedRef.current = true; router.push("/home"); }
     }
   }, [storeLoading, router]);
 
-  const showToast = (msg: string, type: "success" | "error" = "success") => {
-    setToast({ msg, type }); setTimeout(() => setToast(null), 3500);
+  const handleProofUpload = async (file: File) => {
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/delivery/upload", { method: "POST", body: formData });
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error || "Upload failed");
+      setProofUrl(json.url);
+      showToast("Proof image attached!");
+    } catch (err: any) {
+      showToast(err.message || "Failed to upload proof", "error");
+    } finally {
+      setUploading(false);
+    }
   };
 
   const fetchDeliveries = useCallback(async () => {
@@ -86,12 +104,20 @@ export default function DeliveryDashboard() {
   }, [fetchDeliveries]);
 
   const handleStatusAdvance = async (assignment: Assignment, nextStatus: string) => {
+    if (nextStatus === "delivered" && !proofUrl) {
+      showToast("Please upload a proof image first", "error");
+      return;
+    }
+    if (nextStatus === "on_the_way" && !selectedEta) {
+      showToast("Please select an ETA first", "error");
+      return;
+    }
     setActionLoading(assignment.id);
     try {
       const res = await fetch("/api/delivery/assignments", {
         method: "PATCH", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          assignmentId: assignment.id, updates: { status: nextStatus },
+          assignmentId: assignment.id, updates: { status: nextStatus, proof_image: proofUrl || undefined, eta: selectedEta || undefined },
           orderId: (nextStatus === "on_the_way" || nextStatus === "delivered") ? assignment.order_id : undefined,
           orderUpdates: nextStatus === "on_the_way" ? { status: "out_for_delivery" } : nextStatus === "delivered" ? { status: "delivered" } : undefined,
         }),
@@ -125,13 +151,23 @@ export default function DeliveryDashboard() {
         )}
 
         {/* Top Header */}
-        <div className={`relative ${THEME.bg} pt-6 pb-10 px-4 rounded-b-[32px] shadow-sm transition-all duration-500 overflow-hidden`}>
-          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/food.png')] opacity-60 invert pointer-events-none" />
-          <div className="relative z-10 mb-5 mt-2">
-            <h2 className="text-white text-[26px] font-black drop-shadow-sm leading-tight tracking-tight">Your Deliveries</h2>
-            <p className="text-white/95 text-[14px] font-bold mt-1 tracking-wide">Manage your assigned deliveries</p>
-          </div>
-        </div>
+        <PageHero 
+          themeColor="#22C55E"
+          title={
+            <>
+              <span className="block text-white" style={{ WebkitTextStroke: "1px #222" }}>Track</span>
+              Order
+            </>
+          }
+          subtitle="Real-time delivery updates"
+        heroImages={[
+          { src: "/eazymytiffin-priority-delivery.png", bg: "#FACC15" },
+          { src: "/eazymytiffin-weekly-special-meal.png", bg: "#4ADE80" },
+          { src: "/eazymytiffin-veg-meal-plan.png", bg: "#F472B6" },
+        ]}
+        >
+          <div className="h-[76px]" />
+        </PageHero>
 
         {/* List Content */}
         <div className="flex-1 px-5 pt-6 overflow-y-auto pb-10">
@@ -165,7 +201,7 @@ export default function DeliveryDashboard() {
                 const isDelivered = a.status === "delivered";
 
                 return (
-                  <div key={a.id} onClick={() => { setActiveOrderId(a.id); setCurrentView("details"); }}
+                  <div key={a.id} onClick={() => { setActiveOrderId(a.id); setProofUrl(null); setSelectedEta(null); setCurrentView("details"); }}
                     className="p-3 sm:p-4 flex gap-3 sm:gap-4 w-full bg-white relative border border-[#e8e8e8] rounded-[20px] shadow-sm transition-shadow hover:shadow-md cursor-pointer active:scale-[0.98]">
                     
                     {/* Left Side: Order & Customer Details */}
@@ -249,7 +285,7 @@ export default function DeliveryDashboard() {
         </div>
 
         {/* Content */}
-        <div className="flex-1 px-5 pt-6 overflow-y-auto pb-6">
+        <div className="flex-1 px-5 pt-6 overflow-y-auto pb-[120px]">
           <div className="bg-white rounded-[24px] shadow-sm p-6 mb-4">
             
             {/* Timeline */}
@@ -311,12 +347,17 @@ export default function DeliveryDashboard() {
               <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center shrink-0 mt-0.5">
                 <MapPin size={16} className="text-gray-500" />
               </div>
-              <div>
+              <div className="flex-1">
                 <p className="font-bold text-[#1A1A1A] text-[13px] m-0 mb-1 capitalize">{currentOrder.order?.address?.type || "Home"}</p>
-                <p className="text-[12px] text-gray-500 m-0 leading-relaxed">
+                <p className="text-[12px] text-gray-500 m-0 leading-relaxed mb-2">
                   {currentOrder.order?.address?.house_flat_no ? currentOrder.order.address.house_flat_no + ", " : ""}
                   {currentOrder.order?.address?.area}, {currentOrder.order?.address?.city}
                 </p>
+                {currentOrder.order?.address?.google_map_link && (
+                  <a href={currentOrder.order.address.google_map_link} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-[12px] font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-md hover:bg-blue-100 transition-colors">
+                    <Navigation2 size={14} /> Open in Google Maps
+                  </a>
+                )}
               </div>
             </div>
           </div>
@@ -446,16 +487,68 @@ export default function DeliveryDashboard() {
                  </p>
                  <div className="flex text-amber-400 text-[10px] gap-0.5 mt-1">★★★★★</div>
                </div>
-               <a href={`tel:${currentOrder.order?.user?.phone}`} className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center text-white active:scale-95 shadow-md">
-                 <Phone size={20} className="fill-white" />
-               </a>
+               <div className="flex gap-2">
+                 {currentOrder.order?.address?.google_map_link && (
+                   <a href={currentOrder.order.address.google_map_link} target="_blank" rel="noreferrer" className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white active:scale-95 shadow-md">
+                     <Navigation2 size={20} className="fill-white" />
+                   </a>
+                 )}
+                 <a href={`tel:${currentOrder.order?.user?.phone}`} className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center text-white active:scale-95 shadow-md">
+                   <Phone size={20} className="fill-white" />
+                 </a>
+               </div>
              </div>
+
+             {/* Proof Upload Section */}
+             {nextStatus === "delivered" && (
+               <div className="flex flex-col gap-2 mt-2">
+                 <input type="file" accept="image/*" capture="environment" className="hidden" ref={fileInputRef} onChange={(e) => { if (e.target.files?.[0]) handleProofUpload(e.target.files[0]); }} />
+                 {proofUrl ? (
+                   <div className="relative w-full h-[140px] rounded-[12px] overflow-hidden border border-gray-700 bg-gray-800">
+                     <img src={proofUrl} alt="Proof" className="w-full h-full object-cover opacity-90" />
+                     <button onClick={() => setProofUrl(null)} className="absolute top-2 right-2 bg-black/60 text-white p-2 rounded-full hover:bg-black/80 transition-colors">
+                       <X size={16} />
+                     </button>
+                     <div className="absolute bottom-2 left-2 bg-black/60 text-white px-3 py-1 rounded-full text-[11px] font-bold backdrop-blur-sm">
+                       ✓ Proof attached
+                     </div>
+                   </div>
+                 ) : (
+                   <button onClick={() => fileInputRef.current?.click()} disabled={uploading} className="w-full bg-gray-800 border-2 border-gray-600 border-dashed hover:border-gray-500 text-gray-300 py-6 rounded-[12px] flex flex-col items-center justify-center gap-3 active:scale-95 transition-all">
+                     <Camera size={28} className={uploading ? "animate-pulse text-green-400" : "text-gray-400"} />
+                     <span className="text-[14px] font-bold tracking-wide">{uploading ? "Uploading proof..." : "Take a Photo / Upload Proof"}</span>
+                   </button>
+                 )}
+               </div>
+             )}
+
+             {/* ETA Selection Section */}
+             {nextStatus === "on_the_way" && (
+               <div className="flex flex-col gap-2 mt-2 bg-[#2A3143] p-4 rounded-[12px] border border-gray-700/50 shadow-inner">
+                 <p className="text-[13px] font-bold text-gray-300 m-0 mb-1 flex items-center gap-1.5"><Clock size={14} className="text-amber-400" /> Select Estimated Arrival Time (ETA)</p>
+                 <div className="flex flex-wrap gap-2">
+                   {ETA_OPTIONS.map((eta) => (
+                     <button
+                       key={eta}
+                       onClick={() => setSelectedEta(eta)}
+                       className={`px-3.5 py-2 rounded-lg text-[12px] font-bold transition-all border ${selectedEta === eta ? "bg-amber-500 text-white border-amber-500 shadow-md scale-105" : "bg-[#1C2434] text-gray-400 border-gray-600 hover:border-gray-500 hover:text-gray-300"}`}
+                     >
+                       {eta}
+                     </button>
+                   ))}
+                 </div>
+               </div>
+             )}
 
              {/* Action Button */}
              <button
                onClick={() => handleStatusAdvance(currentOrder, nextStatus)}
-               disabled={!!isActionLoading}
-               className="w-full bg-white/10 hover:bg-white/15 text-white font-bold py-3.5 rounded-[12px] active:scale-[0.98] transition-all flex items-center justify-center gap-2 mt-2">
+               disabled={!!isActionLoading || (nextStatus === "delivered" && !proofUrl) || (nextStatus === "on_the_way" && !selectedEta)}
+               className={`w-full font-bold py-4 rounded-[12px] active:scale-[0.98] transition-all flex items-center justify-center gap-2 mt-2 text-[15px] ${
+                 (nextStatus === "delivered" && !proofUrl) || (nextStatus === "on_the_way" && !selectedEta) 
+                   ? "bg-gray-800 text-gray-500 cursor-not-allowed border border-gray-700" 
+                   : "bg-green-600 hover:bg-green-500 text-white shadow-lg shadow-green-900/30"
+               }`}>
                {isActionLoading ? "Updating..." : actionLabel}
              </button>
           </div>

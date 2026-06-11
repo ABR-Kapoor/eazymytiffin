@@ -16,6 +16,7 @@ export default function CTABanner() {
             src="/eazymytiffin-veg-meal-plan.png" 
             alt="Premium Food" 
             fill
+            sizes="(max-width: 1023px) 0vw, 50vw"
             className="object-contain object-right"
           />
           <div className="absolute inset-0 bg-gradient-to-l from-transparent via-white/20 via-white/80 to-white" />

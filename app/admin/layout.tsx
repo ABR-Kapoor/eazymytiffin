@@ -210,11 +210,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </aside>
 
       {/* Main content area */}
-      <div style={{ flex: 1, marginLeft: "240px", display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+      <div style={{ flex: 1, marginLeft: "240px", display: "flex", flexDirection: "column", minHeight: "100vh", minWidth: 0 }}>
 
 
         {/* Page content */}
-        <main style={{ flex: 1, padding: "24px" }}>
+        <main style={{ flex: 1, padding: "24px", minWidth: 0 }}>
           {children}
         </main>
       </div>

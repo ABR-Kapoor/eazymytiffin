@@ -6,27 +6,23 @@ type User = Tables["users"];
 interface UserState {
   user: User | null;
   isLoading: boolean;
-  // Computed
-  isAdmin: () => boolean;
-  isDeliveryBoy: () => boolean;
-  isBlocked: () => boolean;
-  canUseTrial: () => boolean;
-  // Setters
   setUser: (user: User | null) => void;
   setLoading: (loading: boolean) => void;
   clearUser: () => void;
 }
 
-export const useUserStore = create<UserState>((set, get) => ({
+export const useUserStore = create<UserState>((set) => ({
   user: null,
   isLoading: true,
-
-  isAdmin: () => get().user?.role === "admin",
-  isDeliveryBoy: () => get().user?.role === "delivery_boy",
-  isBlocked: () => get().user?.status === "blocked",
-  canUseTrial: () => !get().user?.has_used_trial,
 
   setUser: (user) => set({ user }),
   setLoading: (isLoading) => set({ isLoading }),
   clearUser: () => set({ user: null }),
 }));
+
+export const selectUser = (s: UserState) => s.user;
+export const selectIsAdmin = (s: UserState) => s.user?.role === "admin";
+export const selectIsDeliveryBoy = (s: UserState) => s.user?.role === "delivery_boy";
+export const selectIsBlocked = (s: UserState) => s.user?.status === "blocked";
+export const selectCanUseTrial = (s: UserState) => !s.user?.has_used_trial;
+export const selectIsLoading = (s: UserState) => s.isLoading;

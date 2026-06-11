@@ -149,7 +149,33 @@ export async function PATCH(req: NextRequest) {
       .eq("delivery_boy_id", user.id)
       .single();
 
-    if (!assignment) return NextResponse.json({ error: "Assignment not found" }, { status: 404 });
+    if (!assignment) {
+      // Handle "orphan" assignments where assignmentId is actually the orderId
+      const { data: orphanOrder } = await supabaseAdmin
+        .from("food_orders")
+        .select("id")
+        .eq("id", assignmentId)
+        .eq("assigned_delivery_boy", user.id)
+        .single();
+
+      if (!orphanOrder) return NextResponse.json({ error: "Assignment not found" }, { status: 404 });
+
+      // Create the missing assignment row
+      const { error: insertErr } = await supabaseAdmin
+        .from("delivery_assignments")
+        .insert({
+          order_id: assignmentId,
+          delivery_boy_id: user.id,
+          ...updates
+        });
+
+      if (insertErr) return NextResponse.json({ error: insertErr.message }, { status: 500 });
+      
+      if (orderId && orderUpdates) {
+        await supabaseAdmin.from("food_orders").update(orderUpdates).eq("id", orderId);
+      }
+      return NextResponse.json({ success: true });
+    }
 
     const { error } = await supabaseAdmin
       .from("delivery_assignments")

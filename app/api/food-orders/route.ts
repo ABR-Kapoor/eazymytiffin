@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { supabaseAdmin } from "@/lib/supabase";
+import crypto from "crypto";
 
 export async function POST(req: NextRequest) {
   try {
@@ -88,17 +89,18 @@ export async function POST(req: NextRequest) {
       channel: "in_app",
     }]);
 
-    // If PhonePe, initiate payment
+    // If PhonePe, generate redirect URL directly
     if (paymentMethod === "phonepe") {
-      const initRes = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/payments/phonepe/initiate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "x-clerk-user-id": userId },
-        body: JSON.stringify({ orderId: order.id, amount: totalAmount }),
-      });
-      const initData = await initRes.json();
-      if (initData.success && initData.redirectUrl) {
-        return NextResponse.json({ success: true, redirectUrl: initData.redirectUrl, orderId: order.id });
-      }
+      const transactionId = `TX_${Date.now()}_${crypto.randomBytes(3).toString("hex").toUpperCase()}`;
+
+      // Save transaction ID to payment record so callback can find it
+      await supabaseAdmin
+        .from("payments")
+        .update({ transaction_id: transactionId })
+        .eq("order_id", order.id);
+
+      const redirectUrl = `/payments/phonepe-mock?transactionId=${transactionId}&amount=${totalAmount}&userId=${userData.id}&orderId=${order.id}&type=food_order`;
+      return NextResponse.json({ success: true, redirectUrl, orderId: order.id });
     }
 
     return NextResponse.json({ success: true, orderId: order.id, order });

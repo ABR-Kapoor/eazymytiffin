@@ -15,7 +15,7 @@ const features = [
     Icon: RefreshCw,
     title: "Daily Menu Rotation",
     body: "Never the same meal twice. Our chefs curate a new, exciting menu every single day.",
-    accent: "#10B981",
+    accent: "#acf108",
     bgColor: "bg-emerald-50",
   },
   {

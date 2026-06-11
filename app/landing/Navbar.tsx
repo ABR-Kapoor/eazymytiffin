@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { ArrowUpRight, Menu, X } from "lucide-react";
 import { useAuth, useUser } from "@clerk/nextjs";
 import Link from "next/link";
+import { LandingFloatingNav } from "@/components/LandingFloatingNav";
 
 const navLinks = [
   { label: "Home", href: "#home" },
@@ -46,6 +47,7 @@ export default function Navbar() {
   }, [user]);
 
   return (
+    <>
     <nav
       className="sticky top-0 z-[999] border-b border-t-0"
       style={{
@@ -87,39 +89,18 @@ export default function Navbar() {
           </span>
         </a>
 
-        {/* Desktop nav links */}
-        <ul className="nav-links-custom hidden items-center gap-8" role="list">
-          {navLinks.map((link) => (
-            <li key={link.label}>
-              <a
-                href={link.href}
-                className="text-[14px] font-semibold tracking-[0.3px] transition-colors duration-200"
-                style={{ color: "#5A4A3A" }}
-                onMouseEnter={(e) =>
-                  ((e.currentTarget as HTMLAnchorElement).style.color = "#E8392A")
-                }
-                onMouseLeave={(e) =>
-                  ((e.currentTarget as HTMLAnchorElement).style.color = "#5A4A3A")
-                }
-              >
-                {link.label}
-              </a>
-            </li>
-          ))}
-        </ul>
-
         {/* Right side controls (visible on all devices) */}
         <div className="flex items-center gap-1.5 md:gap-4">
           <a
             href="tel:9770144899"
-            className="btn-glare bg-[#E8392A] hover:bg-red-700 hidden md:flex items-center gap-2 px-5 py-2.5 md:px-8 md:py-3 rounded-full text-[12px] md:text-[13px] font-bold uppercase tracking-[1px] text-white transition-all duration-300 hover:scale-[1.03] whitespace-nowrap"
+            className="btn-glare bg-[#E8392A] hover:bg-red-700 hidden lg:flex items-center gap-2 px-5 py-2.5 lg:px-8 lg:py-3 rounded-full text-[12px] lg:text-[13px] font-bold uppercase tracking-[1px] text-white transition-all duration-300 hover:scale-[1.03] whitespace-nowrap"
           >
             Book Now <ArrowUpRight size={14} className="md:w-4 md:h-4" strokeWidth={3} />
           </a>
           {!isSignedIn && (
             <a
               href="/sign-in"
-              className="border-[1.5px] border-[#E8392A] text-[#E8392A] hover:bg-[#E8392A] hover:text-white hidden md:flex items-center gap-2 px-5 py-2.5 md:px-8 md:py-3 rounded-full text-[12px] md:text-[13px] font-bold uppercase tracking-[1px] transition-all duration-300 hover:scale-[1.03] whitespace-nowrap"
+              className="border-[1.5px] border-[#E8392A] text-[#E8392A] hover:bg-[#E8392A] hover:text-white hidden lg:flex items-center gap-2 px-5 py-2.5 lg:px-8 lg:py-3 rounded-full text-[12px] lg:text-[13px] font-bold uppercase tracking-[1px] transition-all duration-300 hover:scale-[1.03] whitespace-nowrap"
             >
               Login
             </a>
@@ -129,89 +110,27 @@ export default function Navbar() {
               {isAdmin && (
                 <a
                   href="/admin"
-                  className="hidden md:flex bg-[#E8392A] text-white hover:bg-red-700 items-center gap-2 px-5 py-2.5 md:px-8 md:py-3 rounded-full text-[12px] md:text-[13px] font-bold uppercase tracking-[1px] transition-all duration-300 hover:scale-[1.03] whitespace-nowrap"
+                  className="hidden lg:flex bg-[#E8392A] text-white hover:bg-red-700 items-center gap-2 px-5 py-2.5 lg:px-8 lg:py-3 rounded-full text-[12px] lg:text-[13px] font-bold uppercase tracking-[1px] transition-all duration-300 hover:scale-[1.03] whitespace-nowrap"
                 >
                   Admin
                 </a>
               )}
               <a
                 href="/home"
-                className="border-[1.5px] border-[#5A4A3A] text-[#5A4A3A] hover:bg-[#5A4A3A] hover:text-white hidden md:flex items-center gap-2 px-5 py-2.5 md:px-8 md:py-3 rounded-full text-[12px] md:text-[13px] font-bold uppercase tracking-[1px] transition-all duration-300 hover:scale-[1.03] whitespace-nowrap"
+                className="border-[1.5px] border-[#5A4A3A] text-[#5A4A3A] hover:bg-[#5A4A3A] hover:text-white hidden lg:flex items-center gap-2 px-5 py-2.5 lg:px-8 lg:py-3 rounded-full text-[12px] lg:text-[13px] font-bold uppercase tracking-[1px] transition-all duration-300 hover:scale-[1.03] whitespace-nowrap"
               >
                 Dashboard
               </a>
             </div>
           )}
 
-          {/* Mobile hamburger */}
-          <button
-            className="hamburger-custom flex items-center justify-center p-1 ml-1 text-[#1A1A1A] transition-transform hover:scale-110 active:scale-95"
-            onClick={() => setMenuOpen(!menuOpen)}
-            aria-expanded={menuOpen}
-            aria-label="Navigation menu"
-          >
-            {menuOpen ? <X size={26} /> : <Menu size={26} />}
-          </button>
+      {/* Mobile hamburger - REPLACED WITH FLOATING NAV */}
         </div>
       </div>
-
-      {/* Mobile drawer */}
-      {menuOpen && (
-        <div className="drawer-custom bg-white border-t border-[#D4B896] px-6 py-6 flex flex-col gap-4 shadow-xl">
-          {navLinks.map((link) => (
-            <a
-              key={link.label}
-              href={link.href}
-              className="text-[16px] font-semibold py-2 text-center"
-              style={{ color: "#5A4A3A" }}
-              onClick={() => setMenuOpen(false)}
-            >
-              {link.label}
-            </a>
-          ))}
-          {/* Buttons kept in drawer for small screens where they're hidden from top bar */}
-          <div className="mt-2 flex flex-col gap-3">
-            <a
-              href="tel:9770144899"
-              className="w-full md:hidden flex items-center justify-center gap-2 py-2.5 rounded-full text-[13px] font-bold uppercase tracking-[1px] text-white"
-              style={{ background: "#E8392A" }}
-              onClick={() => setMenuOpen(false)}
-            >
-              Book Now <ArrowUpRight size={16} strokeWidth={3} />
-            </a>
-            {!isSignedIn && (
-              <Link
-                href="/sign-in"
-                className="w-full md:hidden flex items-center justify-center py-2.5 border-[1.5px] border-[#E8392A] text-[#E8392A] rounded-full text-[13px] font-bold uppercase tracking-[1.2px]"
-                onClick={() => setMenuOpen(false)}
-              >
-                Login
-              </Link>
-            )}
-            {isSignedIn && (
-              <Link
-                href="/home"
-                className="w-full md:hidden flex items-center justify-center py-2.5 border-[1.5px] border-[#5A4A3A] text-[#5A4A3A] rounded-full text-[13px] font-bold uppercase tracking-[1.2px]"
-                onClick={() => setMenuOpen(false)}
-              >
-                Dashboard
-              </Link>
-            )}
-          </div>
-          {/* Admin panel link kept in drawer for mobile if signed in as admin */}
-          {isSignedIn && isAdmin && (
-            <div className="mt-2 flex flex-col gap-3">
-              <Link
-                href="/admin"
-                className="w-full flex items-center justify-center py-2.5 bg-[#E8392A] text-white rounded-full text-[13px] font-bold uppercase tracking-[1.2px]"
-                onClick={() => setMenuOpen(false)}
-              >
-                Admin Panel
-              </Link>
-            </div>
-          )}
-        </div>
-      )}
     </nav>
+    
+    {/* Floating Action Button Navigation for Mobile */}
+    <LandingFloatingNav />
+    </>
   );
 }

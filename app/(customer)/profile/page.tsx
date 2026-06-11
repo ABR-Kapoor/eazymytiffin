@@ -7,10 +7,13 @@ import { supabase } from "@/lib/supabase";
 import { useConfirm } from "@/components/ConfirmProvider";
 import Link from "next/link";
 import {
-  PartyPopper, LogOut, Save, Edit2, Check, X, Phone, Mail, MapPin,
-  Shield, Star, Plus, Trash2, Home, Building, Briefcase, Smartphone,
-  ChevronRight, User, Pencil
+  PartyPopper, LogOut, Phone, Mail, MapPin,
+  Plus, Trash2, Home, Building, Briefcase, Smartphone,
+  User, Pencil, Store, ChevronRight,
+  Wallet, Package, ClipboardList, ShoppingBag, Bell, LifeBuoy, MessageCircle, Star
 } from "lucide-react";
+import { PageHero } from "@/components/ui/PageHero";
+import { useToast } from "@/lib/useToast";
 
 type Address = {
   id: string;
@@ -37,7 +40,7 @@ export default function ProfilePage() {
   const { signOut } = useClerk();
   const user = useUserStore((s) => s.user);
   const setUser = useUserStore((s) => s.setUser);
-  const isAdmin = useUserStore((s) => s.isAdmin)();
+  const isAdmin = useUserStore((s) => s.user?.role === "admin");
 
   const [editing, setEditing] = useState(false);
   const [formData, setFormData] = useState({ full_name: "", phone: "", city: "Bilaspur" });
@@ -49,12 +52,7 @@ export default function ProfilePage() {
   const [newAddr, setNewAddr] = useState({ type: "home", area: "", house_flat_no: "", landmark: "", hostel_company_name: "", floor: "", google_map_link: "", city: "Bilaspur" });
   const { confirm } = useConfirm();
   const [editingAddrId, setEditingAddrId] = useState<string | null>(null);
-  const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
-
-  const showToast = (msg: string, type: "success" | "error" = "success") => {
-    setToast({ msg, type });
-    setTimeout(() => setToast(null), 3000);
-  };
+  const { toast, showToast } = useToast();
 
   useEffect(() => {
     if (user) {
@@ -192,38 +190,55 @@ export default function ProfilePage() {
         </div>
       )}
       <div className="max-w-[960px] mx-auto">
+
         {/* Profile Hero */}
-        <div className="relative bg-[#0D9488] pt-6 pb-10 px-4 sm:px-6 rounded-b-[32px] shadow-sm transition-all duration-500 overflow-hidden -mx-4 lg:mx-0 mb-6">
-          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/food.png')] opacity-60 invert pointer-events-none" />
-          <div className="relative z-10 flex items-center gap-4 sm:gap-5">
-            <div className="w-[72px] h-[72px] sm:w-[80px] sm:h-[80px] rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center font-black text-[28px] sm:text-[32px] text-white border-2 border-white/30 shadow-lg">
-              {user?.full_name?.charAt(0)?.toUpperCase() || "U"}
-            </div>
-            <div className="flex-1 min-w-0">
-              <h1 className="font-black text-[20px] sm:text-[24px] text-white m-0 tracking-tight drop-shadow-sm truncate">
-                {user?.full_name || "—"}
-              </h1>
-              <p className="text-[13px] text-white/85 m-0 mt-0.5 font-medium truncate">{user?.email}</p>
-              <div className="flex gap-2 flex-wrap mt-2">
-                <span className="text-[10px] font-extrabold uppercase bg-[#1C1C1C]/80 text-white rounded-full px-3 py-1">
-                  {user?.role || "Customer"}
+        <PageHero 
+          themeColor="#0D9488"
+          title={
+            <>
+              <span className="block text-white" style={{ WebkitTextStroke: "1px #222" }}>My</span>
+              Profile
+            </>
+          }
+          subtitle={user?.full_name || "Manage your details"}
+          heroImages={[
+            { src: "/eazymytiffin-logo.png", bg: "#FACC15" },
+            { src: "/eazymytiffin-hero-premium-tiffin.png", bg: "#14B8A6" },
+            { src: "/eazymytiffin-weekly-special-meal.png", bg: "#F472B6" },
+          ]}
+        >
+          <div className="h-[76px]" />
+        </PageHero>
+
+        {/* User Info Card (Replacing the old Hero content) */}
+        <div className="bg-white rounded-[20px] p-5 sm:p-6 mb-5 border border-[#E8E8E8] shadow-[0_2px_12px_rgba(0,0,0,0.04)] transition-all flex items-center gap-4 sm:gap-5 mt-6">
+          <div className="w-[72px] h-[72px] sm:w-[80px] sm:h-[80px] rounded-full bg-[#0D9488]/10 flex items-center justify-center font-black text-[28px] sm:text-[32px] text-[#0D9488] border-2 border-[#0D9488]/20 shadow-sm shrink-0">
+            {user?.full_name?.charAt(0)?.toUpperCase() || "U"}
+          </div>
+          <div className="flex-1 min-w-0">
+            <h1 className="font-black text-[20px] sm:text-[24px] text-[#1C1C1C] m-0 tracking-tight truncate">
+              {user?.full_name || "—"}
+            </h1>
+            <p className="text-[13px] text-[#686B78] m-0 mt-0.5 font-medium truncate">{user?.email}</p>
+            <div className="flex gap-2 flex-wrap mt-2">
+              <span className="text-[10px] font-extrabold uppercase bg-[#1C1C1C]/10 text-[#1C1C1C] rounded-full px-3 py-1">
+                {user?.role || "Customer"}
+              </span>
+              <span className={`text-[10px] font-extrabold uppercase rounded-full px-3 py-1 flex items-center gap-1 ${user?.status === "active" ? "bg-[#1BA672]/10 text-[#1BA672]" : "bg-red-100 text-red-600"}`}>
+                <div className={`w-[6px] h-[6px] rounded-full ${user?.status === "active" ? "bg-[#1BA672]" : "bg-red-600"}`} />
+                {user?.status === "active" ? "Active" : "Blocked"}
+              </span>
+              {user?.is_phone_verified && (
+                <span className="text-[10px] font-extrabold uppercase bg-blue-100 text-blue-600 rounded-full px-3 py-1 flex items-center gap-1">
+                  <Smartphone size={10} /> Verified
                 </span>
-                <span className={`text-[10px] font-extrabold uppercase rounded-full px-3 py-1 flex items-center gap-1 ${user?.status === "active" ? "bg-emerald-800 text-white" : "bg-red-800 text-white"}`}>
-                  <div className={`w-[6px] h-[6px] rounded-full ${user?.status === "active" ? "bg-white" : "bg-white"}`} />
-                  {user?.status === "active" ? "Active" : "Blocked"}
-                </span>
-                {user?.is_phone_verified && (
-                  <span className="text-[10px] font-extrabold uppercase bg-blue-400/20 text-blue-100 rounded-full px-3 py-1 flex items-center gap-1">
-                    <Smartphone size={10} /> Verified
-                  </span>
-                )}
-              </div>
+              )}
             </div>
           </div>
         </div>
 
         {/* Account Information */}
-        <div className="bg-white rounded-[20px] p-5 sm:p-6 mb-5 border border-[#E8E8E8] shadow-[0_2px_12px_rgba(0,0,0,0.04)] transition-all">
+        <div id="account" className="bg-white rounded-[20px] p-5 sm:p-6 mb-5 border border-[#E8E8E8] shadow-[0_2px_12px_rgba(0,0,0,0.04)] transition-all scroll-mt-[100px]">
           <div className="flex justify-between items-center mb-5">
             <h2 className="font-extrabold text-[16px] text-[#1C1C1C] m-0">Account Information</h2>
             {!editing ? (
@@ -291,7 +306,7 @@ export default function ProfilePage() {
         </div>
 
         {/* Saved Addresses */}
-        <div className="bg-white rounded-[20px] p-5 sm:p-6 mb-6 border border-[#E8E8E8] shadow-[0_2px_12px_rgba(0,0,0,0.04)] transition-all">
+        <div id="addresses" className="bg-white rounded-[20px] p-5 sm:p-6 mb-6 border border-[#E8E8E8] shadow-[0_2px_12px_rgba(0,0,0,0.04)] transition-all scroll-mt-[100px]">
           <div className="flex justify-between items-center mb-5">
             <h2 className="font-extrabold text-[16px] text-[#1C1C1C] m-0">
               Saved Addresses
@@ -342,7 +357,7 @@ export default function ProfilePage() {
               </div>
               <div className="flex gap-3 mt-4">
                 <button onClick={handleCancelAddr} className="flex-1 py-2.5 rounded-xl border border-[#E8E8E8] bg-white font-bold text-[13px] text-[#686B78] cursor-pointer hover:bg-[#F8F9FA] transition-colors">{editingAddrId ? "Cancel" : "Cancel"}</button>
-                <button onClick={handleSaveAddress} className="flex-1 py-2.5 rounded-xl bg-[#0D9488] text-white border-none font-bold text-[13px] cursor-pointer hover:bg-[#0F766E] transition-colors shadow-sm">{editingAddrId ? "Update Address" : "Save Address"}</button>
+                <button onClick={handleSaveAddress} className="flex-1 py-2.5 rounded-xl bg-[#0D9488] text-white border-none font-bold text-[13px] cursor-pointer hover:bg-[#0F766E] transition-colors shadow-sm">{editingAddrId ? "Update" : "Save Address"}</button>
               </div>
             </div>
           )}
@@ -410,6 +425,106 @@ export default function ProfilePage() {
               })}
             </div>
           )}
+        </div>
+
+        {!user || user.role !== "delivery_boy" ? (
+          <>
+            {/* Tiffin Meal */}
+            <div className="mb-8">
+              <h2 className="font-extrabold text-[16px] text-[#1C1C1C] mb-3 ml-2 tracking-wide">
+                Tiffin Meal
+              </h2>
+              <div className="bg-white rounded-[20px] p-1.5 border border-[#E8E8E8] shadow-[0_2px_12px_rgba(0,0,0,0.02)]">
+                <Link href="/subscription" className="flex items-center justify-between p-4 hover:bg-[#F8F9FA] rounded-xl transition-colors cursor-pointer group">
+                  <div className="flex items-center gap-4">
+                    <Package size={22} className="text-[#93959F]" strokeWidth={1.5} />
+                    <span className="text-[15px] font-bold text-[#374151]">My Subscriptions</span>
+                  </div>
+                  <ChevronRight size={20} className="text-[#D4D4D8] group-hover:text-[#1C1C1C] transition-colors" />
+                </Link>
+                <div className="h-[1px] bg-[#F3F4F6] mx-4" />
+                <Link href="/food" className="flex items-center justify-between p-4 hover:bg-[#F8F9FA] rounded-xl transition-colors cursor-pointer group">
+                  <div className="flex items-center gap-4">
+                    <ClipboardList size={22} className="text-[#93959F]" strokeWidth={1.5} />
+                    <span className="text-[15px] font-bold text-[#374151]">Foods</span>
+                  </div>
+                  <ChevronRight size={20} className="text-[#D4D4D8] group-hover:text-[#1C1C1C] transition-colors" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Home Chef */}
+            <div className="mb-8">
+              <h2 className="font-extrabold text-[16px] text-[#1C1C1C] mb-3 ml-2 tracking-wide">
+                Home Chef
+              </h2>
+              <div className="bg-white rounded-[20px] p-1.5 border border-[#E8E8E8] shadow-[0_2px_12px_rgba(0,0,0,0.02)]">
+                <Link href="/orders" className="flex items-center justify-between p-4 hover:bg-[#F8F9FA] rounded-xl transition-colors cursor-pointer group">
+                  <div className="flex items-center gap-4">
+                    <ShoppingBag size={22} className="text-[#93959F]" strokeWidth={1.5} />
+                    <span className="text-[15px] font-bold text-[#374151]">My Order</span>
+                  </div>
+                  <ChevronRight size={20} className="text-[#D4D4D8] group-hover:text-[#1C1C1C] transition-colors" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Collaborate With Us */}
+            <div className="mb-8">
+              <h2 className="font-extrabold text-[16px] text-[#1C1C1C] mb-3 ml-2 tracking-wide">
+                Collaborate With Us
+              </h2>
+              <div className="bg-white rounded-[20px] p-1.5 border border-[#E8E8E8] shadow-[0_2px_12px_rgba(0,0,0,0.02)]">
+                <Link href="/about" className="flex items-center justify-between p-4 hover:bg-[#F8F9FA] rounded-xl transition-colors cursor-pointer group">
+                  <div className="flex items-center gap-4">
+                    <MapPin size={22} className="text-[#93959F]" strokeWidth={1.5} />
+                    <span className="text-[15px] font-bold text-[#374151]">Where we are?</span>
+                  </div>
+                  <ChevronRight size={20} className="text-[#D4D4D8] group-hover:text-[#1C1C1C] transition-colors" />
+                </Link>
+                <div className="h-[1px] bg-[#F3F4F6] mx-4" />
+                <Link href="/partner/delivery" className="flex items-center justify-between p-4 hover:bg-[#F8F9FA] rounded-xl transition-colors cursor-pointer group">
+                  <div className="flex items-center gap-4">
+                    <Briefcase size={22} className="text-[#93959F]" strokeWidth={1.5} />
+                    <span className="text-[15px] font-bold text-[#374151]">Register for Delivery Partner</span>
+                  </div>
+                  <ChevronRight size={20} className="text-[#D4D4D8] group-hover:text-[#1C1C1C] transition-colors" />
+                </Link>
+                <div className="h-[1px] bg-[#F3F4F6] mx-4" />
+                <Link href="/partner/business" className="flex items-center justify-between p-4 hover:bg-[#F8F9FA] rounded-xl transition-colors cursor-pointer group">
+                  <div className="flex items-center gap-4">
+                    <Store size={22} className="text-[#93959F]" strokeWidth={1.5} />
+                    <span className="text-[15px] font-bold text-[#374151]">Register for Tiffin Business Partner</span>
+                  </div>
+                  <ChevronRight size={20} className="text-[#D4D4D8] group-hover:text-[#1C1C1C] transition-colors" />
+                </Link>
+                <div className="h-[1px] bg-[#F3F4F6] mx-4" />
+                <Link href="/partner/chef" className="flex items-center justify-between p-4 hover:bg-[#F8F9FA] rounded-xl transition-colors cursor-pointer group">
+                  <div className="flex items-center gap-4">
+                    <Store size={22} className="text-[#93959F]" strokeWidth={1.5} />
+                    <span className="text-[15px] font-bold text-[#374151]">Register for Insta Home Chef</span>
+                  </div>
+                  <ChevronRight size={20} className="text-[#D4D4D8] group-hover:text-[#1C1C1C] transition-colors" />
+                </Link>
+              </div>
+            </div>
+          </>
+        ) : null}
+
+        {/* More */}
+        <div className="mb-8">
+          <h2 className="font-extrabold text-[16px] text-[#1C1C1C] mb-3 ml-2 tracking-wide">
+            More
+          </h2>
+          <div className="bg-white rounded-[20px] p-1.5 border border-[#E8E8E8] shadow-[0_2px_12px_rgba(0,0,0,0.02)]">
+            <a href="https://wa.me/919770144899" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-4 hover:bg-[#F8F9FA] rounded-xl transition-colors cursor-pointer group">
+              <div className="flex items-center gap-4">
+                <MessageCircle size={22} className="text-[#93959F]" strokeWidth={1.5} />
+                <span className="text-[15px] font-bold text-[#374151]">Chat Support</span>
+              </div>
+              <ChevronRight size={20} className="text-[#D4D4D8] group-hover:text-[#1C1C1C] transition-colors" />
+            </a>
+          </div>
         </div>
 
         {/* Sign Out */}

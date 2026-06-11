@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { Plus, Edit2, Trash2, Upload, X, Check, Search, Calendar, Sun, Moon, Utensils } from "lucide-react";
 import { CustomSelect } from "@/components/CustomSelect";
 import { useConfirm } from "@/components/ConfirmProvider";
+import { useToast } from "@/lib/useToast";
 
 type MenuItem = {
   id: string; title: string; description: string | null; image_url: string | null;
@@ -30,12 +31,8 @@ export default function AdminFoodDeliveryPage() {
   const [uploading, setUploading] = useState(false);
   const [search, setSearch] = useState("");
   const { confirm } = useConfirm();
-  const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
+  const { toast, showToast } = useToast();
   const fileRef = useRef<HTMLInputElement>(null);
-
-  const showToast = (msg: string, type: "success" | "error" = "success") => {
-    setToast({ msg, type }); setTimeout(() => setToast(null), 3000);
-  };
 
   const fetchData = async () => {
     const { data } = await supabase.from("menus").select("*").order("created_at", { ascending: false });
